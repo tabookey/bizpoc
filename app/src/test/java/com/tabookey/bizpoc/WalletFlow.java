@@ -2,9 +2,12 @@ package com.tabookey.bizpoc;
 
 import com.tabookey.bizpoc.api.IBitgoEnterprise;
 import com.tabookey.bizpoc.api.IBitgoWallet;
+import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.BitgoEnterprise;
 
 import org.junit.Test;
+
+import java.util.List;
 
 import static com.tabookey.bizpoc.impl.Utils.toJson;
 import static org.junit.Assert.assertEquals;
@@ -23,7 +26,9 @@ public class WalletFlow {
 //        System.out.println( toJson(ent.getInfo()));
         System.out.println( toJson(ent.getMe()) );
         IBitgoWallet w = ent.getWallets().get(0);
-        System.out.println( toJson(w.getTransfers() ));
+        List<Transfer> transfers = w.getTransfers("terc");
+        for ( Transfer t : transfers)
+            System.out.println( toJson(t));
         System.out.println( toJson(w.getPendingApprovals() ));
 
     }

@@ -45,6 +45,14 @@ class Wallet implements IBitgoWallet {
         return users;
     }
 
+    public BitgoUser getUserById(String id) {
+        for ( BitgoUser u : ent.getUsers() ) {
+            if ( u.id.equals(id))
+                return u;
+        }
+        return null;
+    }
+
     @Override
     public String getBalance(String coin) {
         if (coin.contains("eth"))
@@ -60,8 +68,8 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public List<Transfer> getTransfers() {
-        TransferResp resp = ent.http.get("/api/v2/teth/wallet/" + id + "/transfer", TransferResp.class);
+    public List<Transfer> getTransfers(String coin) {
+        TransferResp resp = ent.http.get("/api/v2/"+coin+"/wallet/" + id + "/transfer", TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         xfers.addAll(Arrays.asList(resp.transfers));
         return xfers;
@@ -73,12 +81,41 @@ class Wallet implements IBitgoWallet {
     }
 
     static class PendingApprovalResp {
-        
+
+        public PendingApproval[] pendingApprovals;
+        static class PendingApproval {
+            public String id, coin, creator, createDate;
+            public Info info;
+            public String state, scope;
+            public int approvalsRequired;
+            public String[] userIds;
+        }
+        static class Info {
+            public String type; //transactionRequest
+            public TxRequest transactionRequest;
+        }
+        static class TxRequest {
+            public Recipient[] recipients;
+        }
+        static class Recipient {
+            public String address, amount;
+        }
+
     }
     @Override
     public List<PendingApproval> getPendingApprovals() {
-        PendingApprovalResp pr = ent.http.get("/api/v2/teth/pendingapprovals", PendingApprovalResp.class);
-        return null;
+        PendingApprovalResp resp = ent.http.get("/api/v2/teth/pendingapprovals", PendingApprovalResp.class);
+        ArrayList<PendingApproval> ret = new ArrayList<>();
+        for ( PendingApprovalResp.PendingApproval r : resp.pendingApprovals ) {
+            PendingApproval p = new PendingApproval();
+            p.createDate = r.createDate;
+            p.coin = r.coin;
+            p.creator = getUserById(r.creator);
+            p.recipientAddr = r.info.transactionRequest.recipients[0].address;
+            p.amount = r.info.transactionRequest.recipients[0].amount;
+            ret.add(p);
+        }
+        return ret;
     }
 
     @Override

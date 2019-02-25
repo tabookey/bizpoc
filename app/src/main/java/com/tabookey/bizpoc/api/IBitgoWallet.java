@@ -12,7 +12,7 @@ public interface IBitgoWallet {
     String getBalance(String coin);
 
     //get past transfers from or to this wallet.
-    List<Transfer> getTransfers();
+    List<Transfer> getTransfers(String coin);
 
     void sendMoney(SendRequest req);
 

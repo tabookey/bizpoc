@@ -33,6 +33,6 @@ public class BitgoUser {
         this.email = email;
         this.name = name;
         this.isEnterpriseAdmin = isEnterpriseAdmin;
-        this.permissions = Collections.unmodifiableList(permissions);
+        this.permissions = Collections.unmodifiableList(permissions==null ? Collections.emptyList() : permissions);
     }
 }
