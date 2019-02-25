@@ -68,12 +68,12 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     }
 
     @Override
-    public List<IBitgoWallet> getWallets() {
-        JsonNode node = http.get("/api/v2/teth/wallet", JsonNode.class).get("wallets");
+    public List<IBitgoWallet> getWallets(String coin) {
+        JsonNode node = http.get("/api/v2/"+coin+"/wallet", JsonNode.class).get("wallets");
 
         ArrayList<IBitgoWallet> wallets = new ArrayList<>();
         for (int i = 0; i < node.size(); i++) {
-            Wallet w = new Wallet(this, node.get(i));
+            Wallet w = new Wallet(this, node.get(i), coin);
             wallets.add(w);
         }
         return wallets;

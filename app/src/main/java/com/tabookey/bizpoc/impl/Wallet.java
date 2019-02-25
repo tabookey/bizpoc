@@ -16,18 +16,24 @@ import io.reactivex.exceptions.OnErrorNotImplementedException;
 class Wallet implements IBitgoWallet {
     private final BitgoEnterprise ent;
     private final String balanceString;
-    String id, label;
+    String coin, id, label;
     int approvalsRequired;
     ArrayList<BitgoUser> users;
 
-    Wallet(BitgoEnterprise ent, JsonNode node) {
+    Wallet(BitgoEnterprise ent, JsonNode node, String coin) {
 
         this.ent = ent;
+        this.coin = coin;
         this.id = node.get("id").asText();
         this.label = node.get("label").asText();
         this.approvalsRequired = node.get("approvalsRequired").asInt();
         this.balanceString = node.get("balanceString").asText();
 
+    }
+
+    @Override
+    public String getCoin() {
+        return coin;
     }
 
     @Override
@@ -54,10 +60,8 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public String getBalance(String coin) {
-        if (coin.contains("eth"))
-            return balanceString;
-        throw new RuntimeException("need to support token balance");
+    public String getBalance() {
+        return balanceString;
     }
 
     static class TransferResp {
@@ -68,7 +72,7 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public List<Transfer> getTransfers(String coin) {
+    public List<Transfer> getTransfers() {
         TransferResp resp = ent.http.get("/api/v2/"+coin+"/wallet/" + id + "/transfer", TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         xfers.addAll(Arrays.asList(resp.transfers));
@@ -104,7 +108,7 @@ class Wallet implements IBitgoWallet {
     }
     @Override
     public List<PendingApproval> getPendingApprovals() {
-        PendingApprovalResp resp = ent.http.get("/api/v2/teth/pendingapprovals", PendingApprovalResp.class);
+        PendingApprovalResp resp = ent.http.get("/api/v2/"+coin+"/pendingapprovals", PendingApprovalResp.class);
         ArrayList<PendingApproval> ret = new ArrayList<>();
         for ( PendingApprovalResp.PendingApproval r : resp.pendingApprovals ) {
             PendingApproval p = new PendingApproval();

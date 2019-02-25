@@ -25,8 +25,9 @@ public class WalletFlow {
         IBitgoEnterprise ent = new BitgoEnterprise(accessKey, true);
 //        System.out.println( toJson(ent.getInfo()));
         System.out.println( toJson(ent.getMe()) );
-        IBitgoWallet w = ent.getWallets().get(0);
-        List<Transfer> transfers = w.getTransfers("terc");
+        IBitgoWallet w = ent.getWallets("terc").get(0);
+        System.out.println("wallet balance="+ w.getBalance());
+        List<Transfer> transfers = w.getTransfers();
         for ( Transfer t : transfers)
             System.out.println( toJson(t));
         System.out.println( toJson(w.getPendingApprovals() ));
