@@ -1,4 +1,4 @@
-package com.tabookey.bizpoc;
+package com.tabookey.bizpoc.api;
 
 public class BitgoUser {
     enum Role { Viewer, Spender, Admin }

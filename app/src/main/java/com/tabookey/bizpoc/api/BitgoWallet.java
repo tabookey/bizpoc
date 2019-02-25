@@ -1,4 +1,4 @@
-package com.tabookey.bizpoc;
+package com.tabookey.bizpoc.api;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public interface BitgoWallet {
 
     String getBalance(String coin);
 
-    List<Transfer> getTransfers();
+    List<BitgoEnterprise.Transfer> getTransfers();
 
     void send(SendRequest req);
 

@@ -1,6 +1,6 @@
-package com.tabookey.bizpoc;
+package com.tabookey.bizpoc.api;
 
-class SendRequest {
+public class SendRequest {
     public String recpipientAddress;
     public String comment;
     public String amount;

@@ -1,6 +1,6 @@
-package com.tabookey.bizpoc;
+package com.tabookey.bizpoc.api;
 
-class PendingApproval {
+public class PendingApproval {
     public String id, createDate, recipientAddr, comment, coin, amount;
     public BitgoUser[] approvedByUsers;    //users who already approved (e.g sender himself)
 }
