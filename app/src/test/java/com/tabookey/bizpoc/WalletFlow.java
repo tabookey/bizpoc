@@ -24,6 +24,7 @@ public class WalletFlow {
         System.out.println( toJson(ent.getMe()) );
         IBitgoWallet w = ent.getWallets().get(0);
         System.out.println( toJson(w.getTransfers() ));
+        System.out.println( toJson(w.getPendingApprovals() ));
 
     }
 //    @Test public void run2() {}

@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import io.reactivex.exceptions.OnErrorNotImplementedException;
+
 class Wallet implements IBitgoWallet {
     private final BitgoEnterprise ent;
     private final String balanceString;
@@ -45,7 +47,7 @@ class Wallet implements IBitgoWallet {
 
     @Override
     public String getBalance(String coin) {
-        if ( coin.contains("eth"))
+        if (coin.contains("eth"))
             return balanceString;
         throw new RuntimeException("need to support token balance");
     }
@@ -67,11 +69,15 @@ class Wallet implements IBitgoWallet {
 
     @Override
     public void sendMoney(SendRequest req) {
-
+        throw new NoSuchMethodError("no money transfer yet");
     }
 
+    static class PendingApprovalResp {
+        
+    }
     @Override
     public List<PendingApproval> getPendingApprovals() {
+        PendingApprovalResp pr = ent.http.get("/api/v2/teth/pendingapprovals", PendingApprovalResp.class);
         return null;
     }
 
