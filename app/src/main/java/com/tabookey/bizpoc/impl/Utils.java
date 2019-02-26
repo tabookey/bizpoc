@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class Utils {
     static ObjectMapper sJson = new ObjectMapper()
@@ -28,6 +30,12 @@ public class Utils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static double weiStringToEtherDouble(String weiString){
+        BigDecimal bigIntBalance = new BigDecimal(weiString);
+        BigDecimal divide = bigIntBalance.divide(new BigDecimal(Math.pow(10, 18)), 10, RoundingMode.HALF_UP);
+        return divide.doubleValue();
     }
 
 
