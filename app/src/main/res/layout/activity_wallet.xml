@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+
+    tools:context=".WalletActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Tabbokey Wallet POC" />
+
+    <TextView
+        android:id="@+id/ownerText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="owner title" />
+
+    <TextView
+        android:id="@+id/balanceText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="balance" />
+
+    <Button
+        android:id="@+id/sendButton"
+        android:onClick="onSendMoney"
+        android:textAlignment="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SendMoney" />
+
+
+    <TextView
+        android:paddingTop="50px"
+        android:id="@+id/pendingText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="pending" />
+
+    <ScrollView
+        android:padding="10px"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:paddingTop="50px"
+            android:id="@+id/transfersText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="transfers" />
+
+    </ScrollView>
+
+
+</LinearLayout>

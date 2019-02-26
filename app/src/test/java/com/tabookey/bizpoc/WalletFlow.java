@@ -4,7 +4,6 @@ import com.tabookey.bizpoc.api.IBitgoEnterprise;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
-import com.tabookey.bizpoc.impl.Base58;
 import com.tabookey.bizpoc.impl.BitgoEnterprise;
 
 import org.junit.Test;
@@ -41,15 +40,15 @@ public class WalletFlow {
 
         PendingApproval pa= pendingApprovals.get(0);
 
-        w.rejectPending(pa, "123456");
+//        w.rejectPending(pa, "123456");
     }
 
 
     @Test public void run2() {
         String xpub = "xpub661MyMwAqRbcG6stvcFc3Wee5sqwXvK5NzGnkeRtu8JuUebKbQCuq7zroyJ4TSWd9VuenwwirViTwtrtdHRn9B7HeeBzqVdnrWRCerJhTRe";
         String ethAddress ="0x2c84d8c838935f4c1ab884403daf424759f65f43";
-assertEquals(
-        Base58.encode(new Address(ethAddress).toUint160().getValue().toByteArray()), "");
+//assertEquals(
+//        Base58.encode(new Address(ethAddress).toUint160().getValue().toByteArray()), "");
 //        assertEquals(Numeric.toHexString(Base58.decode(xpub.replace("xpub",""))),ethAddress);
     }
 

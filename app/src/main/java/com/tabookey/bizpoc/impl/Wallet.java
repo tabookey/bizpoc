@@ -65,7 +65,7 @@ class Wallet implements IBitgoWallet {
     static class TransferResp {
         public Trans[] transfers;
         static class Trans {
-            public String txid, coin, valueString, usd, createdDate, confirmedDate;
+            public String txid, coin, valueString, usd, date;
             public Entry[] entries;
         }
         static class Entry {
@@ -83,8 +83,7 @@ class Wallet implements IBitgoWallet {
             tx.coin = t.coin;
             tx.valueString = t.valueString;
             tx.usd = t.usd;
-            tx.createdDate = t.createdDate;
-            tx.confirmedDate = t.confirmedDate;
+            tx.date = t.date;
             //entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
             // looking for the other one, with its value different (actually, negative) of ours.
@@ -113,6 +112,7 @@ class Wallet implements IBitgoWallet {
             public String state, scope;
             public int approvalsRequired;
             public String[] userIds;
+            public Resolver[] resolvers;
         }
         static class Info {
             public String type; //transactionRequest
@@ -123,6 +123,9 @@ class Wallet implements IBitgoWallet {
         }
         static class Recipient {
             public String address, amount;
+        }
+        static class Resolver {
+            public String user, date, resolutionType;
         }
 
     }
@@ -138,6 +141,13 @@ class Wallet implements IBitgoWallet {
             p.creator = getUserById(r.creator);
             p.recipientAddr = r.info.transactionRequest.recipients[0].address;
             p.amount = r.info.transactionRequest.recipients[0].amount;
+            if ( r.resolvers != null ) {
+                ArrayList<BitgoUser> approvedBy = new ArrayList<BitgoUser>();
+                for (PendingApprovalResp.Resolver rs : r.resolvers ) {
+                    approvedBy.add(getUserById(rs.user));
+                }
+                p.approvedByUsers = approvedBy;
+            }
             ret.add(p);
         }
         return ret;
