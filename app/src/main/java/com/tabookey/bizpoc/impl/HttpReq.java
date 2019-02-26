@@ -29,31 +29,31 @@ public class HttpReq {
     OkHttpClient client = new OkHttpClient();
 
     public String get(String api) {
-        return sendRequest(api, null);
+        return sendRequest(api, null,null);
     }
 
     public <T> T get(String api, Class<T> cls) {
-        return fromJson(sendRequest(api,null), cls);
+        return fromJson(sendRequest(api,null,null), cls);
     }
 
-    public <T> T post(String api, Object data, Class<T> cls) {
-        return fromJson(sendRequest(api,null), cls);
+    public <T> T put(String api, Object data, Class<T> cls) {
+        return fromJson(sendRequest(api,data,"PUT"), cls);
     }
 
-    public String sendRequest(String api, Object data ) {
+    public String sendRequest(String api, Object data, String method ) {
         Request.Builder bld = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + accessKey);
 
+        bld.url(host+api);
         if ( data!=null ) {
             RequestBody body = RequestBody.create(MediaType.parse("application/json"), toJson(data));
-            bld.method("POST", body);
+            bld.method(method==null ? "PUT":method, body);
         }
-        bld.url(host+api);
 
         try {
             Request request = bld.build();
             if ( debug )
-                System.err.println( "> "+request.url());
+                System.err.println( "> "+request.method()+" "+ request.url());
             Response res = client.newCall(request).execute();
             String str = res.body().string();
             if ( debug )

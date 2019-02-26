@@ -20,9 +20,11 @@ public interface IBitgoWallet {
 
     List<PendingApproval> getPendingApprovals();
 
-    //2nd/3rd admin approves a transaction
-    public void approvePending(PendingApproval approval);
+    //can't approve through API: according to documentation, must use web interface
+    // (access token has only permission to reject, not approve)
+    //    public void approvePending(PendingApproval approval, String otp);
 
-    //admin reject a transaction (or owner cancel its own transaction
-    public void rejectPending(PendingApproval approval);
+    //admin reject a transaction (or owner cancel its own transaction)
+    //NOTE: api says otp is required. test shows its ignored (works with garbage value)
+    public void rejectPending(PendingApproval approval, String otp);
 }

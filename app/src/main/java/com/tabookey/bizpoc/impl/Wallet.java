@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.reactivex.exceptions.OnErrorNotImplementedException;
-
 class Wallet implements IBitgoWallet {
     private final BitgoEnterprise ent;
     private final String balanceString;
@@ -65,17 +63,39 @@ class Wallet implements IBitgoWallet {
     }
 
     static class TransferResp {
-        public Transfer[] transfers;
-//        static class Trans {
-//            public String txid, coin, valueString, usd, createdDate, confirmedDate;
-//        }
+        public Trans[] transfers;
+        static class Trans {
+            public String txid, coin, valueString, usd, createdDate, confirmedDate;
+            public Entry[] entries;
+        }
+        static class Entry {
+            public String address, valueString;
+        }
     }
 
     @Override
     public List<Transfer> getTransfers() {
         TransferResp resp = ent.http.get("/api/v2/"+coin+"/wallet/" + id + "/transfer", TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
-        xfers.addAll(Arrays.asList(resp.transfers));
+        for ( TransferResp.Trans t : resp.transfers ) {
+            Transfer tx = new Transfer();
+            tx.txid = t.txid;
+            tx.coin = t.coin;
+            tx.valueString = t.valueString;
+            tx.usd = t.usd;
+            tx.createdDate = t.createdDate;
+            tx.confirmedDate = t.confirmedDate;
+            //entries have the add/sub of each transaction "participant".
+            // on ethereum there are exactly 2 such participants. one is our wallet, so we're
+            // looking for the other one, with its value different (actually, negative) of ours.
+            for ( TransferResp.Entry e : t.entries) {
+                if ( !e.valueString.equals(tx.valueString)) {
+                    tx.remoteAddress = e.address;
+                    break;
+                }
+            }
+            xfers.add(tx);
+        }
         return xfers;
     }
 
@@ -112,6 +132,7 @@ class Wallet implements IBitgoWallet {
         ArrayList<PendingApproval> ret = new ArrayList<>();
         for ( PendingApprovalResp.PendingApproval r : resp.pendingApprovals ) {
             PendingApproval p = new PendingApproval();
+            p.id = r.id;
             p.createDate = r.createDate;
             p.coin = r.coin;
             p.creator = getUserById(r.creator);
@@ -122,13 +143,26 @@ class Wallet implements IBitgoWallet {
         return ret;
     }
 
-    @Override
-    public void approvePending(PendingApproval approval) {
+    static class ChangeState {
+        final public String state, otp, walletPassphrase;
+        public String halfSigned; //found in network log. not sure we can send it, since our token is limited..
 
+        ChangeState(String state, String otp, String walletPassphrase) {
+            this.state = state;
+            this.otp = otp;
+            this.walletPassphrase = walletPassphrase;
+        }
     }
+//    @Override
+//    public void approvePending(PendingApproval approval, String otp) {
+//        ChangeState change = new ChangeState("approved", otp, "asdasdsd");
+//        change.halfSigned="0x123123123123";
+//        PendingApprovalResp resp = ent.http.put("/api/v2/"+coin+"/pendingapprovals/"+approval.id, change, PendingApprovalResp.class);
+//    }
 
     @Override
-    public void rejectPending(PendingApproval approval) {
-
+    public void rejectPending(PendingApproval approval, String otp) {
+        ChangeState change = new ChangeState("rejected", otp, null);
+        PendingApprovalResp resp = ent.http.put("/api/v2/"+coin+"/pendingapprovals/"+approval.id, change, PendingApprovalResp.class);
     }
 }
