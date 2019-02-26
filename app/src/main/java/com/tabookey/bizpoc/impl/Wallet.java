@@ -17,6 +17,7 @@ class Wallet implements IBitgoWallet {
     String coin, id, label;
     int approvalsRequired;
     ArrayList<BitgoUser> users;
+    String address;
 
     Wallet(BitgoEnterprise ent, JsonNode node, String coin) {
 
@@ -26,6 +27,7 @@ class Wallet implements IBitgoWallet {
         this.label = node.get("label").asText();
         this.approvalsRequired = node.get("approvalsRequired").asInt();
         this.balanceString = node.get("balanceString").asText();
+        this.address = node.get("coinSpecific").get("baseAddress").asText();
 
     }
 
@@ -60,6 +62,11 @@ class Wallet implements IBitgoWallet {
     @Override
     public String getBalance() {
         return balanceString;
+    }
+
+    @Override
+    public String getAddress() {
+        return address;
     }
 
     static class TransferResp {

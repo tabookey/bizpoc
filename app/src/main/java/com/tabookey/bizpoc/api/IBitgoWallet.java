@@ -12,6 +12,7 @@ public interface IBitgoWallet {
     List<BitgoUser> getUsers();
 
     String getBalance();
+    String getAddress();
 
     //get past transfers from or to this wallet.
     List<Transfer> getTransfers();

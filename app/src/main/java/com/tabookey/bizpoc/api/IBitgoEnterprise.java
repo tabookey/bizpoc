@@ -13,6 +13,8 @@ public interface IBitgoEnterprise {
     //return the user object representing the current user
     BitgoUser getMe();
 
+    ExchangeRate getMarketData();
+
     List<IBitgoWallet> getWallets(String coin);
 
     //return enterprise users (NOTE: "role" is relevant only when called from wallet)

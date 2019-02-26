@@ -3,10 +3,10 @@ package com.tabookey.bizpoc.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.EnterpriseInfo;
+import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.IBitgoEnterprise;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +65,13 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         BitgoUser user = new BitgoUser(u.id, u.username, u.name.full, isAdmin, Collections.emptyList());
 
         return user;
+    }
+
+    @Override
+    public ExchangeRate getMarketData() {
+        JsonNode node = http.get("/api/v2/teth/market/latest", JsonNode.class).get("latest").get("currencies").get("USD").get("24h_avg");
+        ExchangeRate e = new ExchangeRate(node.asDouble());
+        return e;
     }
 
     @Override

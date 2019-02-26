@@ -15,6 +15,7 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionsFragment extends Fragment {
@@ -41,20 +42,16 @@ public class TransactionsFragment extends Fragment {
     public void fillWindow(){
         IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
         List<PendingApproval> pending = ethWallet.getPendingApprovals();
-        pending.addAll(ethWallet.getPendingApprovals());
         List<Transfer> transfers = ethWallet.getTransfers();
-        transfers.addAll(ethWallet.getTransfers());
         Activity activity = getActivity();
         if (activity == null){
             return;
         }
         activity.runOnUiThread(()->{
-            String[] history = {"ONE", "TWO", "THREE"};
-            TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), R.layout.transaction_line, history);
+            TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), R.layout.transaction_line, transfers);
             lvt.setAdapter(historyAdapter);
 
-            String[] pendings = {"FOUR", "FIVE", "THREE"};
-            TransactionHistoryAdapter pendingAdapter = new TransactionHistoryAdapter(getActivity(), R.layout.transaction_line, pendings);
+            TransactionPendingAdapter pendingAdapter = new TransactionPendingAdapter(getActivity(), R.layout.pending_transaction_line, pending);
             lvp.setAdapter(pendingAdapter);
         });
     }

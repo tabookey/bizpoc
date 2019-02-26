@@ -31,11 +31,18 @@
         android:text="balance"
         android:textAlignment="center" />
 
+    <TextView
+        android:id="@+id/balanceInDollaarsText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="$100'000"
+        android:textAlignment="center" />
+
     <Button
         android:id="@+id/sendButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Send Money"
+        android:text="Create transaction"
         android:textAlignment="center" />
 
     <Button

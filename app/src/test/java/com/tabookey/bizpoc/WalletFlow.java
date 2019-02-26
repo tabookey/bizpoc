@@ -7,13 +7,10 @@ import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.BitgoEnterprise;
 
 import org.junit.Test;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.utils.Numeric;
 
 import java.util.List;
 
 import static com.tabookey.bizpoc.impl.Utils.toJson;
-import static org.junit.Assert.assertEquals;
 
 /**
  * command line to go throuh the wallet APIs
@@ -23,7 +20,8 @@ public class WalletFlow {
 
     String accDrorGmail = "v2x0ea2d66f027a54a3f9566934e67008ff4823e016e2ddbdb05e562d48db2d6b02";
 
-    String accessKey = "v2x7fa63b4f6b6b17c821f9b95a6313efa04fb29ecc7705f9dce774d4d6fd94109d";
+//    String accessKey = "v2x7fa63b4f6b6b17c821f9b95a6313efa04fb29ecc7705f9dce774d4d6fd94109d";
+    String accessKey = "v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8";
     @Test public void run1() {
 
         IBitgoEnterprise ent = new BitgoEnterprise(accessKey, true);
