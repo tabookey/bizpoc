@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         frame = findViewById(R.id.frame_layout);
-        Fragment firstFragment = new FirstFragment();
+        Fragment firstFragment = new ImportApiKeyFragment();
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.frame_layout, firstFragment).commit();
     }

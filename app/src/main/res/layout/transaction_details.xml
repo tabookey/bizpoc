@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/guardiansApprovalTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Waiting for guardians approval" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GUARDIANS" />
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="40dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Transaction submission date" />
+
+    <TextView
+        android:id="@+id/transactionDateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="11/03/19 11:00AM" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="From" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tomer Hirsch | PILLAR" />
+
+    <TextView
+        android:id="@+id/senderAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0x123123123123123123123123" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Amount" />
+
+    <TextView
+        android:id="@+id/etherSendAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="674.159999" />
+
+    <TextView
+        android:id="@+id/dollarSentAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="$100'000.00" />
+
+    <Button
+        android:id="@+id/transactionsHashButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Transaction's hash"/>
+</LinearLayout>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Paste your API key here" />
+
+    <EditText
+        android:id="@+id/apiKeyEditText"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:hint="v2x0ea2d66f027a54a3f9566934e67008ff4823e016e2ddbdb05e562d48db2d6b02"
+        android:lines="5" />
+
+    <Button
+        android:id="@+id/saveApiKeyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SAVE" />
+</LinearLayout>

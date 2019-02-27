@@ -15,7 +15,6 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionsFragment extends Fragment {
