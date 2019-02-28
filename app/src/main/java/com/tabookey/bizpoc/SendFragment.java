@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 
 public class SendFragment extends Fragment {
     @Nullable
@@ -21,6 +22,7 @@ public class SendFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Button continueButton = view.findViewById(R.id.continueButton);
+        EditText destinationEditText = view.findViewById(R.id.destinationEditText);
         continueButton.setOnClickListener(v->{
             ConfirmFragment cf = new ConfirmFragment();
             FragmentActivity activity = getActivity();

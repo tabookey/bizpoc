@@ -1,13 +1,17 @@
 package com.tabookey.bizpoc;
 
-import android.app.Activity;
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +28,7 @@ public class ImportApiKeyFragment extends Fragment {
 
     private static final String PREFS_API_KEY_ENCODED = "api_key_encoded";
     private SecretStorge secretStorge = new SecretStorge();
+    EditText et;
 
     @Nullable
     @Override
@@ -38,9 +43,16 @@ public class ImportApiKeyFragment extends Fragment {
         if (activity == null) {
             return;
         }
+
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, 11);
+        }
+
         Button save = view.findViewById(R.id.saveApiKeyButton);
         Button test = view.findViewById(R.id.testApiKeyButton);
-        EditText et = view.findViewById(R.id.apiKeyEditText);
+        Button scan = view.findViewById(R.id.scanApiKeyButton);
+        et = view.findViewById(R.id.apiKeyEditText);
         TextView fingerprintTextView = view.findViewById(R.id.fingerprintEnabledTextView);
         TextView testNameTextView = view.findViewById(R.id.testNameTextView);
         FingerprintManager fingerprintManager = (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
@@ -51,6 +63,9 @@ public class ImportApiKeyFragment extends Fragment {
             save.setEnabled(false);
             fingerprintTextView.setText("User hasn't enrolled any fingerprints to authenticate with");
         }
+        scan.setOnClickListener(v -> {
+            startActivityForResult(new Intent(activity, ScanActivity.class), 1);
+        });
         test.setOnClickListener(v -> {
             new Thread(() -> {
                 String key = et.getText().toString();
@@ -73,6 +88,13 @@ public class ImportApiKeyFragment extends Fragment {
                 throw new RuntimeException(e);
             }
         });
+
+
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        et.setText(data.getStringExtra("apiKey"));
+    }
 }

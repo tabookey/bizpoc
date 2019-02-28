@@ -13,8 +13,14 @@
         android:id="@+id/apiKeyEditText"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:text="v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8"
-        android:lines="5" />
+        android:lines="5"
+        android:text="v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8" />
+
+    <Button
+        android:id="@+id/scanApiKeyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SCAN" />
 
     <TextView
         android:id="@+id/fingerprintEnabledTextView"
@@ -34,6 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="wallet name is: %%%" />
+
     <Button
         android:id="@+id/saveApiKeyButton"
         android:layout_width="wrap_content"

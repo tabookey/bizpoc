@@ -17,14 +17,17 @@
         android:layout_height="wrap_content"
         android:text="Recipient Address"
         android:textAlignment="center" />
-<EditText
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="0x1212121212"/>
-<Button
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="paste"/>
+
+    <EditText
+        android:id="@+id/destinationEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0x1212121212" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="paste" />
 
     <TextView
         android:id="@+id/amountTitle"
@@ -43,7 +46,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ETH 110'000.123"/>
+        android:text="ETH 110'000.123" />
 
     <TextView
         android:id="@+id/validatorsTitle"
@@ -58,6 +61,7 @@
         android:layout_height="wrap_content"
         android:text="liraz@tabookey.com"
         android:textAlignment="center" />
+
     <TextView
         android:id="@+id/guardian2"
         android:layout_width="match_parent"
@@ -69,5 +73,5 @@
         android:id="@+id/continueButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="CONTINUE"/>
+        android:text="CONTINUE" />
 </LinearLayout>
