@@ -40,11 +40,13 @@ public class TransactionHistoryAdapter extends ArrayAdapter<Transfer> {
         TextView coinTextView = view.findViewById(R.id.transactionCoin);
         TextView dollarTextView = view.findViewById(R.id.transactionDollarValue);
         TextView remoteTextView = view.findViewById(R.id.transactionRemoteAddress);
+        TextView transactionComment = view.findViewById(R.id.transactionComment);
+        transactionComment.setText(data.get(position).comment);
 //        txid, valueString, coin, usd, date, remoteAddress
         dateTextView.setText(data.get(position).date);
         idTextView.setText(data.get(position).txid);
         double value = Utils.weiStringToEtherDouble(data.get(position).valueString);
-        valueTextView.setText(String.format(Locale.US,"%.6f", value));
+        valueTextView.setText(String.format(Locale.US, "%.6f", value));
         coinTextView.setText(data.get(position).coin);
         dollarTextView.setText(data.get(position).usd);
         remoteTextView.setText(data.get(position).remoteAddress);

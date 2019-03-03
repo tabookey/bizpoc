@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -9,44 +10,77 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Send"
-        android:textAlignment="center" />
+        android:textSize="17pt" />
 
     <TextView
         android:id="@+id/recipientTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Recipient Address"
-        android:textAlignment="center" />
+        android:text="Recipient Address" />
 
-    <EditText
-        android:id="@+id/destinationEditText"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="0x1212121212" />
+        android:orientation="horizontal">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="paste" />
+
+        <EditText
+            android:id="@+id/destinationEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0x1212121212" />
+
+        <Button
+            android:id="@+id/scanDestinationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:text="Scan" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/amountTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Amount"
-        android:textAlignment="center" />
+        android:text="Amount" />
 
-    <TextView
-        android:id="@+id/dollarEquivalent"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="$ 100'000'000"
-        android:textAlignment="center" />
+        android:orientation="horizontal">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="ETH 110'000.123" />
+        <EditText
+            android:id="@+id/etherSendAmountEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="numberDecimal"
+            android:text="0"
+            android:textAlignment="textEnd" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2"
+            android:text="ETH"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/dollarEquivalent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="textEnd" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2"
+            android:text="USD"
+            android:textAlignment="center" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/validatorsTitle"
@@ -55,19 +89,11 @@
         android:text="The transaction will be submitted after guardians approval"
         android:textAlignment="center" />
 
-    <TextView
-        android:id="@+id/guardian1"
+    <ListView
+        android:id="@+id/guardiansListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="liraz@tabookey.com"
-        android:textAlignment="center" />
-
-    <TextView
-        android:id="@+id/guardian2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="eli@konfidas.com"
-        android:textAlignment="center" />
+        tools:layout_height="80dp" />
 
     <Button
         android:id="@+id/continueButton"

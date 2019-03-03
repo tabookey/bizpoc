@@ -4,6 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+
+    <TextView
+        android:id="@+id/transactionComment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="IAM A TRANSACTION" />
+
     <TextView
         android:id="@+id/transactionDate"
         android:layout_width="wrap_content"

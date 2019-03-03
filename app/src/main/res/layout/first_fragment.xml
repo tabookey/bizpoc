@@ -32,7 +32,7 @@
         android:textAlignment="center" />
 
     <TextView
-        android:id="@+id/balanceInDollaarsText"
+        android:id="@+id/balanceInDollarsText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="$100'000"
@@ -50,6 +50,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Transactions"
+        android:textAlignment="center" />
+    <Button
+        android:id="@+id/transactionDetailsButtonDev"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Transaction details stub"
+        android:background="@color/colorAccent"
         android:textAlignment="center" />
 
 

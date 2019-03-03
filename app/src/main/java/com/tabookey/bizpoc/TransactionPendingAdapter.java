@@ -44,6 +44,7 @@ public class TransactionPendingAdapter extends ArrayAdapter<PendingApproval> {
         TextView coinTextView = view.findViewById(R.id.transactionCoin);
         TextView dollarTextView = view.findViewById(R.id.transactionDollarValue);
         TextView remoteTextView = view.findViewById(R.id.transactionRemoteAddress);
+        TextView transactionComment = view.findViewById(R.id.transactionComment);
 //        txid, valueString, coin, usd, date, remoteAddress
         dateTextView.setText(data.get(position).createDate);
         idTextView.setText(data.get(position).id);

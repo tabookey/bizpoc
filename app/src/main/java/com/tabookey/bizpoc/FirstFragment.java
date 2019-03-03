@@ -15,14 +15,8 @@ import android.widget.TextView;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
-import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.util.List;
 
 public class FirstFragment extends Fragment {
     @Nullable
@@ -44,15 +38,24 @@ public class FirstFragment extends Fragment {
         if (activity == null) {
             return;
         }
-        sendButton.setOnClickListener(v -> {
-            activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, sf).addToBackStack(null).commit();
-        });
+        sendButton.setOnClickListener(v -> activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, sf).addToBackStack(null).commit());
 
         Button transactionsButton = view.findViewById(R.id.transactionsButton);
         TransactionsFragment tf = new TransactionsFragment();
         transactionsButton.setOnClickListener(v ->
                 activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit()
         );
+
+        Button transactionDetailsButtonDev = view.findViewById(R.id.transactionDetailsButtonDev);
+        transactionDetailsButtonDev.setOnClickListener(v -> {
+            TransactionDetailsFragment tdf = new TransactionDetailsFragment();
+            tdf.setTransfer(new Transfer("123412", "12312312312312312", "teth", "1234", "12/12/1212", "0x123123", "TXID321543"));
+            tdf.setExchangeRate(new ExchangeRate(100.01));
+
+            activity.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.frame_layout, tdf).commit();
+        });
+
         new Thread() {
             public void run() {
                 fillWindow();
@@ -67,7 +70,7 @@ public class FirstFragment extends Fragment {
         double etherDouble = Utils.weiStringToEtherDouble(balanceString);
         setText(R.id.balanceText, "%.6f", etherDouble);
         ExchangeRate e = Global.ent.getMarketData();
-        setText(R.id.balanceInDollaarsText, "$%.6f", etherDouble  * e.average24h);
+        setText(R.id.balanceInDollarsText, "$%.2f", etherDouble * e.average24h);
         setText(R.id.addressText, ethWallet.getAddress());
 
     }
