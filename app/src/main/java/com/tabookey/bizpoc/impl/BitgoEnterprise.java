@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.EnterpriseInfo;
 import com.tabookey.bizpoc.api.ExchangeRate;
+import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoEnterprise;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 
@@ -15,9 +16,10 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     HttpReq http;
     private EnterpriseInfo info;
     private ArrayList<BitgoUser> users;
+    private List<IBitgoWallet> wallets;
 
     public BitgoEnterprise(String accessKey, boolean test) {
-        http = new HttpReq(accessKey, true);
+        Global.http = http = new HttpReq(accessKey, true);
     }
 
 
@@ -76,9 +78,12 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
     @Override
     public List<IBitgoWallet> getWallets(String coin) {
+        if ( wallets!=null )
+            return wallets;
+
         JsonNode node = http.get("/api/v2/"+coin+"/wallet", JsonNode.class).get("wallets");
 
-        ArrayList<IBitgoWallet> wallets = new ArrayList<>();
+        wallets = new ArrayList<>();
         for (int i = 0; i < node.size(); i++) {
             Wallet w = new Wallet(this, node.get(i), coin);
             wallets.add(w);

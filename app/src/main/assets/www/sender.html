@@ -1,0 +1,100 @@
+<body onload="init()" >
+<h1>text</h1>
+
+<span id="log"></span>
+<script>
+
+function log(message) {
+    args = Array.prototype.slice.call(arguments).join( " " )
+    const logelem = document.getElementById('log')
+    logelem.innerHTML = logelem.innerHTML+"<br>\n"+args
+}
+
+function init() {
+    log("page loaded")
+}
+</script>
+
+<script src="bitgojs_min.js"> </script>
+
+<script>
+
+let prevconsole = console.log
+class App {
+	getIsTest() { return true; }
+	//wallet password: asd/asd-ASD
+	getWalletPassphrase() { return "asd/asd-ASD" }
+	getWalletId() { return "5c869eecb7b033d603b430afbba85850"}
+	getAccessKey() {return "v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3"}
+    getOtp() { return "000000" }
+    getCoin() { return "teth" }
+    getDest() { return "0xd21934eD8eAf27a67f0A70042Af50A1D6d195E81" }
+    getAmount() { return "1234567890987" }
+    log() { return prevconsole }
+}
+
+
+function applog(msg) {
+    app.log(msg);
+}
+
+async function run() {
+    try {
+        XMLHttpRequest.prototype.origSend = XMLHttpRequest.prototype.send
+        XMLHttpRequest.prototype.send = function(body) {
+            if ( body )
+                this.setRequestHeader( "x-body", body )
+            return this.origSend(body)
+        }
+
+        localtest = true //(running from chrome, without webview)
+        if ( localtest ) {
+            app = new App();
+        } else {
+            console.log=applog
+            console.warn=applog
+            console.err=applog
+            console.err=applog
+        }
+        accessToken = app.getAccessKey();
+        console.log( "start" )
+        env = app.getIsTest() ? "test": "prod" ;
+        console.log("env:",env);
+        bitgo = new BitGoJS.BitGo({env, accessToken});
+
+        otp = app.getOtp();
+        coin = app.getCoin();
+        dest=app.getDest();
+        amount = app.getAmount();
+
+        console.log( "otp="+otp+ " amount="+amount);
+        log( "dest="+dest )
+        log( "token="+accessToken)
+        log( "coin="+coin )
+        wallet = await bitgo.coin(coin).wallets().get({id:app.getWalletId()})
+        await bitgo.unlock({otp})
+        await wallet.sendMany({recipients: [
+          {
+            amount: app.getAmount(),
+            address: app.getDest()
+          }],
+            walletPassphrase: app.getWalletPassphrase()} )
+
+
+    } catch (e) {
+        log( "ex: "+e )
+        console.log("ex", e)
+    }
+}
+
+try {
+
+    run();
+
+
+} catch ( e) {
+    log( "error "+e );
+}
+</script>
+
+</body>
