@@ -2,6 +2,7 @@ package com.tabookey.bizpoc.impl;
 
 import java.io.IOException;
 
+import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -26,7 +27,15 @@ public class HttpReq {
 //        this.host = "http://localhost:12345";
     }
 
-    OkHttpClient client = new OkHttpClient();
+    //from: https://square.github.io/okhttp/3.x/okhttp/okhttp3/CertificatePinner.html
+    CertificatePinner certPinner = new CertificatePinner.Builder()
+            .add("*.bitgo.com", "sha256/rlM24Z6HZfQm71GKuqEO25xb7XP3AXTAU5kvJdkR9TI=")
+            .build();
+
+    private OkHttpClient client = new OkHttpClient.Builder()
+            .certificatePinner(certPinner).build();
+
+    public OkHttpClient getClient() { return client; }
 
     public String get(String api) {
         return sendRequest(api, null,null);
@@ -38,6 +47,10 @@ public class HttpReq {
 
     public <T> T put(String api, Object data, Class<T> cls) {
         return fromJson(sendRequest(api,data,"PUT"), cls);
+    }
+
+    public <T> T post(String api, Object data, Class<T> cls) {
+        return fromJson(sendRequest(api,data,"POST"), cls);
     }
 
     public String sendRequest(String api, Object data, String method ) {
