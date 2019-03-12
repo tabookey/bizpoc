@@ -10,6 +10,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.impl.HttpReq;
 
 import java.io.IOException;
@@ -87,9 +88,8 @@ public class WebvActivity extends AppCompatActivity {
         public String getWalletPassphrase() { return walletPassphrase; }
 
         @JavascriptInterface
-        public String getAccessKey() {
-            return "v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3";
-//        return Global.getAccessKey();
+        public String getAccessToken() {
+            return Global.getAccessToken();
         }
 
         @JavascriptInterface
@@ -101,11 +101,26 @@ public class WebvActivity extends AppCompatActivity {
         public void log(String msg) {
             Log.d("TAG", "log: " + msg);
         }
+
+
+        public void setError(String s) {
+            Log.e(TAG, "setError: "+ s );
+        }
+
+        public void setStatus(String status) {
+            Log.d(TAG, "setStatus: "+status);
+        }
+
+        public void setResult(String res) {
+            Log.d(TAG, "setResult: "+res);
+        }
+
     }
 
     void sendCoins(String dest, String amount, String coin, String otp, String walletPassphrase, boolean testNetwork) {
         AppObject appData = new AppObject(dest, amount, coin, otp, walletPassphrase, testNetwork);
-        WebView webv = findViewById(R.id.webview);
+        WebView webv = new WebView(this);
+        //findViewById(R.id.webview);
         webv.setWebViewClient(new MyWebviewClient(appData));
         webv.getSettings().setJavaScriptEnabled(true);
 
@@ -134,7 +149,7 @@ public class WebvActivity extends AppCompatActivity {
 
         public MyWebviewClient(AppObject appData) {
             this.appData = appData;
-            http = new HttpReq(appData.getAccessKey(), appData.testNetwork);
+            http = new HttpReq(appData.getAccessToken(), appData.testNetwork);
         }
 
         @Override

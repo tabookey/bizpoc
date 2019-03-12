@@ -17,7 +17,7 @@ public interface IBitgoWallet {
     //get past transfers from or to this wallet.
     List<Transfer> getTransfers();
 
-    void sendMoney(SendRequest req);
+    void sendCoins(SendRequest req);
 
     List<PendingApproval> getPendingApprovals();
 

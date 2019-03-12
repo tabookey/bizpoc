@@ -2,18 +2,19 @@ package com.tabookey.bizpoc.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.BitgoUser;
+import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.Transfer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 class Wallet implements IBitgoWallet {
     private final BitgoEnterprise ent;
     private final String balanceString;
+    private final CoinSender coinSender;
     String coin, id, label;
     int approvalsRequired;
     ArrayList<BitgoUser> users;
@@ -28,7 +29,7 @@ class Wallet implements IBitgoWallet {
         this.approvalsRequired = node.get("approvalsRequired").asInt();
         this.balanceString = node.get("balanceString").asText();
         this.address = node.get("coinSpecific").get("baseAddress").asText();
-
+        coinSender = new CoinSender(Global.applicationContext, ent.http);
     }
 
     @Override
@@ -108,9 +109,10 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public void sendMoney(SendRequest req) {
-        throw new NoSuchMethodError("no money transfer yet");
+    public void sendCoins(SendRequest req) {
+        coinSender.sendCoins(this, req.recipientAddress, req.amount, req.otp, req.walletPassphrase);
     }
+
 
     static class PendingApprovalResp {
 
@@ -136,8 +138,8 @@ class Wallet implements IBitgoWallet {
         static class Resolver {
             public String user, date, resolutionType;
         }
-
     }
+
     @Override
     public List<PendingApproval> getPendingApprovals() {
         PendingApprovalResp resp = ent.http.get("/api/v2/"+coin+"/pendingapprovals", PendingApprovalResp.class);
