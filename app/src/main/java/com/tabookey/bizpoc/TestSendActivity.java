@@ -49,7 +49,7 @@ public class TestSendActivity extends AppCompatActivity {
 
     private void sendfromwallet() {
         log("starting:");
-        Global.setApiKey("v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3");
+        Global.setAccessToken("v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3");
         IBitgoEnterprise ent = Global.ent;
         log( "me: "+ent.getMe().name);
         IBitgoWallet w = ent.getWallets("teth").get(3);

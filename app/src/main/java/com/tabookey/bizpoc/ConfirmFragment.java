@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.SendRequest;
@@ -69,33 +70,17 @@ public class ConfirmFragment extends Fragment {
 
     private void sendTransaction() {
         new Handler().postDelayed(()->{
-
+            Toast.makeText(getActivity(), "Transaction transacted", Toast.LENGTH_SHORT).show();
         }, 2000);
     }
 
 
     private void promptOtp() {
-        FragmentActivity activity = getActivity();
-        if (activity == null) {
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity == null){
             return;
         }
-        View view = getView();
-        if (view == null) {
-            return;
-        }
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle("Title");
-
-        final EditText input = new EditText(activity);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(input);
-
-        builder.setPositiveButton("OK", (dialog, which) -> {
-            sendTransaction();
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
-        builder.show();
+        activity.promptOtp((dialog, which) -> sendTransaction());
     }
 
     public void setExchangeRate(ExchangeRate exchangeRate) {
