@@ -13,17 +13,17 @@ public class Global {
 
     public static boolean isTest() { return is_test; }
 
-    public static void setApiKey(String apiKey) {
-        Global.accessKey = apiKey;
-        ent = new BitgoEnterprise(accessKey, isTest());
+    public static void setAccessToken(String accessToken) {
+        Global.accessToken = accessToken;
+        ent = new BitgoEnterprise(Global.accessToken, isTest());
     }
 
     public static String getAccessToken() {
-        return accessKey;
+        return accessToken;
     }
 
     public static Application applicationContext;
 
-    //    static String accessKey = "v2x7fa63b4f6b6b17c821f9b95a6313efa04fb29ecc7705f9dce774d4d6fd94109d";
-    private static String accessKey;
+    //    static String accessToken = "v2x7fa63b4f6b6b17c821f9b95a6313efa04fb29ecc7705f9dce774d4d6fd94109d";
+    private static String accessToken;
 }

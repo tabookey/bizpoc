@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:lines="5"
-        android:text="v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8" />
+        android:text="{&quot;token&quot;:&quot;v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8&quot;, &quot;password&quot;:&quot;asd/asd-ASD&quot;}" />
 
     <Button
         android:id="@+id/scanApiKeyButton"

@@ -20,6 +20,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.tabookey.bizpoc.api.Global;
+import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.Arrays;
 
@@ -27,8 +28,14 @@ import java.util.Arrays;
 public class ImportApiKeyFragment extends Fragment {
 
     private static final String PREFS_API_KEY_ENCODED = "api_key_encoded";
+    private static final String PREFS_PASSWORD_ENCODED = "passphrase_encoded";
     private SecretStorge secretStorge = new SecretStorge();
     EditText et;
+
+    public static class TokenPassword {
+        @SuppressWarnings("WeakerAccess")
+        public String token, password;
+    }
 
     @Nullable
     @Override
@@ -56,7 +63,7 @@ public class ImportApiKeyFragment extends Fragment {
         TextView fingerprintTextView = view.findViewById(R.id.fingerprintEnabledTextView);
         TextView testNameTextView = view.findViewById(R.id.testNameTextView);
         FingerprintManager fingerprintManager = (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
-        if (!fingerprintManager.isHardwareDetected()) {
+        if (fingerprintManager == null || !fingerprintManager.isHardwareDetected()) {
             fingerprintTextView.setText("Device doesn't support fingerprint authentication");
             save.setEnabled(false);
         } else if (!fingerprintManager.hasEnrolledFingerprints()) {
@@ -68,8 +75,9 @@ public class ImportApiKeyFragment extends Fragment {
         });
         test.setOnClickListener(v -> {
             new Thread(() -> {
-                String key = et.getText().toString();
-                Global.setApiKey(key);
+                String tokenPwdString = et.getText().toString();
+                TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
+                Global.setAccessToken(tokenPassword.token);
                 String name = Global.ent.getMe().name;
                 activity.runOnUiThread(() -> {
                     testNameTextView.setText("wallet name is: " + name);
@@ -77,11 +85,18 @@ public class ImportApiKeyFragment extends Fragment {
             }).start();
         });
         save.setOnClickListener(v -> {
-            String key = et.getText().toString();
+            String tokenPwdString = et.getText().toString();
+            TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
             try {
-                byte[] encrypt = secretStorge.encrypt(key.getBytes());
-                String encryptedApiKey = Arrays.toString(encrypt);
-                secretStorge.getPrefs(activity).edit().putString(PREFS_API_KEY_ENCODED, encryptedApiKey).apply();
+                byte[] encryptToken = secretStorge.encrypt(tokenPassword.token.getBytes());
+                String encryptedToken = Arrays.toString(encryptToken);
+                byte[] encryptPwd = secretStorge.encrypt(tokenPassword.password.getBytes());
+                String encryptedPassword = Arrays.toString(encryptPwd);
+                secretStorge.getPrefs(activity).edit()
+                        .putString(PREFS_API_KEY_ENCODED, encryptedToken)
+                        .putString(PREFS_PASSWORD_ENCODED, encryptedPassword)
+                        .apply();
+
                 FirstFragment f = new FirstFragment();
                 activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, f).commit();
             } catch (Exception e) {
