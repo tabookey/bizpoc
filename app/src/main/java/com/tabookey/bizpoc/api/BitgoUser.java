@@ -5,7 +5,7 @@ import java.util.List;
 
 public class BitgoUser {
 
-    enum Perm { Viewer, Spender, Admin }
+    public enum Perm {view, spend, admin }
 
     final public String id, email, name;
     final public List<Perm> permissions;

@@ -17,6 +17,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     private EnterpriseInfo info;
     private ArrayList<BitgoUser> users;
     private List<IBitgoWallet> wallets;
+    private BitgoUser userMe;
 
     public BitgoEnterprise(String accessKey, boolean test) {
         Global.http = http = new HttpReq(accessKey, true);
@@ -56,17 +57,18 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
     @Override
     public BitgoUser getMe() {
-        UserMeResp.User u = http.get("/api/v2/user/me", UserMeResp.class).user;
+        if ( userMe==null ) {
+            UserMeResp.User u = http.get("/api/v2/user/me", UserMeResp.class).user;
 
-        boolean isAdmin = false;
-        for (UserMeResp.Enterprise e : u.enterprises ) {
-            if ( e.id.equals(getInfo().id) && e.permissions.contains("admin") )
-                isAdmin=true;
+            boolean isAdmin = false;
+            for (UserMeResp.Enterprise e : u.enterprises) {
+                if (e.id.equals(getInfo().id) && e.permissions.contains("admin"))
+                    isAdmin = true;
+            }
+
+            userMe = new BitgoUser(u.id, u.username, u.name.full, isAdmin, Collections.emptyList());
         }
-
-        BitgoUser user = new BitgoUser(u.id, u.username, u.name.full, isAdmin, Collections.emptyList());
-
-        return user;
+        return userMe;
     }
 
     @Override
@@ -103,6 +105,14 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     public static class EntUsersResp {
         public UserResp[] adminUsers;
         public UserResp[] nonAdminUsers;
+    }
+
+    public BitgoUser getUserById(String id) {
+        for (BitgoUser u : getUsers()) {
+            if (u.id.equals(id))
+                return u;
+        }
+        return null;
     }
 
     @Override

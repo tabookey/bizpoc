@@ -8,8 +8,9 @@ public interface IBitgoWallet {
     String getId();
 
     String getLabel();
-    //users of this vault. each with its role for this vault.
-    List<BitgoUser> getUsers();
+
+    //all vault users that are not "me"
+    List<BitgoUser> getGuardians();
 
     String getBalance();
     String getAddress();

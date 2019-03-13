@@ -58,6 +58,7 @@ public class TestSendActivity extends AppCompatActivity {
         IBitgoWallet w = ent.getWallets("teth").get(3);
         log( "wallet id="+w.getLabel()+": "+w.getId());
 
+        w.getGuardians().forEach(user->log(user.email+": "+user.permissions));
         List<PendingApproval> pending = w.getPendingApprovals();
         log( "pending: "+pending.size());
         pending.forEach(p->{
@@ -65,7 +66,7 @@ public class TestSendActivity extends AppCompatActivity {
         });
         String dest = "0xd21934eD8eAf27a67f0A70042Af50A1D6d195E81";
         SendRequest req = new SendRequest(dest, "comment", "1122334455667788",
-                "0000000", "asd/asd-ASD");
+                "0000000", "asd/asd-ASD1");
 
         w.sendCoins(req, (type, msg) -> log("== "+type+": "+msg) );
     }

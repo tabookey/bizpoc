@@ -17,7 +17,9 @@ public interface IBitgoEnterprise {
 
     List<IBitgoWallet> getWallets(String coin);
 
-    //return enterprise users (NOTE: "role" is relevant only when called from wallet)
+    //return enterprise users (NOTE: "role" are not set on enterprise-level, only on wallet level)
     List<BitgoUser> getUsers();
 
+    //return specific user by ID, or "null" if not found.
+    BitgoUser getUserById(String id);
 }

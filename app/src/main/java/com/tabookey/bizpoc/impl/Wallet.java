@@ -9,7 +9,26 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.Transfer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+
+
+class WalletNode {
+    public String id, coin, label;
+    public int approvalsRequired;
+    public String balanceString;
+    public CoinSpecific coinSpecific;
+    public User[] users;
+
+    static class CoinSpecific {
+        public String baseAddress;
+    }
+    static class User {
+        public String user;
+        public BitgoUser.Perm[] permissions;
+    }
+}
 
 class Wallet implements IBitgoWallet {
     private final BitgoEnterprise ent;
@@ -17,18 +36,27 @@ class Wallet implements IBitgoWallet {
     private final CoinSender coinSender;
     String coin, id, label;
     int approvalsRequired;
-    ArrayList<BitgoUser> users;
+
+    ArrayList<BitgoUser> guardians;
     String address;
 
     Wallet(BitgoEnterprise ent, JsonNode node, String coin) {
 
+        WalletNode walletData = Utils.fromJson(Utils.toJson(node), WalletNode.class);
+
         this.ent = ent;
         this.coin = coin;
-        this.id = node.get("id").asText();
-        this.label = node.get("label").asText();
-        this.approvalsRequired = node.get("approvalsRequired").asInt();
-        this.balanceString = node.get("balanceString").asText();
-        this.address = node.get("coinSpecific").get("baseAddress").asText();
+        this.id = walletData.id;
+        this.label = walletData.label;
+        this.approvalsRequired = walletData.approvalsRequired;
+        this.balanceString = walletData.balanceString;
+        this.address = walletData.coinSpecific.baseAddress;
+        this.guardians = new ArrayList<>();
+        for ( WalletNode.User user : walletData.users ) {
+            if ( user.user.equals(ent.getMe().id))
+                continue;
+            guardians.add(new BitgoUser(ent.getUserById(user.user), Arrays.asList(user.permissions)));
+        }
         coinSender = new CoinSender(Global.applicationContext, ent.http);
     }
 
@@ -48,8 +76,8 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public List<BitgoUser> getUsers() {
-        return users;
+    public List<BitgoUser> getGuardians() {
+        return guardians;
     }
 
     public BitgoUser getUserById(String id) {
