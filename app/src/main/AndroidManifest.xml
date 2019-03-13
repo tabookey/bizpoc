@@ -15,11 +15,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:name=".BizPocApplication"
         android:theme="@style/AppTheme">
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".WebvActivity"
-            android:label="Webv-test">
+            android:name=".TestSendActivity"
+            android:label="test-send">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

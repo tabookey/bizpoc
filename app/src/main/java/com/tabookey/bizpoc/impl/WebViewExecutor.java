@@ -1,6 +1,9 @@
 package com.tabookey.bizpoc.impl;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -13,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -27,12 +29,21 @@ import okhttp3.Response;
 public class WebViewExecutor {
     static String TAG = "webv";
 
-    private final WebView webview;
+    private WebView webview;
     private final HttpReq http;
 
+    void runOnUiThread(Runnable run) {
+        if (Looper.getMainLooper().getThread() == Thread.currentThread())
+            run.run();
+        else
+            new Handler(Looper.getMainLooper()).post(run);
+    }
+
     public WebViewExecutor(Context ctx, HttpReq http) {
-        this.webview = new WebView(ctx);
         this.http = http;
+        runOnUiThread(() -> {
+            webview = new WebView(ctx);
+        });
     }
 
     /**
@@ -44,41 +55,34 @@ public class WebViewExecutor {
      * @param appData data object. accessible in the javascript code as "app"
      *                (methods must be decorated with @JavascriptInterface)
      */
+    @SuppressLint("JavascriptInterface")
     public void exec(String path, Object appData) {
 
-        webview.setWebViewClient(new MyWebviewClient(appData));
-        webview.getSettings().setJavaScriptEnabled(true);
-
-        webview.loadUrl(path);
+        runOnUiThread(() -> {
+            webview.setWebViewClient(new MyWebviewClient());
+            webview.addJavascriptInterface(appData, "app");
+            webview.getSettings().setJavaScriptEnabled(true);
+            webview.loadUrl("file:///android_asset/" + path);
+        });
     }
 
     final SimpleDateFormat formatter = new SimpleDateFormat("E, dd MMM yyyy kk:mm:ss", Locale.US);
 
     class MyWebviewClient extends WebViewClient {
-        private final Object appData;
-
-        public MyWebviewClient(Object appData) {
-            this.appData = appData;
-        }
 
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
 
+            if (request.getUrl().toString().contains("android"))
+                return null;
+
+            Log.d(TAG, "shouldInterceptRequest: " + request.getMethod() + " " + request.getUrl());
             if (request.getMethod().equals("OPTIONS"))
                 return new WebResourceResponse(
                         null, "UTF-8", 200, "Ok", createHeaders(), null);
-
             try {
-                if (!request.getUrl().toString().startsWith("http")) {
-                    String file = request.getUrl().toString();
+                return callWithOkHttp(http.getClient(), request);
 
-                    InputStream is = webview.getResources().getAssets().open(file);
-                    String mime = file.indexOf(".js") > 0 ? "application/json" : "text/html";
-                    return new WebResourceResponse(
-                            mime, "UTF-8", 200, "Ok", createHeaders(), is);
-                } else {
-                    return callWithOkHttp(http.getClient(), request);
-                }
             } catch (IOException e) {
                 Log.w(TAG, "shouldInterceptRequest: " + request.getMethod() + " " + request.getUrl(), e);
                 return null;
@@ -103,15 +107,10 @@ public class WebViewExecutor {
         private synchronized WebResourceResponse callWithOkHttp(OkHttpClient client, WebResourceRequest request) throws IOException {
             Request.Builder reqbuilder = new Request.Builder()
                     .url(request.getUrl().toString());
-//            if ( request.getUrl().toString().contains("wallet")) {
-//
-//                reqbuilder.url("https://test.bitgo.com/api/v1/user/session" );
-//                Log.d(TAG, "callWithOkHttp: forceurl");
-//            }
 
             Log.d(TAG, ">> " + request.getMethod() + " " + request.getUrl());
             request.getRequestHeaders().forEach((key, value) -> {
-                if ("Authorization, HMAC, Auth-Timestamp, BitGo-Auth-Version".toLowerCase().contains(key.toLowerCase()) ) {
+                if ("Authorization, HMAC, Auth-Timestamp, BitGo-Auth-Version".toLowerCase().contains(key.toLowerCase())) {
                     reqbuilder.addHeader(key, value);
                     Log.d(TAG, ">> " + key + ": " + value);
                 } else {
@@ -134,8 +133,8 @@ public class WebViewExecutor {
                     Log.d(TAG, "<< " + key + ": " + val);
                 headers.put(key, val.get(0));
             });
-            Log.d(TAG, "resp=" + resp.peekBody(100000).string());
-            return new WebResourceResponse("application/json", "UTF-8", 200, "Ok", headers, resp.body().byteStream());
+            Log.d(TAG, "<< body: " + resp.peekBody(100000).string());
+            return new WebResourceResponse("application/json", "UTF-8", resp.code(), resp.message(), headers, resp.body().byteStream());
         }
 
         /**/

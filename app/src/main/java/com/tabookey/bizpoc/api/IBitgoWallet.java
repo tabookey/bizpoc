@@ -17,7 +17,18 @@ public interface IBitgoWallet {
     //get past transfers from or to this wallet.
     List<Transfer> getTransfers();
 
-    void sendCoins(SendRequest req);
+    /**
+     * send coins
+     * @param req - request paramters
+     * @param cb - optional callback. type is "state" for for interim state changes, "result" for final result, or "error" in case of error.
+     * @throws RuntimeException in case any error returns (error message is the "error" status reported
+     */
+    void sendCoins(SendRequest req, StatusCB cb);
+
+    interface StatusCB {
+        void onStatus(String type, String msg);
+    }
+
 
     List<PendingApproval> getPendingApprovals();
 

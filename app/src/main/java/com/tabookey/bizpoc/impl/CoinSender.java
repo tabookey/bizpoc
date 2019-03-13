@@ -15,41 +15,53 @@ public class CoinSender extends WebViewExecutor {
         super(ctx, http);
     }
 
-    public String sendCoins(IBitgoWallet wallet, String dest, String amount, String otp, String passphrase) {
-        AppObject appObject = new AppObject(wallet,dest,amount,otp,passphrase);
+    public String sendCoins(IBitgoWallet wallet, String dest, String amount, String otp, String passphrase, IBitgoWallet.StatusCB cb) {
+        AppObject appObject = new AppObject(wallet, dest, amount, otp, passphrase, cb);
         exec("www/sender.html", appObject);
+
+        //max time to wait for final result
         synchronized (appObject) {
             try {
-                appObject.wait(60);
+                appObject.wait(30 * 1000);
             } catch (InterruptedException e) {
             }
         }
-        if ( appObject.result!=null )
-            return appObject.result;
-        if ( appObject.error!=null )
-            throw new RuntimeException(appObject.error);
 
-        throw new RuntimeException("timed-out: "+appObject.status);
+        if (appObject.result == null) {
+            //report timeout and last known status
+            throw new RuntimeException("timed-out: " + appObject.status);
+        }
+
+        if ( appObject.result.toLowerCase().contains("error"))
+            throw new RuntimeException(appObject.result);
+
+        return appObject.result;
     }
 
     public static class AppObject {
+        private final IBitgoWallet.StatusCB cb;
         IBitgoWallet wallet;
         final String amount, dest, otp, walletPassphrase;
         private String error, result, status;
 
-        AppObject(IBitgoWallet wallet, String dest, String amount, String otp, String walletPassphrase) {
+        AppObject(IBitgoWallet wallet, String dest, String amount, String otp, String walletPassphrase, IBitgoWallet.StatusCB cb) {
             this.wallet = wallet;
             this.amount = amount;
             this.dest = dest;
             this.otp = otp;
             this.walletPassphrase = walletPassphrase;
+            this.cb = cb;
         }
 
         @JavascriptInterface
-        public boolean getIsTest() { return Global.isTest(); }
+        public boolean getIsTest() {
+            return Global.isTest();
+        }
 
         @JavascriptInterface
-        public String getCoin() { return wallet.getCoin(); }
+        public String getCoin() {
+            return wallet.getCoin();
+        }
 
         @JavascriptInterface
         public String getAmount() {
@@ -67,31 +79,33 @@ public class CoinSender extends WebViewExecutor {
         }
 
         @JavascriptInterface
-        public String getWalletPassphrase() { return walletPassphrase; }
+        public String getWalletPassphrase() {
+            return walletPassphrase;
+        }
 
         @JavascriptInterface
-        public String getAccessKey() {
+        public String getAccessToken() {
             return Global.getAccessToken();
         }
 
         @JavascriptInterface
-        public String getWalletId() { return wallet.getId(); }
-
-        public synchronized void setError(String s) {
-            this.error = s;
-            Log.e(TAG, "setError: "+ s );
-            notifyAll();
+        public String getWalletId() {
+            return wallet.getId();
         }
 
-        public void setStatus(String status) {
+        @JavascriptInterface
+        public void setStatus(String type, String status) {
             this.status = status;
-            Log.d(TAG, "setStatus: "+status);
-        }
+            if (cb != null) cb.onStatus(type, status);
+            else
+                Log.d(TAG, "setStatus "+type+": " + status);
 
-        public synchronized void setResult(String res) {
-            Log.d(TAG, "setResult: "+res);
-            this.result = res;
-            notifyAll();
+            if ( !type.equals("state") ) {
+                result = status;
+                synchronized (this) {
+                    notifyAll();
+                }
+            }
         }
 
     }

@@ -53,8 +53,8 @@ class Wallet implements IBitgoWallet {
     }
 
     public BitgoUser getUserById(String id) {
-        for ( BitgoUser u : ent.getUsers() ) {
-            if ( u.id.equals(id))
+        for (BitgoUser u : ent.getUsers()) {
+            if (u.id.equals(id))
                 return u;
         }
         return null;
@@ -72,10 +72,12 @@ class Wallet implements IBitgoWallet {
 
     static class TransferResp {
         public Trans[] transfers;
+
         static class Trans {
             public String txid, coin, valueString, usd, date, comment;
             public Entry[] entries;
         }
+
         static class Entry {
             public String address, valueString;
         }
@@ -83,9 +85,9 @@ class Wallet implements IBitgoWallet {
 
     @Override
     public List<Transfer> getTransfers() {
-        TransferResp resp = ent.http.get("/api/v2/"+coin+"/wallet/" + id + "/transfer", TransferResp.class);
+        TransferResp resp = ent.http.get("/api/v2/" + coin + "/wallet/" + id + "/transfer", TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
-        for ( TransferResp.Trans t : resp.transfers ) {
+        for (TransferResp.Trans t : resp.transfers) {
             Transfer tx = new Transfer(t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment);
 /*
             tx.txid = t.txid;
@@ -97,8 +99,8 @@ class Wallet implements IBitgoWallet {
             //entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
             // looking for the other one, with its value different (actually, negative) of ours.
-            for ( TransferResp.Entry e : t.entries) {
-                if ( !e.valueString.equals(tx.valueString)) {
+            for (TransferResp.Entry e : t.entries) {
+                if (!e.valueString.equals(tx.valueString)) {
                     tx.remoteAddress = e.address;
                     break;
                 }
@@ -109,14 +111,15 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public void sendCoins(SendRequest req) {
-        coinSender.sendCoins(this, req.recipientAddress, req.amount, req.otp, req.walletPassphrase);
+    public void sendCoins(SendRequest req, StatusCB cb) {
+        coinSender.sendCoins(this, req.recipientAddress, req.amount, req.otp, req.walletPassphrase, cb);
     }
 
 
     static class PendingApprovalResp {
 
         public PendingApproval[] pendingApprovals;
+
         static class PendingApproval {
             public String id, coin, creator, createDate;
             public Info info;
@@ -125,16 +128,20 @@ class Wallet implements IBitgoWallet {
             public String[] userIds;
             public Resolver[] resolvers;
         }
+
         static class Info {
             public String type; //transactionRequest
             public TxRequest transactionRequest;
         }
+
         static class TxRequest {
             public Recipient[] recipients;
         }
+
         static class Recipient {
             public String address, amount;
         }
+
         static class Resolver {
             public String user, date, resolutionType;
         }
@@ -142,9 +149,9 @@ class Wallet implements IBitgoWallet {
 
     @Override
     public List<PendingApproval> getPendingApprovals() {
-        PendingApprovalResp resp = ent.http.get("/api/v2/"+coin+"/pendingapprovals", PendingApprovalResp.class);
+        PendingApprovalResp resp = ent.http.get("/api/v2/" + coin + "/pendingapprovals", PendingApprovalResp.class);
         ArrayList<PendingApproval> ret = new ArrayList<>();
-        for ( PendingApprovalResp.PendingApproval r : resp.pendingApprovals ) {
+        for (PendingApprovalResp.PendingApproval r : resp.pendingApprovals) {
             PendingApproval p = new PendingApproval();
             p.id = r.id;
             p.createDate = r.createDate;
@@ -152,9 +159,9 @@ class Wallet implements IBitgoWallet {
             p.creator = getUserById(r.creator);
             p.recipientAddr = r.info.transactionRequest.recipients[0].address;
             p.amount = r.info.transactionRequest.recipients[0].amount;
-            if ( r.resolvers != null ) {
+            if (r.resolvers != null) {
                 ArrayList<BitgoUser> approvedBy = new ArrayList<BitgoUser>();
-                for (PendingApprovalResp.Resolver rs : r.resolvers ) {
+                for (PendingApprovalResp.Resolver rs : r.resolvers) {
                     approvedBy.add(getUserById(rs.user));
                 }
                 p.approvedByUsers = approvedBy;
@@ -184,6 +191,6 @@ class Wallet implements IBitgoWallet {
     @Override
     public void rejectPending(PendingApproval approval, String otp) {
         ChangeState change = new ChangeState("rejected", otp, null);
-        PendingApprovalResp resp = ent.http.put("/api/v2/"+coin+"/pendingapprovals/"+approval.id, change, PendingApprovalResp.class);
+        PendingApprovalResp resp = ent.http.put("/api/v2/" + coin + "/pendingapprovals/" + approval.id, change, PendingApprovalResp.class);
     }
 }
