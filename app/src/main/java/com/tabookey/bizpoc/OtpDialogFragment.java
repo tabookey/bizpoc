@@ -17,7 +17,6 @@
 package com.tabookey.bizpoc;
 
 import android.content.Context;
-import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -25,27 +24,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 /**
  * A dialog which uses fingerprint APIs to authenticate the user, and falls back to password
  * authentication if fingerprint is not available.
  */
-public class FingerprintAuthenticationDialogFragment extends DialogFragment
-        implements FingerprintUiHelper.Callback {
+public class OtpDialogFragment extends DialogFragment {
 
     private Button mCancelButton;
     private View mFingerprintContent;
-    String title;
-    byte[] input;
-    Callback callback;
-    FingerprintManager.CryptoObject mCryptoObject;
 
-    private FingerprintUiHelper mFingerprintUiHelper;
-    private MainActivity mActivity;
+    ConfirmFragment.PasswordCallback callback;
+
+    private ImageView mIcon;
+    private TextView mErrorTextView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,64 +53,43 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        getDialog().setTitle(title);
-        View v = inflater.inflate(R.layout.fingerprint_dialog_container, container, false);
+        getDialog().setTitle("2-Factor authentication");
+        View v = inflater.inflate(R.layout.otp_dialog_container, container, false);
         mCancelButton = v.findViewById(R.id.cancel_button);
         mCancelButton.setOnClickListener(view -> dismiss());
-
-
+        mIcon = v.findViewById(R.id.fingerprint_icon);
+        mErrorTextView = v.findViewById(R.id.fingerprint_status);
         mFingerprintContent = v.findViewById(R.id.fingerprint_container);
-        mFingerprintUiHelper = new FingerprintUiHelper(
-                mActivity.getSystemService(FingerprintManager.class),
-                v.findViewById(R.id.fingerprint_icon),
-                v.findViewById(R.id.fingerprint_status), this);
-        updateStage();
+        mCancelButton.setText(R.string.cancel);
+        mFingerprintContent.setVisibility(View.VISIBLE);
         return v;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mFingerprintUiHelper.startListening(mCryptoObject);
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        mFingerprintUiHelper.stopListening();
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mActivity = (MainActivity) getActivity();
-    }
-    private void updateStage() {
-        mCancelButton.setText(R.string.cancel);
-        mFingerprintContent.setVisibility(View.VISIBLE);
     }
 
-    public interface Callback {
-        void done(byte[] result);
+    public void onOtpTagRecognised(String result) {
+        mIcon.setImageResource(R.drawable.ic_fingerprint_success);
+        mErrorTextView.setTextColor(
+                mErrorTextView.getResources().getColor(R.color.success_color, null));
+        mErrorTextView.setText("Yubikey NFC tag recognised");
+        mIcon.postDelayed(() -> {
+                    callback.run(result);
+                    dismiss();
+                },
+                FingerprintUiHelper.SUCCESS_DELAY_MILLIS);
     }
-
-    @Override
-    public void onAuthenticated(FingerprintManager.AuthenticationResult result) {
-        Cipher cipher = result.getCryptoObject().getCipher();
-        byte[] output;
-        try {
-            output = cipher.doFinal(input);
-        } catch (IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
-        }
-        callback.done(output);
-        dismiss();
-    }
-
-    @Override
-    public void onError() {
-
-    }
-
 }

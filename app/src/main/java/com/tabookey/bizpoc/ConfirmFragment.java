@@ -82,6 +82,7 @@ public class ConfirmFragment extends Fragment {
                     = new FingerprintAuthenticationDialogFragment();
             fragment.mCryptoObject = SecretStorge.getCryptoObject();
             fragment.input = array;
+            fragment.title = "Authorize transaction";
             fragment.callback = result -> {
                 String password = new String(result);
                 promptOtp(password);
@@ -102,7 +103,7 @@ public class ConfirmFragment extends Fragment {
 
     private void sendTransaction(String password, String otp) {
         new Handler().postDelayed(() -> {
-            Toast.makeText(getActivity(), "Transaction transacted " + password + " " + otp.substring(0, 10), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Transaction transacted " + password + "\n" + otp, Toast.LENGTH_LONG).show();
         }, 2000);
     }
 
