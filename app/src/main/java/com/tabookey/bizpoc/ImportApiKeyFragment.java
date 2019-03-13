@@ -24,11 +24,12 @@ import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.Arrays;
 
+import static com.tabookey.bizpoc.SecretStorge.PREFS_API_KEY_ENCODED;
+import static com.tabookey.bizpoc.SecretStorge.PREFS_PASSWORD_ENCODED;
+
 //https://stackoverflow.com/questions/46875774/using-fingerprints-for-encryption-in-combination-with-a-password
 public class ImportApiKeyFragment extends Fragment {
 
-    private static final String PREFS_API_KEY_ENCODED = "api_key_encoded";
-    private static final String PREFS_PASSWORD_ENCODED = "passphrase_encoded";
     private SecretStorge secretStorge = new SecretStorge();
     EditText et;
 

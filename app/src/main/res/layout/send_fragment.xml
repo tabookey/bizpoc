@@ -59,10 +59,11 @@
             android:text="0"
             android:textAlignment="textEnd" />
 
-        <TextView
-            android:layout_width="wrap_content"
+        <Button
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.2"
+            android:background="@android:color/transparent"
             android:text="ETH"
             android:textAlignment="center" />
 
@@ -81,6 +82,13 @@
             android:text="USD"
             android:textAlignment="center" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/balanceTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Balance in selected currency: 123.4567 ETH"
+        android:textAlignment="center" />
 
     <TextView
         android:id="@+id/validatorsTitle"

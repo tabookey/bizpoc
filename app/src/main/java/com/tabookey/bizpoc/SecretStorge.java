@@ -8,6 +8,7 @@ import android.os.CancellationSignal;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
+import android.support.annotation.NonNull;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -35,19 +36,20 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 
-public class SecretStorge {
+class SecretStorge {
 
 
-    public static final String PREFS_API_KEY_ENCODED = "api_key_encoded";
-    public static final String KEY_STORE_ID = "AndroidKeyStore";
-    public static final String KEY_PAIR_ALIAS = "MyKeyPair";
+    static final String PREFS_API_KEY_ENCODED = "api_key_encoded";
+    static final String PREFS_PASSWORD_ENCODED = "passphrase_encoded";
+    private static final String KEY_STORE_ID = "AndroidKeyStore";
+    private static final String KEY_PAIR_ALIAS = "MyKeyPair";
 
-    SharedPreferences getPrefs(Activity activity) {
+    static SharedPreferences getPrefs(Activity activity) {
         return activity.getSharedPreferences(
                 "com.example.app", Context.MODE_PRIVATE);
     }
 
-    private PrivateKey getPrivateKey() {
+    private static PrivateKey getPrivateKey() {
         KeyStore keyStore = getKeyStore();
         try {
             return (PrivateKey) keyStore.getKey(KEY_PAIR_ALIAS, null);
@@ -81,7 +83,7 @@ public class SecretStorge {
         }
     }
 
-    private KeyStore getKeyStore() {
+    private static KeyStore getKeyStore() {
         try {
             KeyStore keyStore = KeyStore.getInstance(KEY_STORE_ID);
             keyStore.load(null);
@@ -94,7 +96,7 @@ public class SecretStorge {
         }
     }
 
-    private void resetKeyPair() {
+    private static void resetKeyPair() {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, KEY_STORE_ID);
             keyPairGenerator.initialize(new KeyGenParameterSpec.Builder(KEY_PAIR_ALIAS, KeyProperties.PURPOSE_DECRYPT)
@@ -107,7 +109,7 @@ public class SecretStorge {
         }
     }
 
-    public byte[] encrypt(byte[] input) throws KeyPermanentlyInvalidatedException, BadPaddingException, IllegalBlockSizeException {
+    byte[] encrypt(byte[] input) throws KeyPermanentlyInvalidatedException, BadPaddingException, IllegalBlockSizeException {
         Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, getPublicKey());
         return cipher.doFinal(input);
     }
@@ -116,10 +118,10 @@ public class SecretStorge {
         void done(byte[] result);
     }
 
-    public CancellationSignal decrypt(Context context, final byte[] input, final Callback callback) throws KeyPermanentlyInvalidatedException {
+    static CancellationSignal decrypt(Context context, final byte[] input, final Callback callback) throws KeyPermanentlyInvalidatedException {
         CancellationSignal cancellationSignal = new CancellationSignal();
         FingerprintManager fingerprintManager = (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
-        FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(getCipher(Cipher.DECRYPT_MODE, getPrivateKey()));
+        FingerprintManager.CryptoObject cryptoObject = getCryptoObject();
         fingerprintManager.authenticate(cryptoObject, cancellationSignal, 0, new FingerprintManager.AuthenticationCallback() {
             @Override
             public void onAuthenticationSucceeded(FingerprintManager.AuthenticationResult result) {
@@ -137,7 +139,12 @@ public class SecretStorge {
         return cancellationSignal;
     }
 
-    private Cipher getCipher(int mode, Key key) throws KeyPermanentlyInvalidatedException {
+    @NonNull
+    static FingerprintManager.CryptoObject getCryptoObject() throws KeyPermanentlyInvalidatedException {
+        return new FingerprintManager.CryptoObject(getCipher(Cipher.DECRYPT_MODE, getPrivateKey()));
+    }
+
+    private static Cipher getCipher(int mode, Key key) throws KeyPermanentlyInvalidatedException {
         Cipher cipher;
         try {
             cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_RSA + "/" + KeyProperties.BLOCK_MODE_ECB + "/" + "OAEPWithSHA-256AndMGF1Padding");
@@ -156,7 +163,7 @@ public class SecretStorge {
         return cipher;
     }
 
-    byte[] getEncryptedBytes(String encryptedApiKey) {
+    static byte[] getEncryptedBytes(String encryptedApiKey) {
         String[] split = encryptedApiKey.substring(1, encryptedApiKey.length() - 1).split(", ");
         byte[] array = new byte[split.length];
         for (int i = 0; i < split.length; i++) {
