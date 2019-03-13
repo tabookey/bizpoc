@@ -2,8 +2,10 @@ package com.tabookey.bizpoc.impl;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -17,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
+import androidx.annotation.RequiresApi;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -55,11 +58,16 @@ public class WebViewExecutor {
      * @param appData data object. accessible in the javascript code as "app"
      *                (methods must be decorated with @JavascriptInterface)
      */
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("JavascriptInterface")
     public void exec(String path, Object appData) {
 
         runOnUiThread(() -> {
             webview.setWebViewClient(new MyWebviewClient());
+            String webViewPackageName = WebView.getCurrentWebViewPackage().packageName;
+            Log.d(TAG, "webview pkg: "+ webViewPackageName);
+            if ( !webViewPackageName.equals("com.android.chrome"))
+                throw new RuntimeException("Invalid webview package: "+webViewPackageName);
             webview.addJavascriptInterface(appData, "app");
             webview.getSettings().setJavaScriptEnabled(true);
             webview.loadUrl("file:///android_asset/" + path);

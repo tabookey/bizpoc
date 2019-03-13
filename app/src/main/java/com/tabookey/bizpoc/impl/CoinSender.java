@@ -6,6 +6,7 @@ import android.webkit.JavascriptInterface;
 
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
+import com.tabookey.bizpoc.api.SendRequest;
 
 import java.io.IOException;
 
@@ -15,14 +16,14 @@ public class CoinSender extends WebViewExecutor {
         super(ctx, http);
     }
 
-    public String sendCoins(IBitgoWallet wallet, String dest, String amount, String otp, String passphrase, IBitgoWallet.StatusCB cb) {
-        AppObject appObject = new AppObject(wallet, dest, amount, otp, passphrase, cb);
+    public String sendCoins(IBitgoWallet wallet, SendRequest req, IBitgoWallet.StatusCB cb) {
+        AppObject appObject = new AppObject(wallet, req, cb);
         exec("www/sender.html", appObject);
 
         //max time to wait for final result
         synchronized (appObject) {
             try {
-                appObject.wait(30 * 1000);
+                appObject.wait(40 * 1000);
             } catch (InterruptedException e) {
             }
         }
@@ -32,7 +33,8 @@ public class CoinSender extends WebViewExecutor {
             throw new RuntimeException("timed-out: " + appObject.status);
         }
 
-        if ( appObject.result.toLowerCase().contains("error"))
+        //either "Error: ..." or '{"error":...}'
+        if (appObject.result.toLowerCase().matches("\\W*error") )
             throw new RuntimeException(appObject.result);
 
         return appObject.result;
@@ -40,16 +42,13 @@ public class CoinSender extends WebViewExecutor {
 
     public static class AppObject {
         private final IBitgoWallet.StatusCB cb;
+        private final SendRequest req;
         IBitgoWallet wallet;
-        final String amount, dest, otp, walletPassphrase;
         private String error, result, status;
 
-        AppObject(IBitgoWallet wallet, String dest, String amount, String otp, String walletPassphrase, IBitgoWallet.StatusCB cb) {
+        AppObject(IBitgoWallet wallet, SendRequest req, IBitgoWallet.StatusCB cb) {
             this.wallet = wallet;
-            this.amount = amount;
-            this.dest = dest;
-            this.otp = otp;
-            this.walletPassphrase = walletPassphrase;
+            this.req = req;
             this.cb = cb;
         }
 
@@ -65,22 +64,27 @@ public class CoinSender extends WebViewExecutor {
 
         @JavascriptInterface
         public String getAmount() {
-            return amount;
+            return req.amount;
         }
 
         @JavascriptInterface
         public String getDest() {
-            return dest;
+            return req.recipientAddress;
         }
 
         @JavascriptInterface
         public String getOtp() {
-            return otp;
+            return req.otp;
+        }
+
+        @JavascriptInterface
+        public String getComment() {
+            return req.comment;
         }
 
         @JavascriptInterface
         public String getWalletPassphrase() {
-            return walletPassphrase;
+            return req.walletPassphrase;
         }
 
         @JavascriptInterface
@@ -98,9 +102,9 @@ public class CoinSender extends WebViewExecutor {
             this.status = status;
             if (cb != null) cb.onStatus(type, status);
             else
-                Log.d(TAG, "setStatus "+type+": " + status);
+                Log.d(TAG, "setStatus " + type + ": " + status);
 
-            if ( !type.equals("state") ) {
+            if (!type.equals("state")) {
                 result = status;
                 synchronized (this) {
                     notifyAll();

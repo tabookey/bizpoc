@@ -36,7 +36,12 @@ async function run() {
             amount: app.getAmount(),
             address: app.getDest()
           }],
+            comment: app.getComment(),
             walletPassphrase: app.getWalletPassphrase()} )
+
+        //if there's a pending approval, remove the "error" (since its not an error)
+        if ( ret.pendingApproval )
+            ret.error = undefined
 
         app.setStatus("result", JSON.stringify(ret))
 

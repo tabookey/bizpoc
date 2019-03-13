@@ -112,7 +112,7 @@ class Wallet implements IBitgoWallet {
 
     @Override
     public void sendCoins(SendRequest req, StatusCB cb) {
-        coinSender.sendCoins(this, req.recipientAddress, req.amount, req.otp, req.walletPassphrase, cb);
+        coinSender.sendCoins(this, req, cb);
     }
 
 
@@ -136,6 +136,7 @@ class Wallet implements IBitgoWallet {
 
         static class TxRequest {
             public Recipient[] recipients;
+            public String comment;
         }
 
         static class Recipient {
@@ -159,6 +160,7 @@ class Wallet implements IBitgoWallet {
             p.creator = getUserById(r.creator);
             p.recipientAddr = r.info.transactionRequest.recipients[0].address;
             p.amount = r.info.transactionRequest.recipients[0].amount;
+            p.comment = r.info.transactionRequest.comment;
             if (r.resolvers != null) {
                 ArrayList<BitgoUser> approvedBy = new ArrayList<BitgoUser>();
                 for (PendingApprovalResp.Resolver rs : r.resolvers) {
