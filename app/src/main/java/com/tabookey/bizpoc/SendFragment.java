@@ -1,5 +1,6 @@
 package com.tabookey.bizpoc;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,6 +30,7 @@ public class SendFragment extends Fragment {
 
     EditText etherSendAmountEditText;
     ExchangeRate exchangeRate;
+    EditText destinationEditText;
 
 
     @Nullable
@@ -43,6 +45,9 @@ public class SendFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
         Button continueButton = view.findViewById(R.id.continueButton);
+        destinationEditText = view.findViewById(R.id.destinationEditText);
+        Button scanDestinationButton = view.findViewById(R.id.scanDestinationButton);
+        scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(getActivity(), ScanActivity.class), 1));
         ListView guardiansListView = view.findViewById(R.id.guardiansListView);
         FragmentActivity activity = getActivity();
         if (activity == null) {
@@ -51,7 +56,6 @@ public class SendFragment extends Fragment {
         etherSendAmountEditText = view.findViewById(R.id.etherSendAmountEditText);
         continueButton.setOnClickListener(v -> {
             ConfirmFragment cf = new ConfirmFragment();
-            EditText destinationEditText = view.findViewById(R.id.destinationEditText);
 
             String destination = destinationEditText.getText().toString();
             String amountInput = etherSendAmountEditText.getText().toString();
@@ -110,5 +114,11 @@ public class SendFragment extends Fragment {
     private String getNewMemoID() {
         int memoId = 100000 + new Random().nextInt(899999);
         return "TXID" + memoId;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        destinationEditText.setText(data.getStringExtra("apiKey"));
     }
 }

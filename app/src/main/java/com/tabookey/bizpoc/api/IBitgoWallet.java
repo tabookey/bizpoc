@@ -24,7 +24,7 @@ public interface IBitgoWallet {
      * @param cb - optional callback. type is "state" for for interim state changes, "result" for final result, or "error" in case of error.
      * @throws RuntimeException in case any error returns (error message is the "error" status reported
      */
-    void sendCoins(SendRequest req, StatusCB cb);
+    String sendCoins(SendRequest req, StatusCB cb);
 
     interface StatusCB {
         void onStatus(String type, String msg);

@@ -12,11 +12,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
+import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FirstFragment extends Fragment {
     @Nullable
@@ -49,7 +54,21 @@ public class FirstFragment extends Fragment {
         Button transactionDetailsButtonDev = view.findViewById(R.id.transactionDetailsButtonDev);
         transactionDetailsButtonDev.setOnClickListener(v -> {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.setTransfer(new Transfer("123412", "12312312312312312", "teth", "1234", "12/12/1212", "0x123123", "TXID321543"));
+            tdf.transfer = new Transfer("123412", "12312312312312312", "teth", "1234", "12/12/1212", "0x123123", "TXID321543");
+            tdf.setExchangeRate(new ExchangeRate(100.01));
+
+            activity.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.frame_layout, tdf).commit();
+        });
+        Button pendingDetailsButtonDev = view.findViewById(R.id.pendingDetailsButtonDev);
+        pendingDetailsButtonDev.setOnClickListener(v -> {
+            TransactionDetailsFragment tdf = new TransactionDetailsFragment();
+            tdf.pendingApproval = new PendingApproval("123412",
+                    "12312312312312312", "0x123123",
+                    "1234", "teth", "200000",
+                    Arrays.asList(new BitgoUser("id", "e@m", "Na me"),
+                            new BitgoUser("id", "e@m", "Na me")),
+                    new BitgoUser("id", "e@m", "Na me"));
             tdf.setExchangeRate(new ExchangeRate(100.01));
 
             activity.getSupportFragmentManager().beginTransaction()

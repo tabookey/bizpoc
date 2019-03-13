@@ -1,13 +1,13 @@
 package com.tabookey.bizpoc;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +17,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.ExchangeRate;
+import com.tabookey.bizpoc.api.Global;
+import com.tabookey.bizpoc.api.IBitgoWallet;
+import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.List;
 import java.util.Locale;
 
 public class ConfirmFragment extends Fragment {
@@ -52,7 +57,7 @@ public class ConfirmFragment extends Fragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1);
         adapter.addAll("liraz", "eli");
         guardiansListView.setAdapter(adapter);
-        submit.setOnClickListener(v -> promptFingerprint((password) -> promptOtp(password)));
+        submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
 
         double etherDouble = Utils.weiStringToEtherDouble(sendRequest.amount);
         dollarEquivalent.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
@@ -85,7 +90,7 @@ public class ConfirmFragment extends Fragment {
             fragment.title = "Authorize transaction";
             fragment.callback = result -> {
                 String password = new String(result);
-                promptOtp(password);
+                pc.run(password);
             };
             FragmentManager fragmentManager = getFragmentManager();
             if (fragmentManager == null) {
@@ -102,9 +107,34 @@ public class ConfirmFragment extends Fragment {
     }
 
     private void sendTransaction(String password, String otp) {
-        new Handler().postDelayed(() -> {
-            Toast.makeText(getActivity(), "Transaction transacted " + password + "\n" + otp, Toast.LENGTH_LONG).show();
-        }, 2000);
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    IBitgoWallet w = Global.ent.getWallets("teth").get(0);
+                    SendRequest req = new SendRequest(sendRequest.recipientAddress, sendRequest.comment, sendRequest.amount, otp, password);
+                    String pendingTxId = Utils.fromJson(w.sendCoins(req, null), JsonNode.class).get("pendingApproval").get("id").asText();
+
+                    TransactionDetailsFragment tdf = new TransactionDetailsFragment();
+                    List<PendingApproval> pendingApprovals = w.getPendingApprovals();
+                    for (PendingApproval pa :
+                            pendingApprovals) {
+                        if (pa.id.equals(pendingTxId)) {
+                            tdf.pendingApproval = pa;
+                            break;
+                        }
+                    }
+                    if (tdf.pendingApproval == null) {
+                        throw new RuntimeException("No pending approval found!");
+                    }
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.frame_layout, tdf).commit();
+
+                } catch (Throwable e) {
+                    Log.e("TAG", "ex: ", e);
+                }
+            }
+        }.start();
     }
 
 

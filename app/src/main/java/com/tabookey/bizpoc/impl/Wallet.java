@@ -139,8 +139,8 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public void sendCoins(SendRequest req, StatusCB cb) {
-        coinSender.sendCoins(this, req, cb);
+    public String sendCoins(SendRequest req, StatusCB cb) {
+        return coinSender.sendCoins(this, req, cb);
     }
 
 
