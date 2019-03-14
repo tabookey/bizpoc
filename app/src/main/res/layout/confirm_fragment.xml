@@ -1,67 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/textView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Send"
-        android:textAlignment="center" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/recipientTitle"
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/recipientTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recipient Address"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/recipientAddressTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="0x1212121212" />
+
+        <TextView
+            android:id="@+id/amountTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Amount"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/dollarEquivalent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            tools:text="$ 100'000'000" />
+
+        <TextView
+            android:id="@+id/etherSendAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="ETH 110'000.123" />
+
+        <TextView
+            android:id="@+id/validatorsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="The transaction will be submitted after guardians approval"
+            android:textAlignment="center" />
+
+        <ListView
+            android:id="@+id/guardiansListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout_height="80dp" />
+
+        <Button
+            android:id="@+id/submitButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SUBMIT" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/progressBar"
+        android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Recipient Address"
-        android:textAlignment="center" />
+        android:layout_height="match_parent"
+        android:background="@android:color/white">
 
-    <TextView
-        android:id="@+id/recipientAddressTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="0x1212121212" />
-
-    <TextView
-        android:id="@+id/amountTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Amount"
-        android:textAlignment="center" />
-
-    <TextView
-        android:id="@+id/dollarEquivalent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="$ 100'000'000"
-        android:textAlignment="center" />
-
-    <TextView
-        android:id="@+id/etherSendAmount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="ETH 110'000.123" />
-
-    <TextView
-        android:id="@+id/validatorsTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="The transaction will be submitted after guardians approval"
-        android:textAlignment="center" />
-
-    <ListView
-        android:id="@+id/guardiansListView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout_height="80dp" />
-
-    <Button
-        android:id="@+id/submitButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="SUBMIT" />
-
-</LinearLayout>
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </FrameLayout>
+</FrameLayout>

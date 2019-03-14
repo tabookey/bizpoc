@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -111,6 +112,8 @@ public class ImportApiKeyFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        et.setText(data.getStringExtra("apiKey"));
+        if (resultCode == Activity.RESULT_OK) {
+            et.setText(data.getStringExtra("apiKey"));
+        }
     }
 }

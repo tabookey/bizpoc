@@ -20,11 +20,13 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
 public class FirstFragment extends Fragment {
+    private View progressBar;
+    private ExchangeRate exchangeRate;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -32,19 +34,20 @@ public class FirstFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        View view = getView();
-        if (view == null) {
-            return;
-        }
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         Button sendButton = view.findViewById(R.id.sendButton);
-        SendFragment sf = new SendFragment();
         FragmentActivity activity = getActivity();
         if (activity == null) {
             return;
         }
-        sendButton.setOnClickListener(v -> activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, sf).addToBackStack(null).commit());
+
+        progressBar = view.findViewById(R.id.progressBar);
+        sendButton.setOnClickListener(v -> {
+            SendFragment sf = new SendFragment();
+            sf.exchangeRate = exchangeRate;
+            activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, sf).addToBackStack(null).commit();
+        });
 
         Button transactionsButton = view.findViewById(R.id.transactionsButton);
         TransactionsFragment tf = new TransactionsFragment();
@@ -75,9 +78,11 @@ public class FirstFragment extends Fragment {
                     .replace(R.id.frame_layout, tdf).commit();
         });
 
+        progressBar.setVisibility(View.VISIBLE);
         new Thread() {
             public void run() {
                 fillWindow();
+                progressBar.post(() -> progressBar.setVisibility(View.GONE));
             }
         }.start();
     }
@@ -88,8 +93,8 @@ public class FirstFragment extends Fragment {
         String balanceString = ethWallet.getBalance("teth");
         double etherDouble = Utils.weiStringToEtherDouble(balanceString);
         setText(R.id.balanceText, "%.6f", etherDouble);
-        ExchangeRate e = Global.ent.getMarketData();
-        setText(R.id.balanceInDollarsText, "$%.2f", etherDouble * e.average24h);
+        exchangeRate = Global.ent.getMarketData();
+        setText(R.id.balanceInDollarsText, "$%.2f", etherDouble * exchangeRate.average24h);
         setText(R.id.addressText, ethWallet.getAddress());
 
     }

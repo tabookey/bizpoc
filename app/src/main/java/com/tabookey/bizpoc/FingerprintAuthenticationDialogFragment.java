@@ -42,6 +42,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     String title;
     byte[] input;
     Callback callback;
+    Runnable cancelled;
     FingerprintManager.CryptoObject mCryptoObject;
 
     private FingerprintUiHelper mFingerprintUiHelper;
@@ -62,7 +63,12 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
         getDialog().setTitle(title);
         View v = inflater.inflate(R.layout.fingerprint_dialog_container, container, false);
         mCancelButton = v.findViewById(R.id.cancel_button);
-        mCancelButton.setOnClickListener(view -> dismiss());
+        mCancelButton.setOnClickListener(view -> {
+            if (cancelled != null) {
+                cancelled.run();
+            }
+            dismiss();
+        });
 
 
         mFingerprintContent = v.findViewById(R.id.fingerprint_container);
@@ -92,6 +98,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
         super.onAttach(context);
         mActivity = (MainActivity) getActivity();
     }
+
     private void updateStage() {
         mCancelButton.setText(R.string.cancel);
         mFingerprintContent.setVisibility(View.VISIBLE);
@@ -116,7 +123,6 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
 
     @Override
     public void onError() {
-
     }
 
 }

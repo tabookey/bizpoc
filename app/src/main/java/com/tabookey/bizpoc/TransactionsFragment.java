@@ -20,6 +20,7 @@ import java.util.List;
 public class TransactionsFragment extends Fragment {
     private ListView lvp;
     private ListView lvt;
+    private View progressBar;
 
     @Nullable
     @Override
@@ -35,18 +36,22 @@ public class TransactionsFragment extends Fragment {
 
         lvp = view.findViewById(R.id.list_view_pending);
 
+        progressBar = view.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);
+
         new Thread(this::fillWindow).start();
     }
 
-    public void fillWindow(){
+    public void fillWindow() {
         IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
         List<PendingApproval> pending = ethWallet.getPendingApprovals();
         List<Transfer> transfers = ethWallet.getTransfers();
         Activity activity = getActivity();
-        if (activity == null){
+        if (activity == null) {
             return;
         }
-        activity.runOnUiThread(()->{
+        activity.runOnUiThread(() -> {
+            progressBar.setVisibility(View.GONE);
             TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), R.layout.transaction_line, transfers);
             lvt.setAdapter(historyAdapter);
 

@@ -1,73 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/ownerText"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Welcome Tomer"
-        android:textAlignment="center" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/addressText"
+        <TextView
+            android:id="@+id/ownerText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Welcome Tomer"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/addressText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0x123123123123123123123123123"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/balanceTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your Balance"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/balanceText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="balance"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/balanceInDollarsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="$100'000"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/sendButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create transaction"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/transactionsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Transactions"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/transactionDetailsButtonDev"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAccent"
+            android:text="Transaction details stub"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/pendingDetailsButtonDev"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAccent"
+            android:text="Transaction details stub"
+            android:textAlignment="center" />
+
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/progressBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="0x123123123123123123123123123"
-        android:textAlignment="center" />
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:visibility="gone">
 
-    <TextView
-        android:id="@+id/balanceTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Your Balance"
-        android:textAlignment="center" />
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </FrameLayout>
 
-    <TextView
-        android:id="@+id/balanceText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="balance"
-        android:textAlignment="center" />
-
-    <TextView
-        android:id="@+id/balanceInDollarsText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="$100'000"
-        android:textAlignment="center" />
-
-    <Button
-        android:id="@+id/sendButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create transaction"
-        android:textAlignment="center" />
-
-    <Button
-        android:id="@+id/transactionsButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Transactions"
-        android:textAlignment="center" />
-
-    <Button
-        android:id="@+id/transactionDetailsButtonDev"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorAccent"
-        android:text="Transaction details stub"
-        android:textAlignment="center" />
-
-    <Button
-        android:id="@+id/pendingDetailsButtonDev"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorAccent"
-        android:text="Transaction details stub"
-        android:textAlignment="center" />
-
-
-</LinearLayout>
+</FrameLayout>

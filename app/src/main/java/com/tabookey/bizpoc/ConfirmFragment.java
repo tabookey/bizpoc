@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +35,8 @@ public class ConfirmFragment extends Fragment {
     TextView dollarEquivalent;
     TextView etherSendAmount;
     private SendRequest sendRequest;
-    private ExchangeRate exchangeRate;
+    ExchangeRate exchangeRate;
+    View progressBar;
 
     @Nullable
     @Override
@@ -48,7 +51,7 @@ public class ConfirmFragment extends Fragment {
         recipientAddress = view.findViewById(R.id.recipientAddressTextView);
         dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         etherSendAmount = view.findViewById(R.id.etherSendAmount);
-
+        progressBar = view.findViewById(R.id.progressBar);
         ListView guardiansListView = view.findViewById(R.id.guardiansListView);
         FragmentActivity activity = getActivity();
         if (activity == null) {
@@ -107,15 +110,18 @@ public class ConfirmFragment extends Fragment {
     }
 
     private void sendTransaction(String password, String otp) {
+        progressBar.setVisibility(View.VISIBLE);
         new Thread() {
             @Override
             public void run() {
                 try {
                     IBitgoWallet w = Global.ent.getWallets("teth").get(0);
-                    SendRequest req = new SendRequest("teth", sendRequest.recipientAddress, sendRequest.comment, sendRequest.amount, otp, password);
-                    String pendingTxId = Utils.fromJson(w.sendCoins(req, null), JsonNode.class).get("pendingApproval").get("id").asText();
+                    SendRequest req = new SendRequest("teth", sendRequest.amount, sendRequest.recipientAddress, otp, password, sendRequest.comment);
+                    String pendingTxId = w.sendCoins(req, null);
+                    dollarEquivalent.post(() -> progressBar.setVisibility(View.GONE));
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();
+                    tdf.exchangeRate = exchangeRate;
                     List<PendingApproval> pendingApprovals = w.getPendingApprovals();
                     for (PendingApproval pa :
                             pendingApprovals) {
@@ -127,14 +133,34 @@ public class ConfirmFragment extends Fragment {
                     if (tdf.pendingApproval == null) {
                         throw new RuntimeException("No pending approval found!");
                     }
-                    getFragmentManager().beginTransaction()
+                    FragmentManager fragmentManager = getFragmentManager();
+                    if (fragmentManager == null) {
+                        return;
+                    }
+                    fragmentManager.beginTransaction()
                             .replace(R.id.frame_layout, tdf).commit();
 
                 } catch (Throwable e) {
                     Log.e("TAG", "ex: ", e);
+                    showErrorDialog(e.getMessage());
                 }
             }
         }.start();
+    }
+
+    private void showErrorDialog(String errorMessage) {
+        dollarEquivalent.post(() -> {
+            FragmentActivity activity = getActivity();
+            if (activity == null) {
+                return;
+            }
+            AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+            alertDialog.setTitle("Transaction failed!");
+            alertDialog.setMessage(errorMessage);
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    (dialog, which) -> dialog.dismiss());
+            alertDialog.show();
+        });
     }
 
 
@@ -144,9 +170,5 @@ public class ConfirmFragment extends Fragment {
             return;
         }
         activity.promptOtp((otp) -> sendTransaction(password, otp));
-    }
-
-    public void setExchangeRate(ExchangeRate exchangeRate) {
-        this.exchangeRate = exchangeRate;
     }
 }

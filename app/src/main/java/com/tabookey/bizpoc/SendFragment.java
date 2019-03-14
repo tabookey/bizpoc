@@ -18,7 +18,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tabookey.bizpoc.api.ExchangeRate;
-import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.SendRequest;
 
 import java.math.BigDecimal;
@@ -41,8 +40,6 @@ public class SendFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        new Thread(() -> exchangeRate = Global.ent.getMarketData()).start();
-
         super.onViewCreated(view, savedInstanceState);
         Button continueButton = view.findViewById(R.id.continueButton);
         destinationEditText = view.findViewById(R.id.destinationEditText);
@@ -62,7 +59,7 @@ public class SendFragment extends Fragment {
             BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal("1000000000000000000")).toBigInteger();
             SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination,  "000000", "passphrase", getNewMemoID());
             cf.setRequest(sendRequest);
-            cf.setExchangeRate(exchangeRate);
+            cf.exchangeRate = exchangeRate;
             activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
         });
 
@@ -89,8 +86,6 @@ public class SendFragment extends Fragment {
 
             }
         });
-
-
     }
 
     private void setDollarEquivalent() {

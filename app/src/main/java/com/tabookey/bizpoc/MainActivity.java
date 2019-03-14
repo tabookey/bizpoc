@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
             fragment.mCryptoObject = SecretStorge.getCryptoObject();
             fragment.input = array;
             fragment.title = getString(R.string.sign_in);
+            fragment.cancelled = this::finish;
             fragment.callback = apiKeyBytes -> {
                 String apiKeyPlaintext = new String(apiKeyBytes);
                 Global.setAccessToken(apiKeyPlaintext);
