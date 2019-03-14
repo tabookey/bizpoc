@@ -17,6 +17,7 @@
 package com.tabookey.bizpoc;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -51,7 +52,6 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // Do not create a new Fragment when the Activity is re-created such as orientation changes.
         setRetainInstance(true);
         setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Material_Light_Dialog);
@@ -64,12 +64,9 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
         View v = inflater.inflate(R.layout.fingerprint_dialog_container, container, false);
         mCancelButton = v.findViewById(R.id.cancel_button);
         mCancelButton.setOnClickListener(view -> {
-            if (cancelled != null) {
-                cancelled.run();
-            }
-            dismiss();
+            getDialog().cancel();
         });
-
+        getDialog().setCanceledOnTouchOutside(false);
 
         mFingerprintContent = v.findViewById(R.id.fingerprint_container);
         mFingerprintUiHelper = new FingerprintUiHelper(
@@ -86,6 +83,11 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
         mFingerprintUiHelper.startListening(mCryptoObject);
     }
 
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        cancelled.run();
+    }
 
     @Override
     public void onPause() {

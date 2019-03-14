@@ -1,6 +1,9 @@
 package com.tabookey.bizpoc;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -18,14 +23,17 @@ import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
-import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class FirstFragment extends Fragment {
     private View progressBar;
     private ExchangeRate exchangeRate;
+    private ListView balancesListView;
+    BalancesAdapter adapter;
 
     @Nullable
     @Override
@@ -41,7 +49,7 @@ public class FirstFragment extends Fragment {
         if (activity == null) {
             return;
         }
-
+        balancesListView = view.findViewById(R.id.balancesListView);
         progressBar = view.findViewById(R.id.progressBar);
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
@@ -89,28 +97,40 @@ public class FirstFragment extends Fragment {
 
     void fillWindow() {
         IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
-        setText(R.id.ownerText, "Hello, %s", Global.ent.getMe().name);
-        String balanceString = ethWallet.getBalance("teth");
-        double etherDouble = Utils.weiStringToEtherDouble(balanceString);
-        setText(R.id.balanceText, "%.6f", etherDouble);
-        exchangeRate = Global.ent.getMarketData();
-        setText(R.id.balanceInDollarsText, "$%.2f", etherDouble * exchangeRate.average24h);
-        setText(R.id.addressText, ethWallet.getAddress());
-
-    }
-
-    void setText(int id, String fmt, Object... args) {
+        exchangeRate = Global.ent.getMarketData("teth");
+        List<String> coins = ethWallet.getCoins();
+        List<BalancesAdapter.Balance> balances = new ArrayList<>();
+        for (String coin : coins) {
+            String coinBalance = ethWallet.getBalance(coin);
+            double exRate = Global.ent.getMarketData(coin).average24h;
+            balances.add(new BalancesAdapter.Balance(coin, coinBalance, exRate, 1));
+        }
         Activity activity = getActivity();
         if (activity == null) {
             return;
         }
+        View view = getView();
+        if (view == null) {
+            return;
+        }
         activity.runOnUiThread(() -> {
-            View view = getView();
-            if (view == null) {
-                return;
-            }
-            TextView v = view.findViewById(id);
-            v.setText(String.format(fmt, args));
+            TextView address = view.findViewById(R.id.addressText);
+            TextView owner = view.findViewById(R.id.ownerText);
+            address.setText(ethWallet.getAddress());
+            owner.setText(String.format("Hello, %s", Global.ent.getMe().name));
+            adapter = new BalancesAdapter(activity, 0, balances);
+            balancesListView.setAdapter(adapter);
+            ImageButton copyButton = view.findViewById(R.id.copyButton);
+            copyButton.setOnClickListener(v -> {
+                ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                if (clipboard == null) {
+                    return;
+                }
+                ClipData clip = ClipData.newPlainText("label", ethWallet.getAddress());
+                clipboard.setPrimaryClip(clip);
+            });
+
         });
+
     }
 }

@@ -13,7 +13,7 @@ public interface IBitgoEnterprise {
     //return the user object representing the current user
     BitgoUser getMe();
 
-    ExchangeRate getMarketData();
+    ExchangeRate getMarketData(String coin);
 
     List<IBitgoWallet> getWallets(String coin);
 

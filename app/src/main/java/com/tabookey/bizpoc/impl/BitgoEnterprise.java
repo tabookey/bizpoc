@@ -18,12 +18,13 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     HttpReq http;
     private EnterpriseInfo info;
     private ArrayList<BitgoUser> users;
-    private HashMap<String,List<IBitgoWallet>> wallets = new HashMap<>();
+    private HashMap<String, List<IBitgoWallet>> wallets = new HashMap<>();
     private BitgoUser userMe;
 
-    String[] validTokens = { "terc", "tbst" }; //teth always added
+    String[] validTokens = {"terc", "tbst"}; //teth always added
+
     public BitgoEnterprise(String accessKey, boolean test) {
-        this.testNetwork=test;
+        this.testNetwork = test;
         Global.http = http = new HttpReq(accessKey, true);
     }
 
@@ -34,7 +35,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
     @Override
     public EnterpriseInfo getInfo() {
-        if ( info==null ) {
+        if (info == null) {
             EntResp res = http.get("/api/v1/enterprise", EntResp.class);
             info = res.enterprises[0];
         }
@@ -43,6 +44,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
     static class UserMeResp {
         public User user;
+
         static class User {
             public String id, username;
             public UserName name;
@@ -61,7 +63,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
     @Override
     public BitgoUser getMe() {
-        if ( userMe==null ) {
+        if (userMe == null) {
             UserMeResp.User u = http.get("/api/v2/user/me", UserMeResp.class).user;
 
             boolean isAdmin = false;
@@ -76,8 +78,8 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     }
 
     @Override
-    public ExchangeRate getMarketData() {
-        JsonNode node = http.get("/api/v2/teth/market/latest", JsonNode.class).get("latest").get("currencies").get("USD").get("24h_avg");
+    public ExchangeRate getMarketData(String coin) {
+        JsonNode node = http.get("/api/v2/" + coin + "/market/latest", JsonNode.class).get("latest").get("currencies").get("USD").get("24h_avg");
         ExchangeRate e = new ExchangeRate(node.asDouble());
         return e;
     }
@@ -85,21 +87,21 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     public List<IBitgoWallet> getMergedWallets() {
         String coin = testNetwork ? "teth" : "eth";
         //must specify at least one coin name, to get back all tokens.
-        MergedWalletsData data = http.get("/api/v2/wallets/merged?coin="+coin+"&enterprise=" + info.id, MergedWalletsData.class);
+        MergedWalletsData data = http.get("/api/v2/wallets/merged?coin=" + coin + "&enterprise=" + info.id, MergedWalletsData.class);
 
         ArrayList<IBitgoWallet> ret = new ArrayList<>();
-        for( MergedWalletsData.WalletData walletData : data.wallets) {
-            ret.add(new MergedWallet(this,walletData));
+        for (MergedWalletsData.WalletData walletData : data.wallets) {
+            ret.add(new MergedWallet(this, walletData));
         }
         return ret;
     }
 
     @Override
     public List<IBitgoWallet> getWallets(String coin) {
-        if ( wallets.get(coin)!=null )
+        if (wallets.get(coin) != null)
             return wallets.get(coin);
 
-        JsonNode node = http.get("/api/v2/"+coin+"/wallet", JsonNode.class).get("wallets");
+        JsonNode node = http.get("/api/v2/" + coin + "/wallet", JsonNode.class).get("wallets");
 
         ArrayList<IBitgoWallet> cointWallets = new ArrayList<>();
         for (int i = 0; i < node.size(); i++) {
@@ -119,6 +121,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
             public String email, verified;
         }
     }
+
     public static class EntUsersResp {
         public UserResp[] adminUsers;
         public UserResp[] nonAdminUsers;
@@ -134,7 +137,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
     @Override
     public List<BitgoUser> getUsers() {
-        if ( users==null ) {
+        if (users == null) {
             ArrayList<BitgoUser> newusers = new ArrayList<>();
 
             String ent_id = getInfo().id;
