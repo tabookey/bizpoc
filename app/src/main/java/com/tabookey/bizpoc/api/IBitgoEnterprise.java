@@ -22,4 +22,7 @@ public interface IBitgoEnterprise {
 
     //return specific user by ID, or "null" if not found.
     BitgoUser getUserById(String id);
+
+    //return a list of wallets - each wallet object for ether and all tokens available on that wallet address
+    List<IBitgoWallet> getMergedWallets();
 }

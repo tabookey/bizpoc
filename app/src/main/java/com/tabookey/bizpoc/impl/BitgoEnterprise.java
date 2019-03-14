@@ -10,16 +10,20 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class BitgoEnterprise implements IBitgoEnterprise {
+    private final boolean testNetwork;
     HttpReq http;
     private EnterpriseInfo info;
     private ArrayList<BitgoUser> users;
-    private List<IBitgoWallet> wallets;
+    private HashMap<String,List<IBitgoWallet>> wallets = new HashMap<>();
     private BitgoUser userMe;
 
+    String[] validTokens = { "terc", "tbst" }; //teth always added
     public BitgoEnterprise(String accessKey, boolean test) {
+        this.testNetwork=test;
         Global.http = http = new HttpReq(accessKey, true);
     }
 
@@ -78,19 +82,32 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         return e;
     }
 
+    public List<IBitgoWallet> getMergedWallets() {
+        String coin = testNetwork ? "teth" : "eth";
+        //must specify at least one coin name, to get back all tokens.
+        MergedWalletsData data = http.get("/api/v2/wallets/merged?coin="+coin+"&enterprise=" + info.id, MergedWalletsData.class);
+
+        ArrayList<IBitgoWallet> ret = new ArrayList<>();
+        for( MergedWalletsData.WalletData walletData : data.wallets) {
+            ret.add(new MergedWallet(this,walletData));
+        }
+        return ret;
+    }
+
     @Override
     public List<IBitgoWallet> getWallets(String coin) {
-        if ( wallets!=null )
-            return wallets;
+        if ( wallets.get(coin)!=null )
+            return wallets.get(coin);
 
         JsonNode node = http.get("/api/v2/"+coin+"/wallet", JsonNode.class).get("wallets");
 
-        wallets = new ArrayList<>();
+        ArrayList<IBitgoWallet> cointWallets = new ArrayList<>();
         for (int i = 0; i < node.size(); i++) {
             Wallet w = new Wallet(this, node.get(i), coin);
-            wallets.add(w);
+            cointWallets.add(w);
         }
-        return wallets;
+        wallets.put(coin, cointWallets);
+        return wallets.get(coin);
     }
 
     public static class UserResp {

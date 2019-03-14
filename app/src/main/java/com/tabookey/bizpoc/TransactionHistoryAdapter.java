@@ -43,7 +43,7 @@ public class TransactionHistoryAdapter extends ArrayAdapter<Transfer> {
         TextView transactionComment = view.findViewById(R.id.transactionComment);
         transactionComment.setText(data.get(position).comment);
 //        txid, valueString, coin, usd, date, remoteAddress
-        dateTextView.setText(data.get(position).date);
+        dateTextView.setText(data.get(position).date.toString());
         idTextView.setText(data.get(position).txid);
         double value = Utils.weiStringToEtherDouble(data.get(position).valueString);
         valueTextView.setText(String.format(Locale.US, "%.6f", value));

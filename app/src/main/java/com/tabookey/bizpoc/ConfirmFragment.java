@@ -112,7 +112,7 @@ public class ConfirmFragment extends Fragment {
             public void run() {
                 try {
                     IBitgoWallet w = Global.ent.getWallets("teth").get(0);
-                    SendRequest req = new SendRequest(sendRequest.recipientAddress, sendRequest.comment, sendRequest.amount, otp, password);
+                    SendRequest req = new SendRequest("teth", sendRequest.recipientAddress, sendRequest.comment, sendRequest.amount, otp, password);
                     String pendingTxId = Utils.fromJson(w.sendCoins(req, null), JsonNode.class).get("pendingApproval").get("id").asText();
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();

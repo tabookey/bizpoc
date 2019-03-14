@@ -6,11 +6,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoEnterprise;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
+import com.tabookey.bizpoc.api.Transfer;
 
 import java.util.List;
 
@@ -55,18 +57,30 @@ public class TestSendActivity extends AppCompatActivity {
         Global.setAccessToken("v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3");
         IBitgoEnterprise ent = Global.ent;
         log( "me: "+ent.getMe().name);
-        IBitgoWallet w = ent.getWallets("teth").get(3);
-        log( "wallet id="+w.getLabel()+": "+w.getId());
 
-        w.getGuardians().forEach(user->log(user.email+": "+user.permissions));
+        List<IBitgoWallet> allw = ent.getMergedWallets();
+        IBitgoWallet w = allw.get(3);
+
+//        IBitgoWallet w = ent.getWallets("teth").get(3);
+        log( "wallet id="+w.getLabel() );
+        log( "coins: "+w.getCoins());
+        for ( String s : w.getCoins() )
+            log( "balance "+s+" - "+w.getBalance(s));
+
+        w.getGuardians().forEach(user->log("guardian: "+user.email+(user.hasPerm(BitgoUser.Perm.admin)?" admin":"")));
+
+        List<Transfer> transfers = w.getTransfers();
+        log( "transfers: "+transfers.size());
+        transfers.forEach(t->log(t.coin+" "+t.valueString+" "+t.comment));
         List<PendingApproval> pending = w.getPendingApprovals();
         log( "pending: "+pending.size());
         pending.forEach(p->{
-            log("- pending: "+p.createDate+" "+p.amount+" "+p.comment);
+            log("- "+p.createDate+" "+p.coin+" "+ p.amount+" "+p.comment);
         });
+        if ( this==null ) return;
         String dest = "0xd21934eD8eAf27a67f0A70042Af50A1D6d195E81";
-        SendRequest req = new SendRequest(dest, "comment", "1122334455667788",
-                "0000000", "asd/asd-ASD1");
+        SendRequest req = new SendRequest("teth", "1122334455667788", dest,
+                "0000000", "asd/asd-ASD", "comment");
 
         w.sendCoins(req, (type, msg) -> log("== "+type+": "+msg) );
     }

@@ -1,9 +1,11 @@
 package com.tabookey.bizpoc.api;
 
+import java.util.Date;
 import java.util.List;
 
 public class PendingApproval {
-    public String id, createDate, recipientAddr, comment, coin, amount;
+    public String id, recipientAddr, comment, coin, amount;
+    public Date createDate;
     public List<BitgoUser> approvedByUsers;    //users who already approved (e.g sender himself)
     public BitgoUser creator;
 
@@ -11,7 +13,7 @@ public class PendingApproval {
 
     }
 
-    public PendingApproval(String id, String createDate, String recipientAddr, String comment, String coin, String amount, List<BitgoUser> approvedByUsers, BitgoUser creator) {
+    public PendingApproval(String id, Date createDate, String recipientAddr, String comment, String coin, String amount, List<BitgoUser> approvedByUsers, BitgoUser creator) {
         this.id = id;
         this.createDate = createDate;
         this.recipientAddr = recipientAddr;

@@ -3,16 +3,18 @@ package com.tabookey.bizpoc.api;
 import java.util.List;
 
 public interface IBitgoWallet {
-
-    String getCoin();
     String getId();
+
+    //list of coins supported by this wallet.
+    List<String> getCoins();
 
     String getLabel();
 
     //all vault users that are not "me"
     List<BitgoUser> getGuardians();
 
-    String getBalance();
+    String getBalance(String coin);
+
     String getAddress();
 
     //get past transfers from or to this wallet.
@@ -22,6 +24,7 @@ public interface IBitgoWallet {
      * send coins
      * @param req - request paramters
      * @param cb - optional callback. type is "state" for for interim state changes, "result" for final result, or "error" in case of error.
+     * @return pending transaction id
      * @throws RuntimeException in case any error returns (error message is the "error" status reported
      */
     String sendCoins(SendRequest req, StatusCB cb);
@@ -29,7 +32,6 @@ public interface IBitgoWallet {
     interface StatusCB {
         void onStatus(String type, String msg);
     }
-
 
     List<PendingApproval> getPendingApprovals();
 

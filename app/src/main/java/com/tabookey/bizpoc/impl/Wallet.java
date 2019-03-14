@@ -10,26 +10,14 @@ import com.tabookey.bizpoc.api.Transfer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 
-
-class WalletNode {
-    public String id, coin, label;
-    public int approvalsRequired;
-    public String balanceString;
-    public CoinSpecific coinSpecific;
-    public User[] users;
-
-    static class CoinSpecific {
-        public String baseAddress;
-    }
-    static class User {
-        public String user;
-        public BitgoUser.Perm[] permissions;
-    }
-}
-
+/**
+ * single-coin wallet.
+ * This is the low-level coin API.
+ */
 class Wallet implements IBitgoWallet {
     private final BitgoEnterprise ent;
     private final String balanceString;
@@ -52,7 +40,7 @@ class Wallet implements IBitgoWallet {
         this.balanceString = walletData.balanceString;
         this.address = walletData.coinSpecific.baseAddress;
         this.guardians = new ArrayList<>();
-        for ( WalletNode.User user : walletData.users ) {
+        for ( WalletUser user : walletData.users ) {
             if ( user.user.equals(ent.getMe().id))
                 continue;
             guardians.add(new BitgoUser(ent.getUserById(user.user), Arrays.asList(user.permissions)));
@@ -61,8 +49,8 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public String getCoin() {
-        return coin;
+    public List<String> getCoins() {
+        return Arrays.asList(coin);
     }
 
     @Override
@@ -89,7 +77,9 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public String getBalance() {
+    public String getBalance(String coin) {
+        if ( !coin.equals(this.coin))
+            throw new RuntimeException("invalid coin "+coin+". Wallet only has "+this.coin);
         return balanceString;
     }
 
@@ -102,7 +92,8 @@ class Wallet implements IBitgoWallet {
         public Trans[] transfers;
 
         static class Trans {
-            public String txid, coin, valueString, usd, date, comment;
+            public String txid, coin, valueString, usd, comment;
+            public Date date;
             public Entry[] entries;
         }
 
@@ -149,7 +140,8 @@ class Wallet implements IBitgoWallet {
         public PendingApproval[] pendingApprovals;
 
         static class PendingApproval {
-            public String id, coin, creator, createDate;
+            public String id, coin, creator;
+            public Date createDate;
             public Info info;
             public String state, scope;
             public int approvalsRequired;
@@ -223,4 +215,22 @@ class Wallet implements IBitgoWallet {
         ChangeState change = new ChangeState("rejected", otp, null);
         PendingApprovalResp resp = ent.http.put("/api/v2/" + coin + "/pendingapprovals/" + approval.id, change, PendingApprovalResp.class);
     }
+
+    //helper class, for parsing a coin.
+    static class WalletNode {
+        public String id, coin, label;
+        public int approvalsRequired;
+        public String balanceString;
+        public CoinSpecific coinSpecific;
+        public WalletUser[] users;
+
+        static class CoinSpecific {
+            public String baseAddress;
+        }
+    }
+    static class WalletUser {
+        public String user;
+        public BitgoUser.Perm[] permissions;
+    }
+
 }

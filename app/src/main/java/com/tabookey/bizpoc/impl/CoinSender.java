@@ -1,14 +1,18 @@
 package com.tabookey.bizpoc.impl;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.SendRequest;
 
-import java.io.IOException;
+import androidx.annotation.RequiresApi;
+
+import static com.tabookey.bizpoc.impl.Utils.fromJson;
 
 public class CoinSender extends WebViewExecutor {
 
@@ -16,6 +20,7 @@ public class CoinSender extends WebViewExecutor {
         super(ctx, http);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public String sendCoins(IBitgoWallet wallet, SendRequest req, IBitgoWallet.StatusCB cb) {
         AppObject appObject = new AppObject(wallet, req, cb);
         exec("www/sender.html", appObject);
@@ -28,16 +33,16 @@ public class CoinSender extends WebViewExecutor {
             }
         }
 
+        if (appObject.error!=null )
+            throw new RuntimeException(appObject.error);
+
         if (appObject.result == null) {
             //report timeout and last known status
             throw new RuntimeException("timed-out: " + appObject.status);
         }
 
-        //either "Error: ..." or '{"error":...}'
-        if (appObject.result.toLowerCase().matches("\\W*error") )
-            throw new RuntimeException(appObject.result);
+        return fromJson(appObject.result, JsonNode.class).get("pendingApproval").get("id").asText();
 
-        return appObject.result;
     }
 
     public static class AppObject {
@@ -59,7 +64,7 @@ public class CoinSender extends WebViewExecutor {
 
         @JavascriptInterface
         public String getCoin() {
-            return wallet.getCoin();
+            return req.coin;
         }
 
         @JavascriptInterface
@@ -104,11 +109,14 @@ public class CoinSender extends WebViewExecutor {
             else
                 Log.d(TAG, "setStatus " + type + ": " + status);
 
-            if (!type.equals("state")) {
-                result = status;
-                synchronized (this) {
-                    notifyAll();
-                }
+            switch (type) {
+                case "state" : return;  //not final - don't notify..
+                case "error" : this.error = status; break;
+                case "result" : this.result = status; break;
+
+            }
+            synchronized (this) {
+                notifyAll();
             }
         }
 

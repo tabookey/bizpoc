@@ -60,7 +60,7 @@ public class SendFragment extends Fragment {
             String destination = destinationEditText.getText().toString();
             String amountInput = etherSendAmountEditText.getText().toString();
             BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal("1000000000000000000")).toBigInteger();
-            SendRequest sendRequest = new SendRequest(destination, getNewMemoID(), amountBigInt.toString(), "teth", "000000");
+            SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination,  "000000", "passphrase", getNewMemoID());
             cf.setRequest(sendRequest);
             cf.setExchangeRate(exchangeRate);
             activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();

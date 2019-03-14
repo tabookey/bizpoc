@@ -46,7 +46,7 @@ public class TransactionPendingAdapter extends ArrayAdapter<PendingApproval> {
         TextView remoteTextView = view.findViewById(R.id.transactionRemoteAddress);
         TextView transactionComment = view.findViewById(R.id.transactionComment);
 //        txid, valueString, coin, usd, date, remoteAddress
-        dateTextView.setText(data.get(position).createDate);
+        dateTextView.setText(data.get(position).createDate.toString());
         idTextView.setText(data.get(position).id);
         double value = Utils.weiStringToEtherDouble(data.get(position).amount);
         valueTextView.setText(String.format(Locale.US,"%.6f", value));

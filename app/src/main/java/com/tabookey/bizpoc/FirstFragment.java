@@ -22,6 +22,7 @@ import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 public class FirstFragment extends Fragment {
     @Nullable
@@ -54,7 +55,7 @@ public class FirstFragment extends Fragment {
         Button transactionDetailsButtonDev = view.findViewById(R.id.transactionDetailsButtonDev);
         transactionDetailsButtonDev.setOnClickListener(v -> {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.transfer = new Transfer("123412", "12312312312312312", "teth", "1234", "12/12/1212", "0x123123", "TXID321543");
+            tdf.transfer = new Transfer("123412", "12312312312312312", "teth", "1234", new Date(), "0x123123", "TXID321543");
             tdf.setExchangeRate(new ExchangeRate(100.01));
 
             activity.getSupportFragmentManager().beginTransaction()
@@ -63,8 +64,7 @@ public class FirstFragment extends Fragment {
         Button pendingDetailsButtonDev = view.findViewById(R.id.pendingDetailsButtonDev);
         pendingDetailsButtonDev.setOnClickListener(v -> {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.pendingApproval = new PendingApproval("123412",
-                    "12312312312312312", "0x123123",
+            tdf.pendingApproval = new PendingApproval("123412", new Date(), "0x123123",
                     "1234", "teth", "200000",
                     Arrays.asList(new BitgoUser("id", "e@m", "Na me"),
                             new BitgoUser("id", "e@m", "Na me")),
@@ -85,7 +85,7 @@ public class FirstFragment extends Fragment {
     void fillWindow() {
         IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
         setText(R.id.ownerText, "Hello, %s", Global.ent.getMe().name);
-        String balanceString = ethWallet.getBalance();
+        String balanceString = ethWallet.getBalance("teth");
         double etherDouble = Utils.weiStringToEtherDouble(balanceString);
         setText(R.id.balanceText, "%.6f", etherDouble);
         ExchangeRate e = Global.ent.getMarketData();
