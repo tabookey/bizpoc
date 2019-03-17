@@ -52,6 +52,9 @@ public class TransactionsFragment extends Fragment {
         }
         activity.runOnUiThread(() -> {
             progressBar.setVisibility(View.GONE);
+            for (Transfer t : transfers) {
+                t.token = Global.ent.getTokens().get(t.coin);
+            }
             TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), R.layout.transaction_line, transfers);
             lvt.setAdapter(historyAdapter);
 

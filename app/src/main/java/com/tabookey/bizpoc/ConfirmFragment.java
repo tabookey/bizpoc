@@ -15,16 +15,15 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
+import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.List;
@@ -62,7 +61,11 @@ public class ConfirmFragment extends Fragment {
         guardiansListView.setAdapter(adapter);
         submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
 
-        double etherDouble = Utils.weiStringToEtherDouble(sendRequest.amount);
+        TokenInfo token = Global.ent.getTokens().get(sendRequest.coin);
+        if (token == null){
+            throw new RuntimeException("No TokenInfo selected");
+        }
+        double etherDouble = Utils.integerStringToCoinDouble(sendRequest.amount, token.decimalPlaces);
         dollarEquivalent.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
         etherSendAmount.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
         recipientAddress.setText(sendRequest.recipientAddress);

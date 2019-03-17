@@ -9,7 +9,6 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.tabookey.bizpoc.api.PendingApproval;
-import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.List;
@@ -46,13 +45,14 @@ public class TransactionPendingAdapter extends ArrayAdapter<PendingApproval> {
         TextView remoteTextView = view.findViewById(R.id.transactionRemoteAddress);
         TextView transactionComment = view.findViewById(R.id.transactionComment);
 //        txid, valueString, coin, usd, date, remoteAddress
-        dateTextView.setText(data.get(position).createDate.toString());
-        idTextView.setText(data.get(position).id);
-        double value = Utils.weiStringToEtherDouble(data.get(position).amount);
+        PendingApproval pending = data.get(position);
+        dateTextView.setText(pending.createDate.toString());
+        idTextView.setText(pending.id);
+        double value = Utils.integerStringToCoinDouble(pending.amount, pending.token.decimalPlaces);
         valueTextView.setText(String.format(Locale.US,"%.6f", value));
-        coinTextView.setText(data.get(position).coin);
+        coinTextView.setText(pending.coin);
         dollarTextView.setText("Not saved for pending?");
-        remoteTextView.setText(data.get(position).recipientAddr);
+        remoteTextView.setText(pending.recipientAddr);
         return view;
     }
 }

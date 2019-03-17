@@ -22,6 +22,7 @@ import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
+import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.api.Transfer;
 
 import java.util.ArrayList;
@@ -96,14 +97,17 @@ public class FirstFragment extends Fragment {
     }
 
     void fillWindow() {
-        IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
+        List<IBitgoWallet> allw = Global.ent.getMergedWallets();
+        IBitgoWallet ethWallet =allw.get(0);
         exchangeRate = Global.ent.getMarketData("teth");
         List<String> coins = ethWallet.getCoins();
         List<BalancesAdapter.Balance> balances = new ArrayList<>();
         for (String coin : coins) {
             String coinBalance = ethWallet.getBalance(coin);
             double exRate = Global.ent.getMarketData(coin).average24h;
-            balances.add(new BalancesAdapter.Balance(coin, coinBalance, exRate, 1));
+
+            TokenInfo token = Global.ent.getTokens().get(coin);
+            balances.add(new BalancesAdapter.Balance(coin, coinBalance, exRate, token));
         }
         Activity activity = getActivity();
         if (activity == null) {

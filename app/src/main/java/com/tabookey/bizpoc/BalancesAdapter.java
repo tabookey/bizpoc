@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.tabookey.bizpoc.api.Transfer;
+import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.List;
@@ -25,13 +25,13 @@ public class BalancesAdapter extends ArrayAdapter<Balance> {
         String coinName;
         String coinBalance;
         double coinWorthUsd;
-        int decimals;
+        TokenInfo tokenInfo;
 
-        public Balance(String coinName, String coinBalance, double coinWorthUsd, int decimals) {
+        public Balance(String coinName, String coinBalance, double coinWorthUsd, TokenInfo tokenInfo) {
             this.coinName = coinName;
             this.coinBalance = coinBalance;
             this.coinWorthUsd = coinWorthUsd;
-            this.decimals = decimals;
+            this.tokenInfo = tokenInfo;
         }
     }
 
@@ -57,10 +57,10 @@ public class BalancesAdapter extends ArrayAdapter<Balance> {
         Balance balance = data.get(position);
         double coinWorthUsd = balance.coinWorthUsd;
         coinExchangeRate.setText(String.format(Locale.US, "%.2f", coinWorthUsd));
-        double value = Utils.weiStringToEtherDouble(balance.coinBalance);
+        double value = Utils.integerStringToCoinDouble(balance.coinBalance, balance.tokenInfo.decimalPlaces);
         coinBalance.setText(String.format(Locale.US, "%.6f", value));
-        coinName.setText(balance.coinName);
-        coinDollarValue.setText(String.format(Locale.US, "%.2f", coinWorthUsd * value / Math.pow(10, balance.decimals)));
+        coinName.setText(balance.tokenInfo.name);
+        coinDollarValue.setText(String.format(Locale.US, "%.2f USD", coinWorthUsd * value));
         return view;
     }
 }

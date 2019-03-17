@@ -1,7 +1,5 @@
 package com.tabookey.bizpoc.impl;
 
-import android.os.Build;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
@@ -109,6 +107,7 @@ class Wallet implements IBitgoWallet {
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (TransferResp.Trans t : resp.transfers) {
             Transfer tx = new Transfer(t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment);
+            tx.token = ent.getTokens().get(tx.coin);
 /*
             tx.txid = t.txid;
             tx.coin = t.coin;
@@ -182,6 +181,7 @@ class Wallet implements IBitgoWallet {
             p.recipientAddr = r.info.transactionRequest.recipients[0].address;
             p.amount = r.info.transactionRequest.recipients[0].amount;
             p.comment = r.info.transactionRequest.comment;
+            p.token = Global.ent.getTokens().get(p.coin);
             if (r.resolvers != null) {
                 ArrayList<BitgoUser> approvedBy = new ArrayList<BitgoUser>();
                 for (PendingApprovalResp.Resolver rs : r.resolvers) {

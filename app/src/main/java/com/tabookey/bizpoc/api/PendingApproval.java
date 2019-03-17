@@ -8,6 +8,7 @@ public class PendingApproval {
     public Date createDate;
     public List<BitgoUser> approvedByUsers;    //users who already approved (e.g sender himself)
     public BitgoUser creator;
+    public TokenInfo token;
 
     public PendingApproval() {
 

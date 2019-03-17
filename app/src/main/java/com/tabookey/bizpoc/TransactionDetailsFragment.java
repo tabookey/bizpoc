@@ -56,8 +56,7 @@ public class TransactionDetailsFragment extends Fragment {
             fillTransfer();
         } else if (pendingApproval != null) {
             fillPending();
-        }
-        else {
+        } else {
             throw new RuntimeException("No transaction object");
         }
         new Thread(() -> {
@@ -72,7 +71,7 @@ public class TransactionDetailsFragment extends Fragment {
     }
 
     private void fillPending() {
-        double etherDouble = Utils.weiStringToEtherDouble(pendingApproval.amount);
+        double etherDouble = Utils.integerStringToCoinDouble(pendingApproval.amount, pendingApproval.token.decimalPlaces);
         etherSendAmountTextView.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
         dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
         recipientAddressTextView.setText(pendingApproval.recipientAddr);
@@ -80,7 +79,7 @@ public class TransactionDetailsFragment extends Fragment {
     }
 
     private void fillTransfer() {
-        double etherDouble = Utils.weiStringToEtherDouble(transfer.valueString);
+        double etherDouble = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
         etherSendAmountTextView.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
         dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
         recipientAddressTextView.setText(transfer.remoteAddress);

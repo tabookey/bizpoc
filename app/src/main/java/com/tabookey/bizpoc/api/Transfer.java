@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 
 /**
@@ -8,6 +10,9 @@ import java.util.Date;
 public class Transfer {
     public String txid, valueString, coin, usd, remoteAddress, comment;
     public Date date;
+
+    @JsonIgnore
+    public TokenInfo token;
 
     public Transfer(String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment) {
         this.txid = txid;

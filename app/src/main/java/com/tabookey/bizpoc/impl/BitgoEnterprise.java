@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
 import android.util.Log;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.R;
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -13,7 +14,6 @@ import com.tabookey.bizpoc.api.TokenInfo;
 
 import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,6 +105,9 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
 
         }
+        TokenInfo eth = new TokenInfo("", "eth", "eth", "", 18, "Ethereum", "", "Ethereum", "Ether");
+        TokenInfo teth = new TokenInfo("", "teth", "eth", "", 18, "tEthereum", "", "tEthereum", "tEther");
+        allTokensInfo.put("teth", teth);
         return Collections.unmodifiableMap(allTokensInfo);
     }
 
@@ -163,7 +166,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     public List<IBitgoWallet> getMergedWallets() {
         String coin = testNetwork ? "teth" : "eth";
         //must specify at least one coin name, to get back all tokens.
-        MergedWalletsData data = http.get("/api/v2/wallets/merged?coin="+coin+"&enterprise=" + info.id, MergedWalletsData.class);
+        MergedWalletsData data = http.get("/api/v2/wallets/merged?coin="+coin+"&enterprise=" + getInfo().id, MergedWalletsData.class);
 
         ArrayList<IBitgoWallet> ret = new ArrayList<>();
         for( MergedWalletsData.WalletData walletData : data.wallets) {

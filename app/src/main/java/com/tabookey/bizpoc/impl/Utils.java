@@ -35,9 +35,9 @@ public class Utils {
         }
     }
 
-    public static double weiStringToEtherDouble(String weiString){
+    public static double integerStringToCoinDouble(String weiString, int decimals){
         BigDecimal bigIntBalance = new BigDecimal(weiString);
-        BigDecimal divide = bigIntBalance.divide(new BigDecimal(Math.pow(10, 18)), 10, RoundingMode.HALF_UP);
+        BigDecimal divide = bigIntBalance.divide(new BigDecimal(Math.pow(10, decimals)), 10, RoundingMode.HALF_UP);
         return divide.doubleValue();
     }
 
