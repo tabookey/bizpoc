@@ -22,20 +22,17 @@
             android:textSize="19sp"
             tools:text="Ethereum" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/coinBalance"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:lines="1"
             android:textAlignment="textEnd"
             android:textColor="@android:color/black"
             android:textSize="19sp"
-            tools:text="9,226.310000" />
+            tools:text="9,226.310000 ETH" />
     </LinearLayout>
 
     <LinearLayout
@@ -53,16 +50,13 @@
             android:layout_weight="1"
             tools:text="133.31 USD" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/coinDollarValue"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:lines="1"
             android:textAlignment="textEnd"
             tools:text="1,300,000.00 USD" />
 

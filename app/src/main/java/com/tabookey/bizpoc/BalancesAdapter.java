@@ -21,17 +21,25 @@ public class BalancesAdapter extends ArrayAdapter<Balance> {
     private Context context;
     private List<Balance> data;
 
-    public static class Balance {
+    static class Balance {
         String coinName;
         String coinBalance;
-        double coinWorthUsd;
+        double exchangeRate;
         TokenInfo tokenInfo;
 
-        public Balance(String coinName, String coinBalance, double coinWorthUsd, TokenInfo tokenInfo) {
+        Balance(String coinName, String coinBalance, double exchangeRate, TokenInfo tokenInfo) {
             this.coinName = coinName;
             this.coinBalance = coinBalance;
-            this.coinWorthUsd = coinWorthUsd;
+            this.exchangeRate = exchangeRate;
             this.tokenInfo = tokenInfo;
+        }
+
+        double getValue() {
+            return Utils.integerStringToCoinDouble(coinBalance, tokenInfo.decimalPlaces);
+        }
+
+        double getDollarValue() {
+            return exchangeRate * getValue();
         }
     }
 
@@ -55,12 +63,17 @@ public class BalancesAdapter extends ArrayAdapter<Balance> {
         TextView coinName = view.findViewById(R.id.coinName);
         TextView coinDollarValue = view.findViewById(R.id.coinDollarValue);
         Balance balance = data.get(position);
-        double coinWorthUsd = balance.coinWorthUsd;
-        coinExchangeRate.setText(String.format(Locale.US, "%.2f", coinWorthUsd));
-        double value = Utils.integerStringToCoinDouble(balance.coinBalance, balance.tokenInfo.decimalPlaces);
-        coinBalance.setText(String.format(Locale.US, "%.6f", value));
+        double coinWorthUsd = balance.exchangeRate;
+        String format;
+        if (coinWorthUsd > 0.01) {
+            format = "%.2f USD";
+        } else {
+            format = "%.6f USD";
+        }
+        coinExchangeRate.setText(String.format(Locale.US, format, coinWorthUsd));
+        coinBalance.setText(String.format(Locale.US, "%.6f %s", balance.getValue(), balance.coinName.toUpperCase()));
         coinName.setText(balance.tokenInfo.name);
-        coinDollarValue.setText(String.format(Locale.US, "%.2f USD", coinWorthUsd * value));
+        coinDollarValue.setText(String.format(Locale.US, "%.2f USD", balance.getDollarValue()));
         return view;
     }
 }

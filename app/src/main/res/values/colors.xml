@@ -8,4 +8,5 @@
     <color name="hint_color">#42000000</color>
     <color name="success_color">#009688</color>
     <color name="buttons_color">#12929A</color>
+    <color name="nonwhite_background">#EEEEEE</color>
 </resources>

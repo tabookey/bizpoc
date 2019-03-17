@@ -1,14 +1,20 @@
 package com.tabookey.bizpoc;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -30,6 +36,7 @@ public class SendFragment extends Fragment {
     EditText etherSendAmountEditText;
     ExchangeRate exchangeRate;
     EditText destinationEditText;
+    private AppCompatActivity mActivity;
 
 
     @Nullable
@@ -51,13 +58,14 @@ public class SendFragment extends Fragment {
             return;
         }
         etherSendAmountEditText = view.findViewById(R.id.etherSendAmountEditText);
+        etherSendAmountEditText.setPaintFlags(etherSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
         continueButton.setOnClickListener(v -> {
             ConfirmFragment cf = new ConfirmFragment();
 
             String destination = destinationEditText.getText().toString();
             String amountInput = etherSendAmountEditText.getText().toString();
             BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal("1000000000000000000")).toBigInteger();
-            SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination,  "000000", "passphrase", getNewMemoID());
+            SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination, "000000", "passphrase", getNewMemoID());
             cf.setRequest(sendRequest);
             cf.exchangeRate = exchangeRate;
             activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
@@ -112,8 +120,35 @@ public class SendFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof Activity) {
+            mActivity = (AppCompatActivity) context;
+        } else {
+            return;
+        }
+        ActionBar actionBar = mActivity.getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
+        actionBar.setDisplayUseLogoEnabled(false);
+
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        destinationEditText.setText(data.getStringExtra("apiKey"));
+        if (resultCode == Activity.RESULT_OK) {
+            destinationEditText.setText(data.getStringExtra("apiKey"));
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                mActivity.onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

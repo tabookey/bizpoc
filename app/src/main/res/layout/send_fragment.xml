@@ -3,99 +3,123 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/nonwhite_background"
     android:orientation="vertical">
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
         android:text="Send"
-        android:textSize="17pt" />
-
-    <TextView
-        android:id="@+id/recipientTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Recipient Address" />
+        android:textSize="27sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-
-        <EditText
-            android:id="@+id/destinationEditText"
+        <TextView
+            android:id="@+id/recipientTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="0x1212121212" />
+            android:text="Recipient Address" />
 
-        <Button
-            android:id="@+id/scanDestinationButton"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:text="Scan" />
-    </LinearLayout>
+            android:background="@drawable/long_field_background"
+            android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/amountTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Amount" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+            <EditText
+                android:id="@+id/destinationEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:autoSizeMaxTextSize="12dp"
+                android:autoSizeMinTextSize="8dp"
+                android:autoSizeTextType="uniform"
+                android:background="@null"
+                android:hint="Enter address"
+                android:inputType="text"
+                android:lines="1"
+                android:maxLines="1"
+                tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
-        <EditText
-            android:id="@+id/etherSendAmountEditText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:inputType="numberDecimal"
-            android:text="0"
-            android:textAlignment="textEnd" />
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.2"
-            android:background="@android:color/transparent"
-            android:text="ETH"
-            android:textAlignment="center" />
+            <Button
+                android:id="@+id/scanDestinationButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:text="Scan" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/dollarEquivalent"
-            android:layout_width="wrap_content"
+            android:id="@+id/amountTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="0"
-            android:textAlignment="textEnd" />
+            android:text="Amount" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/long_field_background"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/etherSendAmountEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:inputType="numberDecimal"
+                android:padding="6dp"
+                android:text="0"
+                android:textAlignment="textEnd"
+                tools:text="123456.78" />
+
+            <Button
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2"
+                android:background="@android:color/transparent"
+                android:lines="1"
+                android:text="ETH"
+                android:textAlignment="center" />
+
+            <TextView
+                android:id="@+id/dollarEquivalent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0"
+                android:textAlignment="textEnd"
+                tools:text="1,234,567,890.99" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2"
+                android:text="USD"
+                android:textAlignment="center" />
+        </LinearLayout>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/balanceTextView"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.2"
-            android:text="USD"
-            android:textAlignment="center" />
+            tools:text="Maximum: 123.4567 ETH" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/balanceTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="Balance in selected currency: 123.4567 ETH"
-        android:textAlignment="center" />
 
     <TextView
         android:id="@+id/validatorsTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="The transaction will be submitted after guardians approval"
-        android:textAlignment="center" />
+        android:padding="16dp"
+        android:text="The transaction will be submitted after guardians approval" />
 
     <ListView
         android:id="@+id/guardiansListView"
@@ -105,7 +129,12 @@
 
     <Button
         android:id="@+id/continueButton"
-        android:layout_width="wrap_content"
+        android:layout_width="140dp"
         android:layout_height="wrap_content"
-        android:text="CONTINUE" />
+        android:layout_gravity="center"
+        android:background="@drawable/button_background_selector"
+        android:text="Continue"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white" />
 </LinearLayout>

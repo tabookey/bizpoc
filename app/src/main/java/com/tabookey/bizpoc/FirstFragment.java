@@ -9,6 +9,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,12 +32,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class FirstFragment extends Fragment {
     private View progressBar;
     private ExchangeRate exchangeRate;
     private ListView balancesListView;
     BalancesAdapter adapter;
+    private TextView balanceInDollarsText;
+    private AppCompatActivity mActivity;
 
     @Nullable
     @Override
@@ -50,8 +56,10 @@ public class FirstFragment extends Fragment {
         if (activity == null) {
             return;
         }
+
         balancesListView = view.findViewById(R.id.balancesListView);
         progressBar = view.findViewById(R.id.progressBar);
+        balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
             sf.exchangeRate = exchangeRate;
@@ -96,18 +104,45 @@ public class FirstFragment extends Fragment {
         }.start();
     }
 
+    private void setToolbar() {
+        ActionBar actionBar = mActivity.getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof Activity) {
+            mActivity = (AppCompatActivity) context;
+        } else {
+            return;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setToolbar();
+    }
+
     void fillWindow() {
         List<IBitgoWallet> allw = Global.ent.getMergedWallets();
-        IBitgoWallet ethWallet =allw.get(0);
+        IBitgoWallet ethWallet = allw.get(0);
         exchangeRate = Global.ent.getMarketData("teth");
         List<String> coins = ethWallet.getCoins();
         List<BalancesAdapter.Balance> balances = new ArrayList<>();
+        double assetsWorth = 0;
         for (String coin : coins) {
             String coinBalance = ethWallet.getBalance(coin);
             double exRate = Global.ent.getMarketData(coin).average24h;
 
             TokenInfo token = Global.ent.getTokens().get(coin);
-            balances.add(new BalancesAdapter.Balance(coin, coinBalance, exRate, token));
+            BalancesAdapter.Balance balance = new BalancesAdapter.Balance(coin, coinBalance, exRate, token);
+            balances.add(balance);
+            assetsWorth += balance.exchangeRate;
         }
         Activity activity = getActivity();
         if (activity == null) {
@@ -117,11 +152,13 @@ public class FirstFragment extends Fragment {
         if (view == null) {
             return;
         }
+        double finalAssetsWorth = assetsWorth;
         activity.runOnUiThread(() -> {
             TextView address = view.findViewById(R.id.addressText);
             TextView owner = view.findViewById(R.id.ownerText);
+            balanceInDollarsText.setText(String.format(Locale.US, "%.2f USD", finalAssetsWorth));
             address.setText(ethWallet.getAddress());
-            owner.setText(String.format("Hello, %s", Global.ent.getMe().name));
+            owner.setText(String.format("Welcome %s", Global.ent.getMe().name));
             adapter = new BalancesAdapter(activity, 0, balances);
             balancesListView.setAdapter(adapter);
             ImageButton copyButton = view.findViewById(R.id.copyButton);

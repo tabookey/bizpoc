@@ -2,13 +2,17 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:paddingTop="40dp"
     android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingTop="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        >
 
         <TextView
             android:id="@+id/ownerText"
@@ -58,6 +62,8 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:textSize="16sp"
             android:text="Your Holdings" />
 
         <ListView
@@ -84,6 +90,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/button_background_selector"
             android:text="Transactions"
+            android:layout_marginBottom="16dp"
             android:textAlignment="center"
             android:textAllCaps="false"
             android:textColor="@android:color/white" />
