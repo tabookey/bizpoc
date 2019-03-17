@@ -79,16 +79,13 @@ public class BitgoEnterprise implements IBitgoEnterprise {
             }
 
             //bitgo_tokens generated with (NOTE: devTokens is for debug, ercTokens for release
-            // curl --silent  'https://test.bitgo.com/js/bitgo-client.07ffdecf50d07643.js' | sed -n '/devTokens.=/,/^$/p' | sed -e 's/^.*Tokens.=//' > bitgo_tokens.txt
+            /*
+            export TOK=devTokens; (echo ethKeycardImage=null; curl --silent  'https://test.bitgo.com/js/bitgo-client.07ffdecf50d07643.js' | sed -n "/$TOK.=/,/^$/p"; echo "console.log(JSON.stringify($TOK))"  )|node > bitgo_tokens.txt
+            */
+
             InputStream is = Global.applicationContext.getResources().openRawResource(R.raw.bitgo_tokens);
             try {
-                String json = IOUtils.toString(is, "UTF-8")
-                        .replace('\'', '"')
-                        .replaceAll(",(\\s*\\})", "$1") //ignore trailing commas (before closing "}" or "]")
-                        .replaceAll("\\.map[\\s\\S]*", "")
-                        .replaceAll("ethKeycardImage", "false") //some javascript item to remove..
-                        ;
-
+                String json = IOUtils.toString(is, "UTF-8");
 
                 BitgoToken[] bitgoTokens = fromJson(json, new BitgoToken[0].getClass());
                 for ( BitgoToken t : bitgoTokens) {
