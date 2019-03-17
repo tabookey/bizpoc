@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc.api;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * interface of a single enterprise.
@@ -25,4 +26,6 @@ public interface IBitgoEnterprise {
 
     //return a list of wallets - each wallet object for ether and all tokens available on that wallet address
     List<IBitgoWallet> getMergedWallets();
+
+    Map<String,TokenInfo> getTokens();
 }

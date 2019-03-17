@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +14,8 @@ import java.math.RoundingMode;
 public class Utils {
     static ObjectMapper sJson = new ObjectMapper()
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+            .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES,true)
+            .configure(JsonParser.Feature.ALLOW_COMMENTS,true)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 

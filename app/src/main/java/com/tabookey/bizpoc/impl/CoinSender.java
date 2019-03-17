@@ -10,8 +10,6 @@ import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.SendRequest;
 
-import androidx.annotation.RequiresApi;
-
 import static com.tabookey.bizpoc.impl.Utils.fromJson;
 
 public class CoinSender extends WebViewExecutor {
@@ -20,7 +18,6 @@ public class CoinSender extends WebViewExecutor {
         super(ctx, http);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public String sendCoins(IBitgoWallet wallet, SendRequest req, IBitgoWallet.StatusCB cb) {
         AppObject appObject = new AppObject(wallet, req, cb);
         exec("www/sender.html", appObject);

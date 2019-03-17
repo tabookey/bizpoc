@@ -16,8 +16,6 @@ import com.tabookey.bizpoc.api.Transfer;
 
 import java.util.List;
 
-import androidx.annotation.RequiresApi;
-
 public class TestSendActivity extends AppCompatActivity {
     private static final String TAG = "TAG";
     private TextView log;
@@ -26,12 +24,12 @@ public class TestSendActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Log.d("LOG", msg );
                 log.append(msg + "\n");
             }
         });
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

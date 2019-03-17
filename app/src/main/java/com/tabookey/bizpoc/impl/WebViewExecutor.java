@@ -2,10 +2,8 @@ package com.tabookey.bizpoc.impl;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -13,13 +11,11 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
-import androidx.annotation.RequiresApi;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -31,6 +27,7 @@ import okhttp3.Response;
  */
 public class WebViewExecutor {
     static String TAG = "webv";
+    private final Context ctx;
 
     private WebView webview;
     private final HttpReq http;
@@ -44,9 +41,7 @@ public class WebViewExecutor {
 
     public WebViewExecutor(Context ctx, HttpReq http) {
         this.http = http;
-        runOnUiThread(() -> {
-            webview = new WebView(ctx);
-        });
+        this.ctx = ctx;
     }
 
     /**
@@ -58,19 +53,33 @@ public class WebViewExecutor {
      * @param appData data object. accessible in the javascript code as "app"
      *                (methods must be decorated with @JavascriptInterface)
      */
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @SuppressLint("JavascriptInterface")
     public void exec(String path, Object appData) {
 
         runOnUiThread(() -> {
-            webview.setWebViewClient(new MyWebviewClient());
-            String webViewPackageName = WebView.getCurrentWebViewPackage().packageName;
-            Log.d(TAG, "webview pkg: "+ webViewPackageName);
-            if ( !webViewPackageName.equals("com.android.chrome"))
-                throw new RuntimeException("Invalid webview package: "+webViewPackageName);
-            webview.addJavascriptInterface(appData, "app");
-            webview.getSettings().setJavaScriptEnabled(true);
+            initWebView(appData,true);
             webview.loadUrl("file:///android_asset/" + path);
+        });
+    }
+
+    @SuppressLint("JavascriptInterface")
+    void initWebView(Object appData, boolean intercept) {
+        if ( webview==null )
+               webview = new WebView(ctx);
+
+        if (intercept)
+            webview.setWebViewClient(new MyWebviewClient());
+        String webViewPackageName = WebView.getCurrentWebViewPackage().packageName;
+        Log.d(TAG, "webview pkg: "+ webViewPackageName);
+        if ( !webViewPackageName.equals("com.android.chrome"))
+            throw new RuntimeException("Invalid webview package: "+webViewPackageName);
+        webview.getSettings().setJavaScriptEnabled(true);
+        webview.addJavascriptInterface(appData, "app");
+    }
+
+    public void loadData(String html, Object appData) {
+        runOnUiThread(() -> {
+            initWebView(appData,false);
+            webview.loadData(html, "application/html", "UTF-8");
         });
     }
 

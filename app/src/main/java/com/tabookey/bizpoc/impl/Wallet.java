@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
+import android.os.Build;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
@@ -12,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 
 /**
  * single-coin wallet.
