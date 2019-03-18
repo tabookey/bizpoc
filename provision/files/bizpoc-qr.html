@@ -1,0 +1,85 @@
+ <style media="screen">
+  .noPrint{ display: block; }
+  .yesPrint{ display: block !important; }
+</style> 
+<style media="print">
+  .noPrint{ display: none; }
+  .yesPrint{ display: block !important; }
+</style>
+
+<style>
+.center {
+  margin: 0;
+  position: absolute;
+  top: 20%;
+  left:50%;
+  transform: translateX(-50%);
+}
+</style>
+
+<!--from: https://github.com/kazuhikoarase/qrcode-generator-->
+<script src="qrcode.js"></script>
+
+<div class="noPrint">
+
+<h3>Bizpoc QR code generator v1</h3>
+
+<table border="0">
+<form name=form>
+<tr><td>Passphrase:</td>
+
+<td><input type=password size=50 name="password" onchange="update()" >
+</td></tr>
+<tr><td>Token:</td>
+<td><input type=password size=50 name="token" onchange="update()">
+</td></tr>
+<tr><td>Size:</td>
+<td><input type="range" min="1" max="20" value="8" id="size" oninput="sizeval.innerText=value; update()">
+    <div id=sizeval></div>
+
+</td></tr>
+<br>
+<p>
+
+<font color="red"><div id="error"></div></font>
+
+</form>
+</table>
+
+</div>
+<div class="center">
+<div class="print" id="placeHolder"></div>
+</div>
+<script>
+
+function error(msg) {
+	document.getElementById('placeHolder').innerHTML = "<font color='red'>"+msg+'</font>'
+}
+
+function update() {
+
+try {
+
+error("")
+
+var typeNumber = 0;
+var errorCorrectionLevel = 'L';
+var qr = qrcode(typeNumber, errorCorrectionLevel);
+tok={token:form.token.value,password:form.password.value}
+
+if ( tok.token.indexOf("v2")!=0 ) {
+	error("invalid token" )
+	return
+}
+
+str = JSON.stringify(tok, null,2)
+qr.addData(str)
+qr.make();
+document.getElementById('placeHolder').innerHTML = qr.createImgTag(form.size.value);
+} catch (e) {
+	error(e.message)
+}
+
+}
+
+</script>

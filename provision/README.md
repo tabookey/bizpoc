@@ -18,7 +18,8 @@
 
 
 ### QRCode:
-1. Run "bizpoc-qr" 
+1. Run "bizpoc-qr.html" 
+    (uploaded as https://gsn.tabookey.com/bizpoc/bizpoc-qr.html)
 2. *Turn off networking*
 3. Paste passphrase
 4. Paste access token.
