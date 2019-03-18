@@ -66,7 +66,7 @@ public class ConfirmFragment extends Fragment {
         submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
 
         TokenInfo token = Global.ent.getTokens().get(sendRequest.coin);
-        if (token == null){
+        if (token == null) {
             throw new RuntimeException("No TokenInfo selected");
         }
         double etherDouble = Utils.integerStringToCoinDouble(sendRequest.amount, token.decimalPlaces);
@@ -129,6 +129,7 @@ public class ConfirmFragment extends Fragment {
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();
                     tdf.exchangeRate = exchangeRate;
+                    tdf.guardians = guardians;
                     List<PendingApproval> pendingApprovals = w.getPendingApprovals();
                     for (PendingApproval pa :
                             pendingApprovals) {

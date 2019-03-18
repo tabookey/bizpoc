@@ -3,89 +3,164 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/nonwhite_background"
     android:orientation="vertical">
 
     <TextView
         android:id="@+id/guardiansApprovalTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Waiting for guardians approval" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="GUARDIANS" />
-
-    <ListView
-        android:id="@+id/guardiansListView"
         android:layout_width="match_parent"
-        android:layout_height="40dp" />
-
-    <TextView
-        android:id="@+id/transactionCommentTextView"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="TXID123456" />
+        android:layout_margin="20dp"
+        android:text="Waiting for guardians approval"
+        android:textAlignment="center"
+        android:textStyle="bold" />
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Transaction submission date" />
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/transactionDateText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="11/03/19 11:00AM" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Guardians"
+            android:textSize="16sp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="From" />
+        <ListView
+            android:id="@+id/guardiansListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout_height="80dp" />
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/senderNameTextView"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tomer Hirsch | PILLAR" />
+        android:layout_marginTop="16dp"
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/senderAddressTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0x123123123123123123123123" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Send to:" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Requested date"
+            android:textColor="@android:color/black" />
 
-    <TextView
-        android:id="@+id/recipientAddressTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0x123123123123123123123123" />
+        <TextView
+            android:id="@+id/transactionDateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="February 26th 2019, 11:07:43 AM" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Amount" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="From"
+            android:textColor="@android:color/black" />
 
-    <TextView
-        android:id="@+id/etherSendAmountTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="674.159999" />
+        <TextView
+            android:id="@+id/senderNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Tomer Hirsch" />
 
-    <TextView
-        android:id="@+id/dollarSentAmountTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="$100'000.00" />
+        <TextView
+            android:id="@+id/senderAddressTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Send to"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/recipientAddressTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
+
+
+        <TextView
+            android:id="@+id/amountTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="6dp"
+            android:text="Amount"
+            android:textColor="@android:color/black" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/etherSendAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lines="1"
+                android:textColor="@android:color/black"
+                android:textSize="24sp"
+                tools:text="674.15 ETH" />
+
+            <TextView
+                android:id="@+id/dollarEquivalent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:lines="1"
+                android:textSize="18sp"
+                tools:text="100,000.00 USD" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Memo"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/transactionCommentTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="TX-101" />
+
+        <Button
+            android:id="@+id/transactionsHashButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:text="Transaction's hash"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
     <Button
-        android:id="@+id/transactionsHashButton"
-        android:layout_width="wrap_content"
+        android:id="@+id/cancelTransaction"
+        android:layout_width="140dp"
         android:layout_height="wrap_content"
-        android:text="Transaction's hash" />
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/button_background_selector"
+        android:text="Cancel transaction"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white" />
 </LinearLayout>

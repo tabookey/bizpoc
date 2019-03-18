@@ -1,15 +1,19 @@
 package com.tabookey.bizpoc;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
@@ -17,7 +21,9 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class TransactionDetailsFragment extends Fragment {
 
@@ -25,13 +31,17 @@ public class TransactionDetailsFragment extends Fragment {
     Transfer transfer;
     ExchangeRate exchangeRate;
 
+    List<BitgoUser> guardians;
+
     TextView senderNameTextView;
     TextView senderAddressTextView;
+    ListView guardiansListView;
 
     TextView recipientAddressTextView;
     TextView etherSendAmountTextView;
     TextView dollarSentAmountTextView;
     TextView transactionCommentTextView;
+    private AppCompatActivity mActivity;
 
     @Nullable
     @Override
@@ -49,9 +59,10 @@ public class TransactionDetailsFragment extends Fragment {
         senderNameTextView = view.findViewById(R.id.senderNameTextView);
         senderAddressTextView = view.findViewById(R.id.senderAddressTextView);
         recipientAddressTextView = view.findViewById(R.id.recipientAddressTextView);
-        etherSendAmountTextView = view.findViewById(R.id.etherSendAmountTextView);
-        dollarSentAmountTextView = view.findViewById(R.id.dollarSentAmountTextView);
+        etherSendAmountTextView = view.findViewById(R.id.etherSendAmount);
+        dollarSentAmountTextView = view.findViewById(R.id.dollarEquivalent);
         transactionCommentTextView = view.findViewById(R.id.transactionCommentTextView);
+        guardiansListView = view.findViewById(R.id.guardiansListView);
         if (transfer != null) {
             fillTransfer();
         } else if (pendingApproval != null) {
@@ -70,8 +81,24 @@ public class TransactionDetailsFragment extends Fragment {
         }).start();
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof AppCompatActivity) {
+            mActivity = (AppCompatActivity) context;
+        }
+    }
+
     private void fillPending() {
         double etherDouble = Utils.integerStringToCoinDouble(pendingApproval.amount, pendingApproval.token.decimalPlaces);
+
+        List<ApprovalsAdapter.Approval> collect = guardians.stream().map(b -> {
+            boolean isApproved = pendingApproval.approvedByUsers.contains(b);
+            return new ApprovalsAdapter.Approval(b.name, isApproved);
+
+        }).collect(Collectors.toList());
+        ApprovalsAdapter adapter = new ApprovalsAdapter(mActivity, 0, collect);
+        guardiansListView.setAdapter(adapter);
         etherSendAmountTextView.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
         dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
         recipientAddressTextView.setText(pendingApproval.recipientAddr);
