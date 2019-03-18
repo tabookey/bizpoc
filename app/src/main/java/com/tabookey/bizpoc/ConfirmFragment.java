@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
@@ -36,6 +37,7 @@ public class ConfirmFragment extends Fragment {
     private SendRequest sendRequest;
     ExchangeRate exchangeRate;
     View progressBar;
+    List<BitgoUser> guardians;
 
     @Nullable
     @Override
@@ -57,7 +59,9 @@ public class ConfirmFragment extends Fragment {
             return;
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1);
-        adapter.addAll("liraz", "eli");
+        for (BitgoUser guardian : guardians) {
+            adapter.add(guardian.name);
+        }
         guardiansListView.setAdapter(adapter);
         submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
 

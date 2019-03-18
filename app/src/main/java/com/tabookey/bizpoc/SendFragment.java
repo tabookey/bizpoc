@@ -115,6 +115,7 @@ public class SendFragment extends Fragment {
             SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination, "000000", "passphrase", getNewMemoID());
             cf.setRequest(sendRequest);
             cf.exchangeRate = exchangeRate;
+            cf.guardians = guardians;
             activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
         });
 
@@ -131,7 +132,7 @@ public class SendFragment extends Fragment {
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
                 try {
                     setDollarEquivalent();
                 } catch (Exception e) {
@@ -141,7 +142,10 @@ public class SendFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-
+                if (editable.toString().equals(".")) {
+                    etherSendAmountEditText.setText("0.");
+                    etherSendAmountEditText.setSelection(etherSendAmountEditText.getText().length());
+                }
             }
         });
     }

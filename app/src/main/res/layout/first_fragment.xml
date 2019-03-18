@@ -40,7 +40,7 @@
                 android:lines="1"
                 android:textAlignment="center"
                 android:paddingRight="10dp"
-                tools:text="0x9b8a477b5b071e3a0da3e07ffc827d278570f81e" />
+                tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
             <ImageButton
                 android:id="@+id/copyButton"

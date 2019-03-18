@@ -86,7 +86,9 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     @Override
     public void onCancel(DialogInterface dialog) {
         super.onCancel(dialog);
-        cancelled.run();
+        if (cancelled != null) {
+            cancelled.run();
+        }
     }
 
     @Override

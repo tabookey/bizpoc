@@ -9,73 +9,126 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+
         <TextView
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Send"
-            android:textAlignment="center" />
+            android:layout_marginTop="20dp"
+            android:paddingLeft="16dp"
+            android:text="Review transaction"
+            android:textSize="27sp" />
 
-        <TextView
-            android:id="@+id/recipientTitle"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Recipient Address"
-            android:textAlignment="center" />
+            android:background="@android:color/white"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/recipientAddressTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="0x1212121212" />
+            <TextView
+                android:id="@+id/recipientTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="0dp"
+                android:text="Recipient Address"
+                android:textColor="@android:color/black" />
 
-        <TextView
-            android:id="@+id/amountTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Amount"
-            android:textAlignment="center" />
+            <TextView
+                android:id="@+id/recipientAddressTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="16dp"
+                android:autoSizeMinTextSize="8dp"
+                android:autoSizeTextType="uniform"
+                android:lines="1"
+                android:textColor="@android:color/black"
+                tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
-        <TextView
-            android:id="@+id/dollarEquivalent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="center"
-            tools:text="$ 100'000'000" />
+            <TextView
+                android:id="@+id/amountTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="6dp"
+                android:text="Amount"
+                android:textColor="@android:color/black" />
 
-        <TextView
-            android:id="@+id/etherSendAmount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="ETH 110'000.123" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/validatorsTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="The transaction will be submitted after guardians approval"
-            android:textAlignment="center" />
+                <TextView
+                    android:id="@+id/etherSendAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:lines="1"
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp"
+                    tools:text="674.15 ETH" />
 
-        <ListView
-            android:id="@+id/guardiansListView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:layout_height="80dp" />
+                <TextView
+                    android:id="@+id/dollarEquivalent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:lines="1"
+                    android:textSize="18sp"
+                    tools:text="100,000.00 USD" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/validatorsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="The transaction will be submitted after guardians approval"
+                android:textSize="16sp" />
+
+            <ListView
+                android:id="@+id/guardiansListView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:layout_height="80dp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/submitButton"
-            android:layout_width="wrap_content"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
-            android:text="SUBMIT" />
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/button_background_selector"
+            android:text="Submit"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
 
     </LinearLayout>
 
     <FrameLayout
         android:id="@+id/progressBar"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white">
+        android:background="@android:color/white"
+        android:visibility="gone">
 
         <ProgressBar
             android:layout_width="wrap_content"
