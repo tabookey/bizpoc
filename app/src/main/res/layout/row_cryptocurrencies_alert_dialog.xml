@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:orientation="horizontal"
+    android:minHeight="70dp"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp">
+
+    <ImageView
+        android:id="@+id/coin_logo"
+        android:layout_width="30dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/ic_ethereum_logo"/>
+
+    <TextView
+        android:id="@+id/coin_name"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:lines="1"
+        android:maxLines="1"
+        android:minLines="1"
+        tools:text="Ethereum" />
+
+</LinearLayout>

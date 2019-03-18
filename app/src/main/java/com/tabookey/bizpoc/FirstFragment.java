@@ -11,7 +11,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +18,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
@@ -41,6 +41,8 @@ public class FirstFragment extends Fragment {
     BalancesAdapter adapter;
     private TextView balanceInDollarsText;
     private AppCompatActivity mActivity;
+    List<BitgoUser> guardians;
+    List<BalancesAdapter.Balance> balances;
 
     @Nullable
     @Override
@@ -63,6 +65,8 @@ public class FirstFragment extends Fragment {
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
             sf.exchangeRate = exchangeRate;
+            sf.guardians = guardians;
+            sf.balances = balances;
             activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, sf).addToBackStack(null).commit();
         });
 
@@ -133,13 +137,16 @@ public class FirstFragment extends Fragment {
         IBitgoWallet ethWallet = allw.get(0);
         exchangeRate = Global.ent.getMarketData("teth");
         List<String> coins = ethWallet.getCoins();
-        List<BalancesAdapter.Balance> balances = new ArrayList<>();
+        balances = new ArrayList<>();
         double assetsWorth = 0;
         for (String coin : coins) {
             String coinBalance = ethWallet.getBalance(coin);
             double exRate = Global.ent.getMarketData(coin).average24h;
 
             TokenInfo token = Global.ent.getTokens().get(coin);
+            if (token == null) {
+                throw new RuntimeException("Unknown token balance!");
+            }
             BalancesAdapter.Balance balance = new BalancesAdapter.Balance(coin, coinBalance, exRate, token);
             balances.add(balance);
             assetsWorth += balance.exchangeRate;
@@ -152,6 +159,7 @@ public class FirstFragment extends Fragment {
         if (view == null) {
             return;
         }
+        guardians = ethWallet.getGuardians();
         double finalAssetsWorth = assetsWorth;
         activity.runOnUiThread(() -> {
             TextView address = view.findViewById(R.id.addressText);
@@ -169,6 +177,7 @@ public class FirstFragment extends Fragment {
                 }
                 ClipData clip = ClipData.newPlainText("label", ethWallet.getAddress());
                 clipboard.setPrimaryClip(clip);
+                Toast.makeText(mActivity, "Wallet address copied to clipboard", Toast.LENGTH_LONG).show();
             });
 
         });

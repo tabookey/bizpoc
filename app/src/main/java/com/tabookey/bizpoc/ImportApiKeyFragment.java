@@ -113,7 +113,7 @@ public class ImportApiKeyFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            et.setText(data.getStringExtra("apiKey"));
+            et.setText(data.getStringExtra(ScanActivity.SCANNED_STRING_EXTRA));
         }
     }
 }

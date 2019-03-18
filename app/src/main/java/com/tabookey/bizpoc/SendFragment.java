@@ -1,6 +1,8 @@
 package com.tabookey.bizpoc;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Paint;
@@ -10,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -22,21 +25,33 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.SendRequest;
+import com.tabookey.bizpoc.api.TokenInfo;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.stream.Collectors;
+
+import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
 
 public class SendFragment extends Fragment {
 
+    public List<BalancesAdapter.Balance> balances;
     EditText etherSendAmountEditText;
     ExchangeRate exchangeRate;
     EditText destinationEditText;
+    List<BitgoUser> guardians;
     private AppCompatActivity mActivity;
+
+    TextView amountRequiredNote;
+    TextView destinationRequiredNote;
 
 
     @Nullable
@@ -50,7 +65,37 @@ public class SendFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Button continueButton = view.findViewById(R.id.continueButton);
         destinationEditText = view.findViewById(R.id.destinationEditText);
+
+        amountRequiredNote = view.findViewById(R.id.amountRequiredNote);
+        destinationRequiredNote = view.findViewById(R.id.destinationRequiredNote);
+
+        Button selectCoinButton = view.findViewById(R.id.selectCoinButton);
+        selectCoinButton.setOnClickListener(v -> {
+            List<TokenInfo> collect = balances.stream().map(b -> b.tokenInfo).collect(Collectors.toList());
+            CryptoCurrencySpinnerAdapter cryptoCurrencySpinnerAdapter = new CryptoCurrencySpinnerAdapter(mActivity, collect);
+            new AlertDialog.Builder(mActivity)
+                    .setTitle("Select token")
+                    .setAdapter(cryptoCurrencySpinnerAdapter, (a, which) -> {
+                    })
+                    .create().show();
+        });
         Button scanDestinationButton = view.findViewById(R.id.scanDestinationButton);
+        Button pasteDestinationButton = view.findViewById(R.id.pasteDestinationButton);
+        pasteDestinationButton.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null
+                    && clipboard.hasPrimaryClip()
+                    && clipboard.getPrimaryClip() != null
+                    && clipboard.getPrimaryClipDescription() != null
+                    && clipboard.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_PLAIN)) {
+                ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+                String pasteData = item.getText().toString();
+                destinationEditText.setText(pasteData);
+                Toast.makeText(mActivity, "Destination address pasted", Toast.LENGTH_LONG).show();
+            }
+        });
+        scanDestinationButton.setPaintFlags(scanDestinationButton.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        pasteDestinationButton.setPaintFlags(pasteDestinationButton.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(getActivity(), ScanActivity.class), 1));
         ListView guardiansListView = view.findViewById(R.id.guardiansListView);
         FragmentActivity activity = getActivity();
@@ -60,8 +105,10 @@ public class SendFragment extends Fragment {
         etherSendAmountEditText = view.findViewById(R.id.etherSendAmountEditText);
         etherSendAmountEditText.setPaintFlags(etherSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
         continueButton.setOnClickListener(v -> {
+            if (!isEnteredValueValid()) {
+                return;
+            }
             ConfirmFragment cf = new ConfirmFragment();
-
             String destination = destinationEditText.getText().toString();
             String amountInput = etherSendAmountEditText.getText().toString();
             BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal("1000000000000000000")).toBigInteger();
@@ -72,7 +119,10 @@ public class SendFragment extends Fragment {
         });
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1);
-        adapter.addAll("liraz", "eli");
+
+        for (BitgoUser guardian : guardians) {
+            adapter.add(guardian.name);
+        }
         guardiansListView.setAdapter(adapter);
         etherSendAmountEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -96,14 +146,27 @@ public class SendFragment extends Fragment {
         });
     }
 
+    private boolean isEnteredValueValid() {
+        boolean amount = etherSendAmountEditText.getText().toString().length() != 0;
+        boolean destination = destinationEditText.getText().toString().length() != 0;
+        amountRequiredNote.setVisibility(amount ? View.GONE : View.VISIBLE);
+        destinationRequiredNote.setVisibility(destination ? View.GONE : View.VISIBLE);
+        return amount
+                && destination;
+    }
+
     private void setDollarEquivalent() {
         View view = getView();
         FragmentActivity activity = getActivity();
         if (activity == null || view == null || exchangeRate == null) {
             return;
         }
-        double etherDouble = Double.parseDouble(etherSendAmountEditText.getText().toString());
         TextView dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
+        String etherAmount = etherSendAmountEditText.getText().toString();
+        if (etherAmount.length() == 0) {
+            dollarEquivalent.setText("0.00 USD");
+        }
+        double etherDouble = Double.parseDouble(etherAmount);
         dollarEquivalent.setText(String.format(Locale.US, "$%.2f", etherDouble * exchangeRate.average24h));
     }
 
@@ -139,7 +202,9 @@ public class SendFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            destinationEditText.setText(data.getStringExtra("apiKey"));
+            String destAddress = data.getStringExtra(ScanActivity.SCANNED_STRING_EXTRA);
+            destAddress = destAddress.replaceAll("ethereum:", ""); // MetaMask format
+            destinationEditText.setText(destAddress);
         }
     }
 

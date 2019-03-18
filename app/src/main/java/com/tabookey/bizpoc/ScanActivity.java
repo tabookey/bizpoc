@@ -1,5 +1,6 @@
 package com.tabookey.bizpoc;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import com.budiyev.android.codescanner.CodeScannerView;
 
 public class ScanActivity extends AppCompatActivity {
     private CodeScanner mCodeScanner;
+    static String SCANNED_STRING_EXTRA = "SCANNED_STRING_EXTRA";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,8 +21,8 @@ public class ScanActivity extends AppCompatActivity {
         mCodeScanner.setDecodeCallback(result ->
         {
             Intent data = new Intent("res");
-            data.putExtra("apiKey", result.getText());
-            setResult(0, data);
+            data.putExtra(SCANNED_STRING_EXTRA, result.getText());
+            setResult(Activity.RESULT_OK, data);
             finish();
         });
         scannerView.setOnClickListener(view -> mCodeScanner.startPreview());

@@ -70,7 +70,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     public Map<String, TokenInfo> getTokens() {
 
         if (allTokensInfo == null) {
-            allTokensInfo = new HashMap<String, TokenInfo>();
+            allTokensInfo = new HashMap<>();
             BitgoConstants bitgoConstants = http.get("/api/v1/client/constants", BitgoConstants.class);
             BitgoConstants.CoinInfo allcoins = testNetwork ? bitgoConstants.constants.teth : bitgoConstants.constants.eth;
 
@@ -102,8 +102,8 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
 
         }
-        TokenInfo eth = new TokenInfo("", "eth", "eth", "", 18, "Ethereum", "", "Ethereum", "Ether");
-        TokenInfo teth = new TokenInfo("", "teth", "eth", "", 18, "tEthereum", "", "tEthereum", "tEther");
+        TokenInfo eth = new TokenInfo("", "eth", "eth", "", 18, "Ethereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "Ethereum", "Ether");
+        TokenInfo teth = new TokenInfo("", "teth", "eth", "", 18, "tEthereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "tEthereum", "tEther");
         allTokensInfo.put("teth", teth);
         return Collections.unmodifiableMap(allTokensInfo);
     }

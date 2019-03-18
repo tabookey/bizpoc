@@ -10,6 +10,7 @@
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:paddingLeft="16dp"
         android:text="Send"
         android:textSize="27sp" />
@@ -25,29 +26,39 @@
             android:id="@+id/recipientTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="Recipient Address" />
+
+        <EditText
+            android:id="@+id/destinationEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:autoSizeMaxTextSize="12dp"
+            android:autoSizeMinTextSize="8dp"
+            android:autoSizeTextType="uniform"
+            android:hint="Enter address"
+            android:inputType="text"
+            android:lines="1"
+            android:maxLines="1"
+            android:textSize="14sp"
+            tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
+
+        <TextView
+            android:id="@+id/destinationRequiredNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="* Required"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="12sp"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/long_field_background"
+            android:gravity="center"
             android:orientation="horizontal">
 
-
-            <EditText
-                android:id="@+id/destinationEditText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:autoSizeMaxTextSize="12dp"
-                android:autoSizeMinTextSize="8dp"
-                android:autoSizeTextType="uniform"
-                android:background="@null"
-                android:hint="Enter address"
-                android:inputType="text"
-                android:lines="1"
-                android:maxLines="1"
-                tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
             <Button
                 android:id="@+id/scanDestinationButton"
@@ -55,6 +66,17 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
                 android:text="Scan" />
+
+            <View
+                android:layout_width="50dp"
+                android:layout_height="0dp" />
+
+            <Button
+                android:id="@+id/pasteDestinationButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:text="Paste" />
         </LinearLayout>
 
         <TextView
@@ -75,13 +97,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@null"
+                android:hint="0.00"
                 android:inputType="numberDecimal"
                 android:padding="6dp"
-                android:text="0"
                 android:textAlignment="textEnd"
                 tools:text="123456.78" />
 
             <Button
+                android:id="@+id/selectCoinButton"
                 android:layout_width="20dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.2"
@@ -108,6 +131,15 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/amountRequiredNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="* Required"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/balanceTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,7 +151,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="The transaction will be submitted after guardians approval" />
+        android:text="The transaction will be submitted after guardians approval"
+        android:textSize="16sp" />
 
     <ListView
         android:id="@+id/guardiansListView"
@@ -127,11 +160,17 @@
         android:layout_height="wrap_content"
         tools:layout_height="80dp" />
 
+    <View
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1" />
+
     <Button
         android:id="@+id/continueButton"
         android:layout_width="140dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/button_background_selector"
         android:text="Continue"
         android:textAlignment="center"
