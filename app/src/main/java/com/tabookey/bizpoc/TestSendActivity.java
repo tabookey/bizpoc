@@ -54,6 +54,7 @@ public class TestSendActivity extends AppCompatActivity {
         log("starting:");
         Global.setAccessToken("v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3");
         IBitgoEnterprise ent = Global.ent;
+        Log.d(TAG, "rates: "+ent.getAllExchangeRates());
         log( "me: "+ent.getMe().name);
 
         List<IBitgoWallet> allw = ent.getMergedWallets();

@@ -14,6 +14,8 @@ public interface IBitgoEnterprise {
     //return the user object representing the current user
     BitgoUser getMe();
 
+    public Map<String,Double> getAllExchangeRates();
+
     ExchangeRate getMarketData(String coin);
 
     List<IBitgoWallet> getWallets(String coin);

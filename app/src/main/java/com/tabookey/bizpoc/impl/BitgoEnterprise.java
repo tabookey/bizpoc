@@ -2,7 +2,9 @@ package com.tabookey.bizpoc.impl;
 
 import android.util.Log;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tabookey.bizpoc.R;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.EnterpriseInfo;
@@ -13,11 +15,13 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.TokenInfo;
 
 import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -169,6 +173,29 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         return userMe;
     }
 
+    /**
+     * return market value of all known currencies and tokens.
+     * @return map of token=>usd-value
+     */
+    public Map<String,Double> getAllExchangeRates() {
+        HashMap<String,Double> ret = new HashMap<>();
+        String currency="USD";
+        String fieldName = "24h_avg"; //"last", "prevDayLow", "prevDayHigh" and more..
+        JsonNode data = http.get("/api/v2/market/latest?allTokens=true&coin="+coinName(), JsonNode.class).get("marketData").get(0);
+        ret.put(data.get("coin").asText(), data.get("currencies").get(currency).get(fieldName).asDouble());
+
+        getTokens().keySet().forEach(token->{
+            try {
+                double val = data.get("tokens").get(token.toUpperCase()).get("currencies").get(currency).get(fieldName).asDouble();
+                ret.put(token, val);
+            } catch (Exception ignore) {
+                //ignore tokens without value
+            }
+        });
+
+        return ret;
+    }
+
     @Override
     public ExchangeRate getMarketData(String coin) {
         JsonNode node = http.get("/api/v2/" + coin + "/market/latest", JsonNode.class).get("latest").get("currencies").get("USD").get("24h_avg");
@@ -177,7 +204,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     }
 
     public List<IBitgoWallet> getMergedWallets() {
-        String coin = testNetwork ? "teth" : "eth";
+        String coin = coinName();
         //must specify at least one coin name, to get back all tokens.
         MergedWalletsData data = http.get("/api/v2/wallets/merged?coin="+coin+"&enterprise=" + getInfo().id, MergedWalletsData.class);
 
@@ -186,6 +213,11 @@ public class BitgoEnterprise implements IBitgoEnterprise {
             ret.add(new MergedWallet(this,walletData));
         }
         return ret;
+    }
+
+    @NotNull
+    private String coinName() {
+        return testNetwork ? "teth" : "eth";
     }
 
     @Override

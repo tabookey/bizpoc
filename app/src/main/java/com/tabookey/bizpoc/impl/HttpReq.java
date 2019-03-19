@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.io.IOException;
 
 import okhttp3.CertificatePinner;
@@ -17,6 +19,7 @@ public class HttpReq {
     boolean debug=true;
 
     static String testUrl = "https://test.bitgo.com";
+//    static String testUrl = "https://relay1.duckdns.org";
     static String prodUrl = "https://www.bitgo.com";
 
     private final String accessKey;
@@ -24,7 +27,10 @@ public class HttpReq {
     public HttpReq( String accessKey, boolean test) {
         this.accessKey = accessKey;
         this.host = test ? testUrl : prodUrl;
-//        this.host = "http://localhost:12345";
+    }
+
+    public String getHost() {
+        return host;
     }
 
     //from: https://square.github.io/okhttp/3.x/okhttp/okhttp3/CertificatePinner.html
@@ -71,8 +77,10 @@ public class HttpReq {
             String str = res.body().string();
             if ( debug )
                 System.err.println( "< "+str);
-            if ( str.contains("\"error\"") )
-                throw new RuntimeException(str);
+            if ( str.contains("\"error\"") ) {
+                JsonNode errdecs = fromJson(str, JsonNode.class);
+                throw new BitgoError(errdecs.get("name").asText(), errdecs.get("error").asText());
+            }
             return str;
         } catch (IOException e) {
             throw new RuntimeException(e);
