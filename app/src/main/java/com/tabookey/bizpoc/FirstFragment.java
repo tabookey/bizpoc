@@ -71,10 +71,11 @@ public class FirstFragment extends Fragment {
         });
 
         Button transactionsButton = view.findViewById(R.id.transactionsButton);
-        TransactionsFragment tf = new TransactionsFragment();
-        transactionsButton.setOnClickListener(v ->
-                activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit()
-        );
+        transactionsButton.setOnClickListener(v -> {
+            TransactionsFragment tf = new TransactionsFragment();
+            tf.mExchangeRate = exchangeRate;
+            activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
+        });
 
         Button transactionDetailsButtonDev = view.findViewById(R.id.transactionDetailsButtonDev);
         transactionDetailsButtonDev.setOnClickListener(v -> {
@@ -149,7 +150,7 @@ public class FirstFragment extends Fragment {
             }
             BalancesAdapter.Balance balance = new BalancesAdapter.Balance(coin, coinBalance, exRate, token);
             balances.add(balance);
-            assetsWorth += balance.exchangeRate;
+            assetsWorth += balance.getDollarValue();
         }
         Activity activity = getActivity();
         if (activity == null) {

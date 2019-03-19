@@ -39,8 +39,8 @@ class Wallet implements IBitgoWallet {
         this.balanceString = walletData.balanceString;
         this.address = walletData.coinSpecific.baseAddress;
         this.guardians = new ArrayList<>();
-        for ( WalletUser user : walletData.users ) {
-            if ( user.user.equals(ent.getMe().id))
+        for (WalletUser user : walletData.users) {
+            if (user.user.equals(ent.getMe().id))
                 continue;
             guardians.add(new BitgoUser(ent.getUserById(user.user), Arrays.asList(user.permissions)));
         }
@@ -77,8 +77,8 @@ class Wallet implements IBitgoWallet {
 
     @Override
     public String getBalance(String coin) {
-        if ( !coin.equals(this.coin))
-            throw new RuntimeException("invalid coin "+coin+". Wallet only has "+this.coin);
+        if (!coin.equals(this.coin))
+            throw new RuntimeException("invalid coin " + coin + ". Wallet only has " + this.coin);
         return balanceString;
     }
 
@@ -173,6 +173,11 @@ class Wallet implements IBitgoWallet {
         PendingApprovalResp resp = ent.http.get("/api/v2/" + coin + "/pendingapprovals", PendingApprovalResp.class);
         ArrayList<PendingApproval> ret = new ArrayList<>();
         for (PendingApprovalResp.PendingApproval r : resp.pendingApprovals) {
+            if (r.info == null
+                    || r.info.transactionRequest == null
+                    || r.info.transactionRequest.recipients == null) {
+                continue;
+            }
             PendingApproval p = new PendingApproval();
             p.id = r.id;
             p.createDate = r.createDate;
@@ -229,6 +234,7 @@ class Wallet implements IBitgoWallet {
             public String baseAddress;
         }
     }
+
     static class WalletUser {
         public String user;
         public BitgoUser.Perm[] permissions;

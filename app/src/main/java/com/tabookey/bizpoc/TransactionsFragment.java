@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
@@ -18,9 +19,9 @@ import com.tabookey.bizpoc.api.Transfer;
 import java.util.List;
 
 public class TransactionsFragment extends Fragment {
-    private ListView lvp;
     private ListView lvt;
     private View progressBar;
+    ExchangeRate mExchangeRate;
 
     @Nullable
     @Override
@@ -34,8 +35,6 @@ public class TransactionsFragment extends Fragment {
 
         lvt = view.findViewById(R.id.list_view_transactions);
 
-        lvp = view.findViewById(R.id.list_view_pending);
-
         progressBar = view.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
@@ -44,7 +43,7 @@ public class TransactionsFragment extends Fragment {
 
     public void fillWindow() {
         IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
-        List<PendingApproval> pending = ethWallet.getPendingApprovals();
+        List<PendingApproval> pendingApprovals = ethWallet.getPendingApprovals();
         List<Transfer> transfers = ethWallet.getTransfers();
         Activity activity = getActivity();
         if (activity == null) {
@@ -52,14 +51,16 @@ public class TransactionsFragment extends Fragment {
         }
         activity.runOnUiThread(() -> {
             progressBar.setVisibility(View.GONE);
-            for (Transfer t : transfers) {
-                t.token = Global.ent.getTokens().get(t.coin);
-            }
-            TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), R.layout.transaction_line, transfers);
+            TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), mExchangeRate);
+            historyAdapter.addItem("Pending");
+            historyAdapter.addItems(pendingApprovals);
+            historyAdapter.addItem("History");
+            historyAdapter.addItems(transfers);
+
             lvt.setAdapter(historyAdapter);
 
-            TransactionPendingAdapter pendingAdapter = new TransactionPendingAdapter(getActivity(), R.layout.pending_transaction_line, pending);
-            lvp.setAdapter(pendingAdapter);
+//            TransactionPendingAdapter pendingAdapter = new TransactionPendingAdapter(getActivity(), R.layout.pending_transaction_line, pending);
+//            lvp.setAdapter(pendingAdapter);
         });
     }
 }

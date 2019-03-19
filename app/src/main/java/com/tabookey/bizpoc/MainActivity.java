@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             if (encryptedApiKey == null) {
                 Fragment firstFragment = new ImportApiKeyFragment();
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.frame_layout, firstFragment).commit();
+                        .replace(R.id.frame_layout, firstFragment).commit();
                 return;
             }
 
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 Global.setAccessToken(apiKeyPlaintext);
                 Fragment firstFragment = new FirstFragment();
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.frame_layout, firstFragment).commit();
+                        .replace(R.id.frame_layout, firstFragment).commit();
             };
             FragmentManager fragmentManager = getSupportFragmentManager();
             if (fragmentManager == null) {

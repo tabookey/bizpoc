@@ -9,4 +9,5 @@
     <color name="success_color">#009688</color>
     <color name="buttons_color">#12929A</color>
     <color name="nonwhite_background">#F9F9F9</color>
+    <color name="bluish_background">#D3E2E3</color>
 </resources>

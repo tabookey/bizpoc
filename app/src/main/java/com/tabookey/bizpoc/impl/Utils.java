@@ -10,8 +10,28 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static com.bumptech.glide.util.Preconditions.checkArgument;
+
 
 public class Utils {
+
+    public static String getDayOfMonthSuffix(Date date) {
+        SimpleDateFormat formatDayOfMonth  = new SimpleDateFormat("d");
+        int n = Integer.parseInt(formatDayOfMonth.format(date));
+        checkArgument(n >= 1 && n <= 31, "illegal day of month: " + n);
+        if (n >= 11 && n <= 13) {
+            return "th";
+        }
+        switch (n % 10) {
+            case 1:  return "st";
+            case 2:  return "nd";
+            case 3:  return "rd";
+            default: return "th";
+        }
+    }
     static ObjectMapper sJson = new ObjectMapper()
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
             .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES,true)

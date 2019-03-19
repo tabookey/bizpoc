@@ -70,7 +70,7 @@ public class ConfirmFragment extends Fragment {
             throw new RuntimeException("No TokenInfo selected");
         }
         double etherDouble = Utils.integerStringToCoinDouble(sendRequest.amount, token.decimalPlaces);
-        dollarEquivalent.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
+        dollarEquivalent.setText(String.format(Locale.US, "%.2f USD", etherDouble * exchangeRate.average24h));
         etherSendAmount.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
         recipientAddress.setText(sendRequest.recipientAddress);
     }

@@ -1,49 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="wrap_content">
 
-
-    <TextView
-        android:id="@+id/transactionComment"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="IAM A TRANSACTION" />
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/transactionDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="IAM A TRANSACTION" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="-5dp"
+            android:gravity="center">
 
-    <TextView
-        android:id="@+id/transactionId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="IAM A TRANSACTION" />
+            <ImageView
+                android:id="@+id/transactionStatusIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_arrow_upward_black_24dp" />
 
-    <TextView
-        android:id="@+id/transactionValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="IAM A TRANSACTION" />
+            <TextView
+                android:id="@+id/transactionStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Sent" />
 
-    <TextView
-        android:id="@+id/transactionCoin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="IAM A TRANSACTION" />
 
-    <TextView
-        android:id="@+id/transactionDollarValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="IAM A TRANSACTION" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
-    <TextView
-        android:id="@+id/transactionRemoteAddress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="IAM A TRANSACTION" />
+            <TextView
+                android:id="@+id/transactionDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="13/01/18 05:24 PM" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/transactionValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                tools:text="ETH 674.15" />
+
+            <View
+                android:layout_width="60dp"
+                android:layout_height="0dp" />
+
+            <TextView
+                android:id="@+id/transactionDollarValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                tools:text="$100,000.00" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/transactionRemoteAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
+    </LinearLayout>
 </LinearLayout>
