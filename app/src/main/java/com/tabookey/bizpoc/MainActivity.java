@@ -17,6 +17,10 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener {
 
+    public static String DETAILS_FRAGMENT = "details_frag";
+    public static String SEND_FRAGMENT = "send_frag";
+    private FirstFragment mFirstFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,9 +41,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             String encryptedApiKey = SecretStorge.getPrefs(this).getString(SecretStorge.PREFS_API_KEY_ENCODED, null);
 
             if (encryptedApiKey == null) {
-                Fragment firstFragment = new ImportApiKeyFragment();
+                Fragment apiKeyFragment = new ImportApiKeyFragment();
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.frame_layout, firstFragment).commit();
+                        .replace(R.id.frame_layout, apiKeyFragment).commit();
                 return;
             }
 
@@ -53,9 +57,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             fragment.callback = apiKeyBytes -> {
                 String apiKeyPlaintext = new String(apiKeyBytes);
                 Global.setAccessToken(apiKeyPlaintext);
-                Fragment firstFragment = new FirstFragment();
+                mFirstFragment = new FirstFragment();
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.frame_layout, firstFragment).commit();
+                        .replace(R.id.frame_layout, mFirstFragment).commit();
             };
             FragmentManager fragmentManager = getSupportFragmentManager();
             if (fragmentManager == null) {
@@ -122,10 +126,32 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
     @Override
+    public void onBackPressed() {
+        if (check_skip_send_flow())
+        {
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     public boolean onSupportNavigateUp() {
-        //This method is called when the up button is pressed. Just the pop back stack.
-        getSupportFragmentManager().popBackStack();
+        if (!check_skip_send_flow())
+        {
+            getSupportFragmentManager().popBackStack();
+        }
         return true;
+    }
+
+    // After sending a transaction, we want to get to first screen when clicking 'back'
+    private boolean check_skip_send_flow() {
+        if (getSupportFragmentManager().findFragmentByTag(DETAILS_FRAGMENT) != null &&
+                getSupportFragmentManager().findFragmentByTag(SEND_FRAGMENT) != null){
+
+            getSupportFragmentManager().popBackStack("to_send", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            return true;
+        }
+        return false;
     }
 
     @Override

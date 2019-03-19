@@ -67,37 +67,18 @@ public class FirstFragment extends Fragment {
             sf.exchangeRate = exchangeRate;
             sf.guardians = guardians;
             sf.balances = balances;
-            activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, sf).addToBackStack(null).commit();
+            activity.getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, sf, MainActivity.SEND_FRAGMENT)
+                    .addToBackStack("to_send").commit();
         });
 
         Button transactionsButton = view.findViewById(R.id.transactionsButton);
         transactionsButton.setOnClickListener(v -> {
             TransactionsFragment tf = new TransactionsFragment();
             tf.mExchangeRate = exchangeRate;
+            tf.mGuardians = guardians;
             activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
-        });
-
-        Button transactionDetailsButtonDev = view.findViewById(R.id.transactionDetailsButtonDev);
-        transactionDetailsButtonDev.setOnClickListener(v -> {
-            TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.transfer = new Transfer("123412", "12312312312312312", "teth", "1234", new Date(), "0x123123", "TXID321543");
-            tdf.setExchangeRate(new ExchangeRate(100.01));
-
-            activity.getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame_layout, tdf).commit();
-        });
-        Button pendingDetailsButtonDev = view.findViewById(R.id.pendingDetailsButtonDev);
-        pendingDetailsButtonDev.setOnClickListener(v -> {
-            TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.pendingApproval = new PendingApproval("123412", new Date(), "0x123123",
-                    "1234", "teth", "200000",
-                    Arrays.asList(new BitgoUser("id", "e@m", "Na me"),
-                            new BitgoUser("id", "e@m", "Na me")),
-                    new BitgoUser("id", "e@m", "Na me"));
-            tdf.setExchangeRate(new ExchangeRate(100.01));
-
-            activity.getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame_layout, tdf).commit();
         });
 
         progressBar.setVisibility(View.VISIBLE);
@@ -109,28 +90,17 @@ public class FirstFragment extends Fragment {
         }.start();
     }
 
-    private void setToolbar() {
-        ActionBar actionBar = mActivity.getSupportActionBar();
-        if (actionBar == null) {
-            return;
-        }
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
         if (context instanceof Activity) {
             mActivity = (AppCompatActivity) context;
-        } else {
-            return;
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        setToolbar();
     }
 
     void fillWindow() {

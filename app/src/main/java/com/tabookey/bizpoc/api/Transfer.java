@@ -14,7 +14,7 @@ public class Transfer {
     @JsonIgnore
     public TokenInfo token;
 
-    public Transfer(String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment) {
+    public Transfer(String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token) {
         this.txid = txid;
         this.valueString = valueString;
         this.coin = coin;
@@ -22,6 +22,7 @@ public class Transfer {
         this.date = date;
         this.remoteAddress = remoteAddress;
         this.comment = comment;
+        this.token = token;
     }
     //TODO: add other transfer items (e.g. approve time, approvers)?
 }

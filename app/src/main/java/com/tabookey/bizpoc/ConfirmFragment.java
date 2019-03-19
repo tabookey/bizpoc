@@ -25,8 +25,10 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
+import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,6 +51,7 @@ public class ConfirmFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Button submit = view.findViewById(R.id.submitButton);
+        Button fakeSubmitButton = view.findViewById(R.id.fakeSubmitButton);
         recipientAddress = view.findViewById(R.id.recipientAddressTextView);
         dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         etherSendAmount = view.findViewById(R.id.etherSendAmount);
@@ -63,6 +66,18 @@ public class ConfirmFragment extends Fragment {
             adapter.add(guardian.name);
         }
         guardiansListView.setAdapter(adapter);
+        fakeSubmitButton.setOnClickListener(v ->
+                {
+                    TransactionDetailsFragment tdf = new TransactionDetailsFragment();
+                    tdf.exchangeRate = exchangeRate;
+                    tdf.guardians = guardians;
+                    tdf.transfer = new Transfer("", "0", "", "", new Date(), "", "", Global.ent.getTokens().get("teth"));
+                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.frame_layout, tdf, MainActivity.DETAILS_FRAGMENT)
+                            .addToBackStack(null)
+                            .commit();
+                });
         submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
 
         TokenInfo token = Global.ent.getTokens().get(sendRequest.coin);
@@ -146,7 +161,9 @@ public class ConfirmFragment extends Fragment {
                         return;
                     }
                     fragmentManager.beginTransaction()
-                            .replace(R.id.frame_layout, tdf).commit();
+                            .replace(R.id.frame_layout, tdf, MainActivity.DETAILS_FRAGMENT)
+                            .addToBackStack(null)
+                            .commit();
 
                 } catch (Throwable e) {
                     Log.e("TAG", "ex: ", e);

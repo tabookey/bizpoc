@@ -121,6 +121,19 @@
             android:textAllCaps="false"
             android:textColor="@android:color/white" />
 
+        <Button
+            android:id="@+id/fakeSubmitButton"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/button_background_selector"
+            android:text="Fake Submit"
+            android:visibility="gone"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
+
     </LinearLayout>
 
     <FrameLayout

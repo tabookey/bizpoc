@@ -95,24 +95,6 @@
             android:textAllCaps="false"
             android:textColor="@android:color/white" />
 
-        <Button
-            android:id="@+id/transactionDetailsButtonDev"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorAccent"
-            android:text="Transaction details stub"
-            android:textAlignment="center"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/pendingDetailsButtonDev"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorAccent"
-            android:text="Transaction details stub"
-            android:textAlignment="center"
-            android:visibility="gone" />
-
 
     </LinearLayout>
 

@@ -112,8 +112,4 @@ public class TransactionDetailsFragment extends Fragment {
         recipientAddressTextView.setText(transfer.remoteAddress);
         transactionCommentTextView.setText(transfer.comment);
     }
-
-    public void setExchangeRate(ExchangeRate exchangeRate) {
-        this.exchangeRate = exchangeRate;
-    }
 }
