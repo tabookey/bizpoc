@@ -122,8 +122,10 @@ public class WebViewExecutor {
         }
 
         private synchronized WebResourceResponse callWithOkHttp(OkHttpClient client, WebResourceRequest request) throws IOException {
-            Request.Builder reqbuilder = new Request.Builder()
-                    .url(request.getUrl().toString());
+            String url = request.getUrl().toString();
+            //use the host defined in http - it can be a proxy...
+            url = url.replaceAll("https://\\w+.bitgo.com", http.getHost());
+            Request.Builder reqbuilder = new Request.Builder().url(url);
 
             Log.d(TAG, ">> " + request.getMethod() + " " + request.getUrl());
             request.getRequestHeaders().forEach((key, value) -> {
