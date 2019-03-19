@@ -80,10 +80,14 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
             //bitgo_tokens generated with (NOTE: devTokens is for debug, ercTokens for release
             /*
-            export TOK=devTokens; (echo ethKeycardImage=null; curl --silent  'https://test.bitgo.com/js/bitgo-client.07ffdecf50d07643.js' | sed -n "/$TOK.=/,/^$/p"; echo "console.log(JSON.stringify($TOK))"  )|node > bitgo_tokens.txt
+            export TOK=devTokens; (echo ethKeycardImage=null; curl --silent  'https://test.bitgo.com/js/bitgo-client.07ffdecf50d07643.js' | sed -n "/$TOK.=/,/^$/p"; echo "console.log(JSON.stringify($TOK))"  )|node > bitgo_tokens_testnet.txt
+            export TOK=ercTokens; (echo prodErcTokenBaseConfig=null; curl --silent  'https://test.bitgo.com/js/bitgo-client.07ffdecf50d07643.js' | sed -n "/$TOK.=/,/^$/p"; echo "console.log(JSON.stringify($TOK))"  )|node > bitgo_tokens.txt
+
+            NOTE: real production URL: https://www.bitgo.com/js/bitgo-client.5a72c7a810b67c8d.js (but generates the same tokens lsit)
             */
 
-            InputStream is = Global.applicationContext.getResources().openRawResource(R.raw.bitgo_tokens);
+            InputStream is = Global.applicationContext.getResources().openRawResource(
+                    testNetwork ? R.raw.bitgo_tokens_testnet : R.raw.bitgo_tokens);
             try {
                 String json = IOUtils.toString(is, "UTF-8");
 
@@ -97,7 +101,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
                     }
                 }
             } catch (Exception e) {
-                Log.w("TAG", "getTokens: failed to read logo, extra info" );
+                Log.w("TAG", "getTokens: failed  o read logo, extra info" );
             }
 
 
@@ -125,6 +129,8 @@ public class BitgoEnterprise implements IBitgoEnterprise {
             public String id, username;
             public UserName name;
             public Enterprise[] enterprises;
+            public OtpDevice[] otpDevices;
+            public String timezone;
         }
 
         static class Enterprise {
@@ -134,6 +140,11 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
         static class UserName {
             public String first, last, full;
+        }
+        static class OtpDevice {
+            public BitgoUser.OtpType type;
+            public String label;
+            public boolean verified;
         }
     }
 
@@ -149,6 +160,11 @@ public class BitgoEnterprise implements IBitgoEnterprise {
             }
 
             userMe = new BitgoUser(u.id, u.username, u.name.full, isAdmin, Collections.emptyList());
+            ArrayList<BitgoUser.OtpType> otpTypes = new ArrayList<>();
+            for (UserMeResp.OtpDevice otp : u.otpDevices ) {
+                otpTypes.add(otp.type);
+            }
+            userMe.otpTypes = otpTypes;
         }
         return userMe;
     }

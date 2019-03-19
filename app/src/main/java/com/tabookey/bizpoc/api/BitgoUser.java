@@ -6,14 +6,20 @@ import java.util.List;
 public class BitgoUser {
 
     public enum Perm {view, spend, admin }
+    public enum OtpType { yubikey, totp }
 
     final public String id, email, name;
     final public List<Perm> permissions;
+
+    public List<OtpType> otpTypes;
     final public boolean isEnterpriseAdmin;
+
 
     public boolean hasPerm(Perm perm) {
         return permissions!=null && permissions.contains(perm);
     }
+
+    public boolean hasOtp(OtpType type) { return otpTypes.contains(type); }
 
     public BitgoUser(String id, String email, String name) {
         this(id,email,name,false,Collections.emptyList());

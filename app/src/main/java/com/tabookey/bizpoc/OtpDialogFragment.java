@@ -18,6 +18,7 @@ package com.tabookey.bizpoc;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -26,6 +27,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.tabookey.bizpoc.api.BitgoUser;
+import com.tabookey.bizpoc.api.Global;
 
 /**
  * A dialog which uses fingerprint APIs to authenticate the user, and falls back to password
@@ -48,6 +53,18 @@ public class OtpDialogFragment extends DialogFragment {
         // Do not create a new Fragment when the Activity is re-created such as orientation changes.
         setRetainInstance(true);
         setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Material_Light_Dialog);
+        //debug mode: if user doesn't have yubikey, use totp instead..
+        if (BuildConfig.DEBUG && Global.isTest() &&
+                !Global.ent.getMe().hasOtp(BitgoUser.OtpType.yubikey) &&
+                Global.ent.getMe().hasOtp(BitgoUser.OtpType.totp)) {
+            new Thread(() -> {
+                SystemClock.sleep(2000);
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getActivity(), "Google Authenticator 000000", Toast.LENGTH_LONG).show();
+                    onOtpTagRecognised("000000");
+                });
+            }).start();
+        }
     }
 
     @Override
