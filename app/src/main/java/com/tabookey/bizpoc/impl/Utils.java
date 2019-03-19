@@ -1,5 +1,9 @@
 package com.tabookey.bizpoc.impl;
 
+import android.app.Activity;
+import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AlertDialog;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -59,6 +63,17 @@ public class Utils {
         BigDecimal bigIntBalance = new BigDecimal(weiString);
         BigDecimal divide = bigIntBalance.divide(new BigDecimal(Math.pow(10, decimals)), 10, RoundingMode.HALF_UP);
         return divide.doubleValue();
+    }
+    public static void showErrorDialog(Activity activity, String errorMessage) {
+        if (activity == null) {
+            return;
+        }
+        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+        alertDialog.setTitle("Transaction failed!");
+        alertDialog.setMessage(errorMessage);
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                (dialog, which) -> dialog.dismiss());
+        alertDialog.show();
     }
 
 

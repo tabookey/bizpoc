@@ -1,49 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Paste your API key here" />
-
-    <EditText
-        android:id="@+id/apiKeyEditText"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:lines="5"
-        android:text="{&quot;token&quot;:&quot;v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8&quot;, &quot;password&quot;:&quot;asd/asd-ASD&quot;}" />
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/scanApiKeyButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="SCAN" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-    <TextView
-        android:id="@+id/fingerprintEnabledTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fingerprint sensor is available" />
+        <Button
+            android:id="@+id/scanApiKeyButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorPrimary"
+            android:text="Scan QR Code"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="30sp" />
 
-    <Button
-        android:id="@+id/testApiKeyButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TEST" />
+        <TextView
+            android:id="@+id/fingerprintEnabledTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
+        <TextView
+            android:id="@+id/testNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/testNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="wallet name is: %%%" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-    <Button
-        android:id="@+id/saveApiKeyButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="SAVE" />
-</LinearLayout>
+        <Button
+            android:id="@+id/useTestCredentialsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@android:color/transparent"
+            android:gravity="bottom"
+            android:text="USE TEST API KEY" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </FrameLayout>
+</FrameLayout>

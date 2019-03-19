@@ -67,17 +67,17 @@ public class ConfirmFragment extends Fragment {
         }
         guardiansListView.setAdapter(adapter);
         fakeSubmitButton.setOnClickListener(v ->
-                {
-                    TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-                    tdf.exchangeRate = exchangeRate;
-                    tdf.guardians = guardians;
-                    tdf.transfer = new Transfer("", "0", "", "", new Date(), "", "", Global.ent.getTokens().get("teth"));
-                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.frame_layout, tdf, MainActivity.DETAILS_FRAGMENT)
-                            .addToBackStack(null)
-                            .commit();
-                });
+        {
+            TransactionDetailsFragment tdf = new TransactionDetailsFragment();
+            tdf.exchangeRate = exchangeRate;
+            tdf.guardians = guardians;
+            tdf.transfer = new Transfer("", "0", "", "", new Date(), "", "", Global.ent.getTokens().get("teth"));
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.frame_layout, tdf, MainActivity.DETAILS_FRAGMENT)
+                    .addToBackStack(null)
+                    .commit();
+        });
         submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
 
         TokenInfo token = Global.ent.getTokens().get(sendRequest.coin);
@@ -167,25 +167,13 @@ public class ConfirmFragment extends Fragment {
 
                 } catch (Throwable e) {
                     Log.e("TAG", "ex: ", e);
-                    showErrorDialog(e.getMessage());
+                    dollarEquivalent.post(() -> {
+                        progressBar.setVisibility(View.GONE);
+                        Utils.showErrorDialog(getActivity(), e.getMessage());
+                    });
                 }
             }
         }.start();
-    }
-
-    private void showErrorDialog(String errorMessage) {
-        dollarEquivalent.post(() -> {
-            FragmentActivity activity = getActivity();
-            if (activity == null) {
-                return;
-            }
-            AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-            alertDialog.setTitle("Transaction failed!");
-            alertDialog.setMessage(errorMessage);
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                    (dialog, which) -> dialog.dismiss());
-            alertDialog.show();
-        });
     }
 
 
