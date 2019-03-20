@@ -1,7 +1,6 @@
 package com.tabookey.bizpoc.impl;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
@@ -42,13 +41,37 @@ public class CoinSender extends WebViewExecutor {
 
     }
 
+    public boolean checkPassphrase(IBitgoWallet wallet, String passphrase, IBitgoWallet.StatusCB cb) {
+        SendRequest req = new SendRequest(wallet.getCoins().get(0), null,null,null,passphrase,null);
+
+        AppObject appObject = new AppObject(wallet, req, cb);
+        exec("www/verify.html", appObject);
+
+        //max time to wait for final result
+        synchronized (appObject) {
+            try {
+                appObject.wait(40 * 1000);
+            } catch (InterruptedException e) {
+            }
+        }
+
+        if (appObject.error!=null )
+            return false;
+
+        if (appObject.result == null) {
+            //report timeout and last known status
+            throw new RuntimeException("timed-out: " + appObject.status);
+        }
+        return true;
+    }
+
     public static class AppObject {
         private final IBitgoWallet.StatusCB cb;
         private final SendRequest req;
         IBitgoWallet wallet;
         private String error, result, status;
 
-        AppObject(IBitgoWallet wallet, SendRequest req, IBitgoWallet.StatusCB cb) {
+        public AppObject(IBitgoWallet wallet, SendRequest req, IBitgoWallet.StatusCB cb) {
             this.wallet = wallet;
             this.req = req;
             this.cb = cb;

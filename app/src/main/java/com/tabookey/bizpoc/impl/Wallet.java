@@ -126,6 +126,10 @@ class Wallet implements IBitgoWallet {
         return coinSender.sendCoins(this, req, cb);
     }
 
+    @Override
+    public boolean checkPassphrase(String passphrase) {
+        return coinSender.checkPassphrase(this,passphrase,null);
+    }
 
     static class PendingApprovalResp {
 

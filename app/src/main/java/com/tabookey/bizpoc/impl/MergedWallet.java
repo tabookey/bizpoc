@@ -108,6 +108,11 @@ class MergedWallet implements IBitgoWallet {
     }
 
     @Override
+    public boolean checkPassphrase(String passphrase) {
+        return ethWallet.checkPassphrase(passphrase);
+    }
+
+    @Override
     public List<PendingApproval> getPendingApprovals() {
 
         ArrayList<PendingApproval> ret = new ArrayList();

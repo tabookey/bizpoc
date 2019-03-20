@@ -14,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.tabookey.bizpoc.api.Global;
+import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.Arrays;
@@ -103,6 +105,10 @@ public class ImportApiKeyFragment extends Fragment {
                     TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
                     Global.setAccessToken(tokenPassword.token);
                     String name = Global.ent.getMe().name;
+                    IBitgoWallet wallet = Global.ent.getMergedWallets().get(0);
+
+                    if ( !wallet.checkPassphrase(tokenPassword.password) )
+                        throw new RuntimeException("Invalid QRcode\nwallet: "+wallet.getLabel()+"\nUser: "+name);
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
                         testNameTextView.setText("wallet name is: " + name);

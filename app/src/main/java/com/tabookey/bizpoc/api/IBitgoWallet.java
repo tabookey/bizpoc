@@ -29,6 +29,12 @@ public interface IBitgoWallet {
      */
     String sendCoins(SendRequest req, StatusCB cb);
 
+    /**
+     * check if the given passphrase is valid for this wallet - that is, it can be used by sendCoins
+     * @param passphrase - passphrase to check
+     */
+    boolean checkPassphrase(String passphrase);
+
     interface StatusCB {
         void onStatus(String type, String msg);
     }

@@ -1,0 +1,70 @@
+<body>
+
+<script src="bitgojs_min.js"> </script>
+
+<script>
+
+inbrowser=false
+if ( typeof app=='undefined') {
+    inbrowser=true
+    app= {
+    	setStatus: console.log,
+    	getIsTest : function() { return true; },
+    	getAccessToken: function (){ 
+            return "v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3" },
+        getCoin:function(){return 'teth'},
+        getWalletPassphrase: function() {return "wallet-pwd"}    	
+    }
+}
+function state(msg) {
+    app.setStatus("state", msg)
+}
+
+async function run() {
+
+    try {
+
+        state("loaded")
+        XMLHttpRequest.prototype.origOpen = XMLHttpRequest.prototype.open
+        XMLHttpRequest.prototype.origSend = XMLHttpRequest.prototype.send
+        XMLHttpRequest.prototype.send = function(body) {
+            if ( body && !inbrowser )
+                this.setRequestHeader( "x-body", body )
+            return this.origSend(body)
+        }
+        if ( inbrowser ) {
+            XMLHttpRequest.prototype.open = function(method,url,async) {
+                let newurl=url.replace("test.bitgo.com", "relay1.duckdns.org")
+                this.origOpen(method, newurl, async)
+            }
+        }
+
+        env = app.getIsTest() ? "test": "prod" ;
+        bitgo = new BitGoJS.BitGo({env, accessToken: app.getAccessToken()});
+        state( "wallet")
+        w = await bitgo.coin(app.getCoin()).wallets().list()
+        wallet = w.wallets[0]   //always check first wallet..
+        console.log( "wallet label=",wallet.label())
+        walletPassphrase=app.getWalletPassphrase()
+        state("prv for passphrase: {"+walletPassphrase+"}")
+        await wallet.getPrv({walletPassphrase})
+
+        app.setStatus("result", "ok")
+
+    } catch (e) {
+        console.error("ex", e)
+        app.setStatus("error", e.toString() )
+    }
+}
+
+try {
+
+    run();
+
+} catch ( e) {
+    console.error( "error ", e );
+    app.setStatus("error", e.toString() );
+}
+</script>
+
+</body>

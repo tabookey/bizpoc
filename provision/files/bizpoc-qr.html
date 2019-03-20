@@ -28,10 +28,10 @@
 <form name=form>
 <tr><td>Passphrase:</td>
 
-<td><input type=password size=50 name="password" onchange="update()" >
+<td><input type=password size=50 name="password" oninput="update()" >
 </td></tr>
 <tr><td>Token:</td>
-<td><input type=password size=50 name="token" onchange="update()">
+<td><input type=password size=50 name="token" oninput="update()">
 </td></tr>
 <tr><td>Size:</td>
 <td><input type="range" min="1" max="20" value="8" id="size" oninput="sizeval.innerText=value; update()">
