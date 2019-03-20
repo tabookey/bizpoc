@@ -29,6 +29,7 @@ public class TransactionsFragment extends Fragment {
     ExchangeRate mExchangeRate;
     private AppCompatActivity mActivity;
     List<BitgoUser> mGuardians;
+    private IBitgoWallet ethWallet;
 
     @Nullable
     @Override
@@ -57,6 +58,7 @@ public class TransactionsFragment extends Fragment {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();
             tdf.exchangeRate = mExchangeRate;
             tdf.guardians = mGuardians;
+            tdf.ethWallet = ethWallet;
             if (item instanceof PendingApproval) {
                 tdf.pendingApproval = (PendingApproval) item;
             } else if (item instanceof Transfer) {
@@ -75,7 +77,7 @@ public class TransactionsFragment extends Fragment {
     }
 
     public void fillWindow() {
-        IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
+        ethWallet = Global.ent.getWallets("teth").get(0);
         List<PendingApproval> pendingApprovals = ethWallet.getPendingApprovals();
         List<Transfer> transfers = ethWallet.getTransfers();
         Activity activity = getActivity();

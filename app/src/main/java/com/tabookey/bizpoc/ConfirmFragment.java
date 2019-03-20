@@ -40,6 +40,7 @@ public class ConfirmFragment extends Fragment {
     ExchangeRate exchangeRate;
     View progressBar;
     List<BitgoUser> guardians;
+    private IBitgoWallet bitgoWallet;
 
     @Nullable
     @Override
@@ -71,6 +72,7 @@ public class ConfirmFragment extends Fragment {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();
             tdf.exchangeRate = exchangeRate;
             tdf.guardians = guardians;
+            tdf.ethWallet = bitgoWallet;
             tdf.transfer = new Transfer("", "0", "", "", new Date(), "", "", Global.ent.getTokens().get("teth"));
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             fragmentManager.beginTransaction()
@@ -137,15 +139,16 @@ public class ConfirmFragment extends Fragment {
             @Override
             public void run() {
                 try {
-                    IBitgoWallet w = Global.ent.getWallets("teth").get(0);
+                    bitgoWallet = Global.ent.getWallets("teth").get(0);
                     SendRequest req = new SendRequest("teth", sendRequest.amount, sendRequest.recipientAddress, otp, password, sendRequest.comment);
-                    String pendingTxId = w.sendCoins(req, null);
+                    String pendingTxId = bitgoWallet.sendCoins(req, null);
                     dollarEquivalent.post(() -> progressBar.setVisibility(View.GONE));
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();
                     tdf.exchangeRate = exchangeRate;
                     tdf.guardians = guardians;
-                    List<PendingApproval> pendingApprovals = w.getPendingApprovals();
+                    tdf.ethWallet = bitgoWallet;
+                    List<PendingApproval> pendingApprovals = bitgoWallet.getPendingApprovals();
                     for (PendingApproval pa :
                             pendingApprovals) {
                         if (pa.id.equals(pendingTxId)) {
