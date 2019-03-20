@@ -2,13 +2,16 @@ package com.tabookey.bizpoc;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,15 +40,20 @@ public class TransactionDetailsFragment extends Fragment {
     List<BitgoUser> guardians;
     IBitgoWallet ethWallet;
 
+    View progressBar;
     TextView senderNameTextView;
     TextView senderAddressTextView;
+    TextView guardiansApprovalTitle;
     ListView guardiansListView;
+    View guardiansView;
 
     TextView recipientAddressTextView;
     TextView etherSendAmountTextView;
     TextView dollarSentAmountTextView;
     TextView transactionCommentTextView;
+    TextView transactionDateText;
     Button transactionsHashButton;
+    Button cancelTransaction;
     private AppCompatActivity mActivity;
 
     @Nullable
@@ -69,8 +77,20 @@ public class TransactionDetailsFragment extends Fragment {
         transactionCommentTextView = view.findViewById(R.id.transactionCommentTextView);
         transactionsHashButton = view.findViewById(R.id.transactionsHashButton);
         guardiansListView = view.findViewById(R.id.guardiansListView);
+        transactionDateText = view.findViewById(R.id.transactionDateText);
+        guardiansView = view.findViewById(R.id.guardiansView);
+        guardiansApprovalTitle = view.findViewById(R.id.guardiansApprovalTitle);
+        progressBar = view.findViewById(R.id.progressBar);
+        cancelTransaction = view.findViewById(R.id.cancelTransaction);
+
         if (transfer != null) {
             transactionsHashButton.setVisibility(View.VISIBLE);
+            cancelTransaction.setVisibility(View.GONE);
+            guardiansView.setVisibility(View.GONE);
+            guardiansApprovalTitle.setVisibility(View.GONE);
+
+            String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", transfer.date).toString();
+            transactionDateText.setText(dateFormat);
             transactionsHashButton.setOnClickListener(v -> {
                 String url = "https://kovan.etherscan.io/tx/" + transfer.txid;
                 Intent i = new Intent(Intent.ACTION_VIEW);
@@ -80,6 +100,20 @@ public class TransactionDetailsFragment extends Fragment {
             fillTransfer();
         } else if (pendingApproval != null) {
             transactionsHashButton.setVisibility(View.GONE);
+            String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", pendingApproval.createDate).toString();
+            transactionDateText.setText(dateFormat);
+            cancelTransaction.setOnClickListener(v -> {
+                AlertDialog dialog = new AlertDialog.Builder(activity).create();
+                dialog.setTitle("Are you sure you want to canccel the transaction?");
+                dialog.setMessage("This transaction will be cancelled (and your guardians will be notified about this change)");
+                dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes, I'm sure",
+                        (d, w) -> {
+                            cancelTransaction();
+                            dialog.dismiss();
+                        });
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Go back", (d, w) -> d.dismiss());
+                dialog.show();
+            });
             fillPending();
         } else {
             throw new RuntimeException("No transaction object");
@@ -87,6 +121,22 @@ public class TransactionDetailsFragment extends Fragment {
         String name = Global.ent.getMe().name;
         senderNameTextView.setText(name);
         senderAddressTextView.setText(ethWallet.getAddress());
+    }
+
+    private void cancelTransaction() {
+        progressBar.setVisibility(View.VISIBLE);
+        new Thread(() -> {
+            try {
+                IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
+                ethWallet.rejectPending(pendingApproval);
+                mActivity.runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    mActivity.onBackPressed();
+                });
+            } catch (Exception e) {
+                Utils.showErrorDialog(mActivity, e.getMessage());
+            }
+        }).start();
     }
 
     @Override

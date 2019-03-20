@@ -36,7 +36,7 @@ android {
 }
 
 //return timestamp in 5-min interval since 1-1-2018
-def getTimestamp() {
+static def getTimestamp() {
     def epoch = new Date(2018 - 1900, 1, 1).getTime()
 
     def time = (int) ((new Date().getTime() - epoch) / TimeUnit.MINUTES.toMillis(5))

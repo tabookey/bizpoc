@@ -47,5 +47,5 @@ public interface IBitgoWallet {
 
     //admin reject a transaction (or owner cancel its own transaction)
     //NOTE: api says otp is required. test shows its ignored (works with garbage value)
-    public void rejectPending(PendingApproval approval, String otp);
+    void rejectPending(PendingApproval approval);
 }

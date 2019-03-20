@@ -124,7 +124,7 @@ class MergedWallet implements IBitgoWallet {
     }
 
     @Override
-    public void rejectPending(PendingApproval approval, String otp) {
-        ethWallet.rejectPending(approval, otp);
+    public void rejectPending(PendingApproval approval) {
+        ethWallet.rejectPending(approval);
     }
 }

@@ -224,8 +224,8 @@ class Wallet implements IBitgoWallet {
 //    }
 
     @Override
-    public void rejectPending(PendingApproval approval, String otp) {
-        ChangeState change = new ChangeState("rejected", otp, null);
+    public void rejectPending(PendingApproval approval) {
+        ChangeState change = new ChangeState("rejected", null, null);
         PendingApprovalResp resp = ent.http.put("/api/v2/" + coin + "/pendingapprovals/" + approval.id, change, PendingApprovalResp.class);
     }
 
