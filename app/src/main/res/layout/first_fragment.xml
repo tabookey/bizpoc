@@ -2,17 +2,16 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:paddingTop="40dp"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="40dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingTop="16dp"
         android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        >
+        android:paddingTop="16dp"
+        android:paddingRight="16dp">
 
         <TextView
             android:id="@+id/ownerText"
@@ -34,12 +33,12 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:autoSizeTextType="uniform"
                 android:autoSizeMaxTextSize="20sp"
                 android:autoSizeMinTextSize="12sp"
+                android:autoSizeTextType="uniform"
                 android:lines="1"
-                android:textAlignment="center"
                 android:paddingRight="10dp"
+                android:textAlignment="center"
                 tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
             <ImageButton
@@ -63,8 +62,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:textSize="16sp"
-            android:text="Your Holdings" />
+            android:text="Your Holdings"
+            android:textSize="16sp" />
 
         <ListView
             android:id="@+id/balancesListView"
@@ -88,9 +87,9 @@
             android:id="@+id/transactionsButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:background="@drawable/button_background_selector"
             android:text="Transactions"
-            android:layout_marginBottom="16dp"
             android:textAlignment="center"
             android:textAllCaps="false"
             android:textColor="@android:color/white" />
@@ -99,16 +98,26 @@
     </LinearLayout>
 
     <FrameLayout
-        android:id="@+id/progressBar"
+        android:id="@+id/progressView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
         android:visibility="gone">
 
         <ProgressBar
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
+
+        <Button
+            android:id="@+id/retryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="50dp"
+            android:text="Retry"
+            android:visibility="gone" />
     </FrameLayout>
 
 </FrameLayout>

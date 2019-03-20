@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +31,9 @@ import java.util.List;
 import java.util.Locale;
 
 public class FirstFragment extends Fragment {
-    private View progressBar;
+    private View progressView;
+    private ProgressBar progressBar;
+    private Button retryButton;
     private ExchangeRate exchangeRate;
     private ListView balancesListView;
     BalancesAdapter adapter;
@@ -55,7 +58,10 @@ public class FirstFragment extends Fragment {
         }
 
         balancesListView = view.findViewById(R.id.balancesListView);
+        progressView = view.findViewById(R.id.progressView);
         progressBar = view.findViewById(R.id.progressBar);
+        retryButton = view.findViewById(R.id.retryButton);
+        retryButton.setOnClickListener(v -> fillWindow());
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
@@ -76,13 +82,7 @@ public class FirstFragment extends Fragment {
             activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
         });
 
-        progressBar.setVisibility(View.VISIBLE);
-        new Thread() {
-            public void run() {
-                fillWindow();
-                progressBar.post(() -> progressBar.setVisibility(View.GONE));
-            }
-        }.start();
+        fillWindow();
     }
 
     @Override
@@ -99,54 +99,66 @@ public class FirstFragment extends Fragment {
     }
 
     void fillWindow() {
-        List<IBitgoWallet> allw = Global.ent.getMergedWallets();
-        IBitgoWallet ethWallet = allw.get(0);
-        exchangeRate = Global.ent.getMarketData("teth");
-        List<String> coins = ethWallet.getCoins();
-        balances = new ArrayList<>();
-        double assetsWorth = 0;
-        for (String coin : coins) {
-            String coinBalance = ethWallet.getBalance(coin);
-            double exRate = Global.ent.getMarketData(coin).average24h;
+        progressView.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
+        retryButton.setVisibility(View.GONE);
+        new Thread() {
+            public void run() {
+                double assetsWorth = 0;
+                IBitgoWallet ethWallet;
+                try {
+                    List<IBitgoWallet> allw = Global.ent.getMergedWallets();
+                    ethWallet = allw.get(0);
+                    exchangeRate = Global.ent.getMarketData("teth");
+                    List<String> coins = ethWallet.getCoins();
+                    balances = new ArrayList<>();
+                    for (String coin : coins) {
+                        String coinBalance = ethWallet.getBalance(coin);
+                        double exRate = Global.ent.getMarketData(coin).average24h;
 
-            TokenInfo token = Global.ent.getTokens().get(coin);
-            if (token == null) {
-                throw new RuntimeException("Unknown token balance!");
-            }
-            BalancesAdapter.Balance balance = new BalancesAdapter.Balance(coin, coinBalance, exRate, token);
-            balances.add(balance);
-            assetsWorth += balance.getDollarValue();
-        }
-        Activity activity = getActivity();
-        if (activity == null) {
-            return;
-        }
-        View view = getView();
-        if (view == null) {
-            return;
-        }
-        guardians = ethWallet.getGuardians();
-        double finalAssetsWorth = assetsWorth;
-        activity.runOnUiThread(() -> {
-            TextView address = view.findViewById(R.id.addressText);
-            TextView owner = view.findViewById(R.id.ownerText);
-            balanceInDollarsText.setText(String.format(Locale.US, "%.2f USD", finalAssetsWorth));
-            address.setText(ethWallet.getAddress());
-            owner.setText(String.format("Welcome %s", Global.ent.getMe().name));
-            adapter = new BalancesAdapter(activity, 0, balances);
-            balancesListView.setAdapter(adapter);
-            ImageButton copyButton = view.findViewById(R.id.copyButton);
-            copyButton.setOnClickListener(v -> {
-                ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                if (clipboard == null) {
+                        TokenInfo token = Global.ent.getTokens().get(coin);
+                        if (token == null) {
+                            throw new RuntimeException("Unknown token balance!");
+                        }
+                        BalancesAdapter.Balance balance = new BalancesAdapter.Balance(coin, coinBalance, exRate, token);
+                        balances.add(balance);
+                        assetsWorth += balance.getDollarValue();
+                    }
+                    guardians = ethWallet.getGuardians();
+                } catch (Exception e) {
+                    mActivity.runOnUiThread(() -> {
+                        progressBar.setVisibility(View.GONE);
+                        retryButton.setVisibility(View.VISIBLE);
+                    });
                     return;
                 }
-                ClipData clip = ClipData.newPlainText("label", ethWallet.getAddress());
-                clipboard.setPrimaryClip(clip);
-                Toast.makeText(mActivity, "Wallet address copied to clipboard", Toast.LENGTH_LONG).show();
-            });
+                double finalAssetsWorth = assetsWorth;
+                mActivity.runOnUiThread(() -> {
+                    progressView.setVisibility(View.GONE);
+                    View view = getView();
+                    if (view == null) {
+                        return;
+                    }
+                    TextView address = view.findViewById(R.id.addressText);
+                    TextView owner = view.findViewById(R.id.ownerText);
+                    balanceInDollarsText.setText(String.format(Locale.US, "%.2f USD", finalAssetsWorth));
+                    address.setText(ethWallet.getAddress());
+                    owner.setText(String.format("Welcome %s", Global.ent.getMe().name));
+                    adapter = new BalancesAdapter(mActivity, 0, balances);
+                    balancesListView.setAdapter(adapter);
+                    ImageButton copyButton = view.findViewById(R.id.copyButton);
+                    copyButton.setOnClickListener(v -> {
+                        ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
+                        if (clipboard == null) {
+                            return;
+                        }
+                        ClipData clip = ClipData.newPlainText("label", ethWallet.getAddress());
+                        clipboard.setPrimaryClip(clip);
+                        Toast.makeText(mActivity, "Wallet address copied to clipboard", Toast.LENGTH_LONG).show();
+                    });
 
-        });
-
+                });
+            }
+        }.start();
     }
 }
