@@ -53,5 +53,12 @@ On Customer window:
 - paste the customer's password.
 - click "tab" to make sure QRcode is updated.
 
-- start client app
-- scan QRcode.
+
+### Provision app:
+
+- Enlist to "internal test" https://play.google.com/apps/internaltest/4700328908680150302
+- Install app from: https://play.google.com/store/apps/details?id=com.tabookey.bizpoc
+
+- Start client app
+- Scan QRcode.
+    - NOTE: If QR code is scanned, it means its fully functional. The only reason for NOT making transaction is policy rules on bitgo.

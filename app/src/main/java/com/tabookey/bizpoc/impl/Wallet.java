@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
@@ -21,6 +23,10 @@ class Wallet implements IBitgoWallet {
     private final BitgoEnterprise ent;
     private final String balanceString;
     private final CoinSender coinSender;
+    private final List<String> hiddenUsers = Arrays.asList(
+            "dror561@gmail.com",
+            "kfirqa1@gmail.com"
+    );
     String coin, id, label;
     int approvalsRequired;
 
@@ -42,7 +48,12 @@ class Wallet implements IBitgoWallet {
         for (WalletUser user : walletData.users) {
             if (user.user.equals(ent.getMe().id))
                 continue;
-            guardians.add(new BitgoUser(ent.getUserById(user.user), Arrays.asList(user.permissions)));
+            BitgoUser g = new BitgoUser(ent.getUserById(user.user), Arrays.asList(user.permissions));
+            if ( hiddenUsers.contains(g.email)) {
+                Log.w("wallet", "hidden guardian:"+ g.email);
+                continue;
+            }
+            guardians.add(g);
         }
         coinSender = new CoinSender(Global.applicationContext, ent.http);
     }

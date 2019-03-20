@@ -37,7 +37,13 @@ public class CoinSender extends WebViewExecutor {
             throw new RuntimeException("timed-out: " + appObject.status);
         }
 
-        return fromJson(appObject.result, JsonNode.class).get("pendingApproval").get("id").asText();
+        JsonNode node = fromJson(appObject.result, JsonNode.class);
+        if ( node.has("pendingApproval") ) {
+            return node.get("pendingApproval").get("id").asText();
+        } else {
+            //special case: configured to pass transactions without approval
+            return node.get("transfer").get("id").asText();
+        }
 
     }
 

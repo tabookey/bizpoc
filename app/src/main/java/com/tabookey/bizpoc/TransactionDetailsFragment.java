@@ -93,7 +93,12 @@ public class TransactionDetailsFragment extends Fragment {
         double etherDouble = Utils.integerStringToCoinDouble(pendingApproval.amount, pendingApproval.token.decimalPlaces);
 
         List<ApprovalsAdapter.Approval> collect = guardians.stream().map(b -> {
-            boolean isApproved = pendingApproval.approvedByUsers.contains(b);
+            boolean isApproved =false;
+
+            for ( BitgoUser user : pendingApproval.approvedByUsers ) {
+                if ( user.email.equals(b.email) )
+                    isApproved=true;
+            };
             return new ApprovalsAdapter.Approval(b.name, isApproved);
 
         }).collect(Collectors.toList());
