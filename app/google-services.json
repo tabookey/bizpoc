@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "420091363900",
+    "firebase_url": "https://bizpoc-f194d.firebaseio.com",
+    "project_id": "bizpoc-f194d",
+    "storage_bucket": "bizpoc-f194d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:420091363900:android:24c707cfd6c89fa9",
+        "android_client_info": {
+          "package_name": "com.tabookey.bizpoc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "420091363900-ffa3mkai0a1f7vv1n7hdq709vda1bad0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAsWsbdjDB0tueQDuTgAAhzvQs8clqwRo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
