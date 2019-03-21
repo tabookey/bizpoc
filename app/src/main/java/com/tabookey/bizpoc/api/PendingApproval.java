@@ -14,7 +14,7 @@ public class PendingApproval {
 
     }
 
-    public PendingApproval(String id, Date createDate, String recipientAddr, String comment, String coin, String amount, List<BitgoUser> approvedByUsers, BitgoUser creator) {
+    public PendingApproval(String id, Date createDate, String recipientAddr, String comment, String coin, String amount, List<BitgoUser> approvedByUsers, BitgoUser creator, TokenInfo token) {
         this.id = id;
         this.createDate = createDate;
         this.recipientAddr = recipientAddr;
@@ -23,5 +23,6 @@ public class PendingApproval {
         this.amount = amount;
         this.approvedByUsers = approvedByUsers;
         this.creator = creator;
+        this.token = token;
     }
 }

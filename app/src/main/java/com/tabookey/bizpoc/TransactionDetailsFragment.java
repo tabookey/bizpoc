@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -54,7 +55,10 @@ public class TransactionDetailsFragment extends Fragment {
     TextView transactionDateText;
     Button transactionsHashButton;
     Button cancelTransaction;
+    Button greatThanksButton;
     private AppCompatActivity mActivity;
+    boolean showSuccessPopup = false;
+    private View successPopup;
 
     @Nullable
     @Override
@@ -75,9 +79,11 @@ public class TransactionDetailsFragment extends Fragment {
         guardiansListView = view.findViewById(R.id.guardiansListView);
         transactionDateText = view.findViewById(R.id.transactionDateText);
         guardiansView = view.findViewById(R.id.guardiansView);
+        successPopup = view.findViewById(R.id.successPopup);
         guardiansApprovalTitle = view.findViewById(R.id.guardiansApprovalTitle);
         progressBar = view.findViewById(R.id.progressBar);
         cancelTransaction = view.findViewById(R.id.cancelTransaction);
+        greatThanksButton = view.findViewById(R.id.greatThanksButton);
 
         if (transfer != null) {
             transactionsHashButton.setVisibility(View.VISIBLE);
@@ -111,6 +117,10 @@ public class TransactionDetailsFragment extends Fragment {
                 dialog.show();
             });
             fillPending();
+            if (showSuccessPopup) {
+                successPopup.setVisibility(View.VISIBLE);
+                greatThanksButton.setOnClickListener(v -> successPopup.setVisibility(View.GONE));
+            }
         } else {
             throw new RuntimeException("No transaction object");
         }

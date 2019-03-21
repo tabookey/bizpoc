@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
+import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
 
@@ -47,6 +48,7 @@ public class SendFragment extends Fragment {
     ExchangeRate exchangeRate;
     EditText destinationEditText;
     List<BitgoUser> guardians;
+    IBitgoWallet mBitgoWallet;
     private AppCompatActivity mActivity;
 
     TextView amountRequiredNote;
@@ -155,6 +157,7 @@ public class SendFragment extends Fragment {
         cf.setRequest(sendRequest);
         cf.exchangeRate = exchangeRate;
         cf.guardians = guardians;
+        cf.mBitgoWallet = mBitgoWallet;
         mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
     }
 

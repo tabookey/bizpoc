@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +40,7 @@ public class FirstFragment extends Fragment {
     private AppCompatActivity mActivity;
     List<BitgoUser> guardians;
     List<BalancesAdapter.Balance> balances;
+    private IBitgoWallet mBitgoWallet;
 
     @Nullable
     @Override
@@ -63,6 +63,7 @@ public class FirstFragment extends Fragment {
             sf.exchangeRate = exchangeRate;
             sf.guardians = guardians;
             sf.balances = balances;
+            sf.mBitgoWallet = mBitgoWallet;
             mActivity.getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.frame_layout, sf, MainActivity.SEND_FRAGMENT)
@@ -100,15 +101,14 @@ public class FirstFragment extends Fragment {
         new Thread() {
             public void run() {
                 double assetsWorth = 0;
-                IBitgoWallet ethWallet;
                 try {
                     List<IBitgoWallet> allw = Global.ent.getMergedWallets();
-                    ethWallet = allw.get(0);
+                    mBitgoWallet = allw.get(0);
                     exchangeRate = Global.ent.getMarketData("teth");
-                    List<String> coins = ethWallet.getCoins();
+                    List<String> coins = mBitgoWallet.getCoins();
                     balances = new ArrayList<>();
                     for (String coin : coins) {
-                        String coinBalance = ethWallet.getBalance(coin);
+                        String coinBalance = mBitgoWallet.getBalance(coin);
                         double exRate = Global.ent.getMarketData(coin).average24h;
 
                         TokenInfo token = Global.ent.getTokens().get(coin);
@@ -119,7 +119,7 @@ public class FirstFragment extends Fragment {
                         balances.add(balance);
                         assetsWorth += balance.getDollarValue();
                     }
-                    guardians = ethWallet.getGuardians();
+                    guardians = mBitgoWallet.getGuardians();
                 } catch (Exception e) {
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
@@ -137,7 +137,7 @@ public class FirstFragment extends Fragment {
                     TextView address = view.findViewById(R.id.addressText);
                     TextView owner = view.findViewById(R.id.ownerText);
                     balanceInDollarsText.setText(String.format(Locale.US, "%.2f USD", finalAssetsWorth));
-                    address.setText(ethWallet.getAddress());
+                    address.setText(mBitgoWallet.getAddress());
                     owner.setText(String.format("Welcome %s", Global.ent.getMe().name));
                     adapter = new BalancesAdapter(mActivity, 0, balances);
                     balancesListView.setAdapter(adapter);
@@ -147,7 +147,7 @@ public class FirstFragment extends Fragment {
                         if (clipboard == null) {
                             return;
                         }
-                        ClipData clip = ClipData.newPlainText("label", ethWallet.getAddress());
+                        ClipData clip = ClipData.newPlainText("label", mBitgoWallet.getAddress());
                         clipboard.setPrimaryClip(clip);
                         Toast.makeText(mActivity, "Wallet address copied to clipboard", Toast.LENGTH_LONG).show();
                     });

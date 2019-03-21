@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.support.annotation.NonNull;
@@ -7,7 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,11 +30,13 @@ import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class ConfirmFragment extends Fragment {
+    private AppCompatActivity mActivity;
     TextView recipientAddress;
     TextView dollarEquivalent;
     TextView etherSendAmount;
@@ -40,12 +44,20 @@ public class ConfirmFragment extends Fragment {
     ExchangeRate exchangeRate;
     View progressBar;
     List<BitgoUser> guardians;
-    private IBitgoWallet bitgoWallet;
+    IBitgoWallet mBitgoWallet;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.confirm_fragment, container, false);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof Activity) {
+            mActivity = (AppCompatActivity) context;
+        }
     }
 
     @Override
@@ -70,15 +82,9 @@ public class ConfirmFragment extends Fragment {
         fakeSubmitButton.setOnClickListener(v ->
         {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.exchangeRate = exchangeRate;
-            tdf.guardians = guardians;
-            tdf.ethWallet = bitgoWallet;
-            tdf.transfer = new Transfer("", "0", "", "", new Date(), "", "", Global.ent.getTokens().get("teth"));
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.frame_layout, tdf, MainActivity.DETAILS_FRAGMENT)
-                    .addToBackStack(null)
-                    .commit();
+            tdf.pendingApproval = new PendingApproval("", new Date(), "", "", "", "", new ArrayList<BitgoUser>() {
+            }, new BitgoUser("", "", ""), Global.ent.getTokens().get("teth"));
+            goToDetails(tdf);
         });
         submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
 
@@ -139,16 +145,12 @@ public class ConfirmFragment extends Fragment {
             @Override
             public void run() {
                 try {
-                    bitgoWallet = Global.ent.getWallets("teth").get(0);
                     SendRequest req = new SendRequest("teth", sendRequest.amount, sendRequest.recipientAddress, otp, password, sendRequest.comment);
-                    String pendingTxId = bitgoWallet.sendCoins(req, null);
+                    String pendingTxId = mBitgoWallet.sendCoins(req, null);
                     dollarEquivalent.post(() -> progressBar.setVisibility(View.GONE));
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-                    tdf.exchangeRate = exchangeRate;
-                    tdf.guardians = guardians;
-                    tdf.ethWallet = bitgoWallet;
-                    List<PendingApproval> pendingApprovals = bitgoWallet.getPendingApprovals();
+                    List<PendingApproval> pendingApprovals = mBitgoWallet.getPendingApprovals();
                     for (PendingApproval pa :
                             pendingApprovals) {
                         if (pa.id.equals(pendingTxId)) {
@@ -159,14 +161,7 @@ public class ConfirmFragment extends Fragment {
                     if (tdf.pendingApproval == null) {
                         throw new RuntimeException("No pending approval found!");
                     }
-                    FragmentManager fragmentManager = getFragmentManager();
-                    if (fragmentManager == null) {
-                        return;
-                    }
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.frame_layout, tdf, MainActivity.DETAILS_FRAGMENT)
-                            .addToBackStack(null)
-                            .commit();
+                    goToDetails(tdf);
 
                 } catch (Throwable e) {
                     Log.e("TAG", "ex: ", e);
@@ -177,6 +172,23 @@ public class ConfirmFragment extends Fragment {
                 }
             }
         }.start();
+    }
+
+    private void goToDetails(TransactionDetailsFragment tdf) {
+        tdf.showSuccessPopup = true;
+        tdf.exchangeRate = exchangeRate;
+        tdf.guardians = guardians;
+        tdf.ethWallet = mBitgoWallet;
+        mActivity.runOnUiThread(() -> {
+            FragmentManager fragmentManager = getFragmentManager();
+            if (fragmentManager == null) {
+                return;
+            }
+            fragmentManager.beginTransaction()
+                    .replace(R.id.frame_layout, tdf, MainActivity.DETAILS_FRAGMENT)
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
 

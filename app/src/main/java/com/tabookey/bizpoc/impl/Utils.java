@@ -60,9 +60,15 @@ public class Utils {
     }
 
     public static double integerStringToCoinDouble(String weiString, int decimals){
-        BigDecimal bigIntBalance = new BigDecimal(weiString);
-        BigDecimal divide = bigIntBalance.divide(new BigDecimal(Math.pow(10, decimals)), 10, RoundingMode.HALF_UP);
-        return divide.doubleValue();
+        try {
+            BigDecimal bigIntBalance = new BigDecimal(weiString);
+            BigDecimal divide = bigIntBalance.divide(new BigDecimal(Math.pow(10, decimals)), 10, RoundingMode.HALF_UP);
+            return divide.doubleValue();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return 0;
+        }
     }
     public static void showErrorDialog(Activity activity, String errorMessage) {
         if (activity == null) {
