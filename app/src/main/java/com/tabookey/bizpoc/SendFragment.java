@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -95,30 +94,13 @@ public class SendFragment extends Fragment {
         });
         scanDestinationButton.setPaintFlags(scanDestinationButton.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         pasteDestinationButton.setPaintFlags(pasteDestinationButton.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-        scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(getActivity(), ScanActivity.class), 1));
+        scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(mActivity, ScanActivity.class), 1));
         ListView guardiansListView = view.findViewById(R.id.guardiansListView);
-        FragmentActivity activity = getActivity();
-        if (activity == null) {
-            return;
-        }
         etherSendAmountEditText = view.findViewById(R.id.etherSendAmountEditText);
         etherSendAmountEditText.setPaintFlags(etherSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
-        continueButton.setOnClickListener(v -> {
-            if (!isEnteredValueValid()) {
-                return;
-            }
-            ConfirmFragment cf = new ConfirmFragment();
-            String destination = destinationEditText.getText().toString();
-            String amountInput = etherSendAmountEditText.getText().toString();
-            BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal("1000000000000000000")).toBigInteger();
-            SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination, "000000", "passphrase", getNewMemoID());
-            cf.setRequest(sendRequest);
-            cf.exchangeRate = exchangeRate;
-            cf.guardians = guardians;
-            activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
-        });
+        continueButton.setOnClickListener(v -> moveToContinue());
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(mActivity, android.R.layout.simple_list_item_1);
 
         for (BitgoUser guardian : guardians) {
             adapter.add(guardian.name);
@@ -149,6 +131,21 @@ public class SendFragment extends Fragment {
         });
     }
 
+    private void moveToContinue() {
+        if (!isEnteredValueValid()) {
+            return;
+        }
+        ConfirmFragment cf = new ConfirmFragment();
+        String destination = destinationEditText.getText().toString();
+        String amountInput = etherSendAmountEditText.getText().toString();
+        BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal("1000000000000000000")).toBigInteger();
+        SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination, "000000", "passphrase", getNewMemoID());
+        cf.setRequest(sendRequest);
+        cf.exchangeRate = exchangeRate;
+        cf.guardians = guardians;
+        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
+    }
+
     private boolean isEnteredValueValid() {
         boolean amount = etherSendAmountEditText.getText().toString().length() != 0;
         boolean destination = destinationEditText.getText().toString().length() != 0;
@@ -160,8 +157,7 @@ public class SendFragment extends Fragment {
 
     private void setDollarEquivalent() {
         View view = getView();
-        FragmentActivity activity = getActivity();
-        if (activity == null || view == null || exchangeRate == null) {
+        if (view == null || exchangeRate == null) {
             return;
         }
         TextView dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
@@ -190,8 +186,6 @@ public class SendFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Activity) {
             mActivity = (AppCompatActivity) context;
-        } else {
-            return;
         }
     }
 

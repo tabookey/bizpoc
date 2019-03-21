@@ -38,6 +38,7 @@ public class ImportApiKeyFragment extends Fragment {
     String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
     private AppCompatActivity mActivity;
     private TextView testNameTextView;
+    private Button scanApiKeyButton;
 
     public static class TokenPassword {
         @SuppressWarnings("WeakerAccess")
@@ -63,7 +64,7 @@ public class ImportApiKeyFragment extends Fragment {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, 11);
         }
 
-        Button scan = view.findViewById(R.id.scanApiKeyButton);
+        scanApiKeyButton = view.findViewById(R.id.scanApiKeyButton);
         Button useTestCredentialsButton = view.findViewById(R.id.useTestCredentialsButton);
         TextView fingerprintTextView = view.findViewById(R.id.fingerprintEnabledTextView);
         testNameTextView = view.findViewById(R.id.testNameTextView);
@@ -71,12 +72,12 @@ public class ImportApiKeyFragment extends Fragment {
         FingerprintManager fingerprintManager = (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
         if (fingerprintManager == null || !fingerprintManager.isHardwareDetected()) {
             fingerprintTextView.setText("Device doesn't support fingerprint authentication");
-            scan.setEnabled(false);
+            scanApiKeyButton.setEnabled(false);
         } else if (!fingerprintManager.hasEnrolledFingerprints()) {
-            scan.setEnabled(false);
+            scanApiKeyButton.setEnabled(false);
             fingerprintTextView.setText("User hasn't enrolled any fingerprints to authenticate with");
         }
-        scan.setOnClickListener(v -> {
+        scanApiKeyButton.setOnClickListener(v -> {
             startActivityForResult(new Intent(activity, ScanActivity.class), 1);
         });
         useTestCredentialsButton.setOnClickListener(v -> {
@@ -111,6 +112,7 @@ public class ImportApiKeyFragment extends Fragment {
                         throw new RuntimeException("Invalid QRcode\nwallet: "+wallet.getLabel()+"\nUser: "+name);
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
+                        scanApiKeyButton.setVisibility(View.GONE);
                         testNameTextView.setText("wallet name is: " + name);
                     });
                     byte[] encryptToken = secretStorge.encrypt(tokenPassword.token.getBytes());

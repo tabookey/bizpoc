@@ -11,7 +11,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -25,7 +27,9 @@ import java.util.List;
 
 public class TransactionsFragment extends Fragment {
     private ListView transactionsListView;
-    private View progressBar;
+    private ProgressBar progressBar;
+    private View progressView;
+    private Button retryButton;
     ExchangeRate mExchangeRate;
     private AppCompatActivity mActivity;
     List<BitgoUser> mGuardians;
@@ -71,27 +75,44 @@ public class TransactionsFragment extends Fragment {
         });
 
         progressBar = view.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
-
-        new Thread(this::fillWindow).start();
+        progressView = view.findViewById(R.id.progressView);
+        retryButton = view.findViewById(R.id.retryButton);
+        retryButton.setOnClickListener(v -> fillWindow());
+        fillWindow();
     }
 
     public void fillWindow() {
-        ethWallet = Global.ent.getWallets("teth").get(0);
-        List<PendingApproval> pendingApprovals = ethWallet.getPendingApprovals();
-        List<Transfer> transfers = ethWallet.getTransfers();
-        Activity activity = getActivity();
-        if (activity == null) {
-            return;
-        }
-        activity.runOnUiThread(() -> {
-            progressBar.setVisibility(View.GONE);
-            TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), mExchangeRate);
-            historyAdapter.addItem("Pending");
-            historyAdapter.addItems(pendingApprovals);
-            historyAdapter.addItem("History");
-            historyAdapter.addItems(transfers);
-            transactionsListView.setAdapter(historyAdapter);
-        });
+        progressView.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
+        retryButton.setVisibility(View.GONE);
+        new Thread(() -> {
+            List<PendingApproval> pendingApprovals;
+            List<Transfer> transfers;
+            try {
+                ethWallet = Global.ent.getWallets("teth").get(0);
+                pendingApprovals = ethWallet.getPendingApprovals();
+                transfers = ethWallet.getTransfers();
+                Activity activity = getActivity();
+                if (activity == null) {
+                    return;
+                }
+            } catch (Exception e) {
+                mActivity.runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    retryButton.setVisibility(View.VISIBLE);
+                });
+                return;
+            }
+            mActivity.runOnUiThread(() -> {
+                progressView.setVisibility(View.GONE);
+                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), mExchangeRate);
+                historyAdapter.addItem("Pending");
+                historyAdapter.addItems(pendingApprovals);
+                historyAdapter.addItem("History");
+                historyAdapter.addItems(transfers);
+                transactionsListView.setAdapter(historyAdapter);
+            });
+        }).start();
+
     }
 }

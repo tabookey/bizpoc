@@ -18,16 +18,28 @@
             android:orientation="vertical" />
     </LinearLayout>
 
+
     <FrameLayout
-        android:id="@+id/progressBar"
+        android:id="@+id/progressView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
         android:visibility="gone">
 
         <ProgressBar
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
+
+        <Button
+            android:id="@+id/retryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="50dp"
+            android:text="Retry"
+            android:visibility="gone" />
     </FrameLayout>
+
 </FrameLayout>
