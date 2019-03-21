@@ -30,12 +30,16 @@ class TransactionHistoryAdapter extends BaseAdapter {
         viewHolder.dateTextView.setText(dateFormat);
         double value = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
         viewHolder.valueTextView.setText(String.format(Locale.US, "%.6f %s", value, transfer.coin.toUpperCase()));
-        String usd = transfer.usd.replaceAll("-", "");
-        viewHolder.dollarTextView.setText(String.format(Locale.US, "$%s", usd));
+        if ( transfer.usd!=null ) {
+            String usd = transfer.usd.replaceAll("-", "");
+            viewHolder.dollarTextView.setText(String.format(Locale.US, "$%s", usd));
+        }
+
         viewHolder.remoteTextView.setText(transfer.remoteAddress);
         boolean isOutgoingTx = transfer.valueString.contains("-");
-        viewHolder.transactionStatus.setText(isOutgoingTx ? "Sent" : "Received");
-        viewHolder.transactionStatusIcon.setImageResource(isOutgoingTx ? R.drawable.ic_arrow_upward_black_24dp : R.drawable.ic_arrow_downward_black_24dp);
+        viewHolder.transactionStatus.setText(transfer.isRejected ? "Rejected" : isOutgoingTx ? "Sent" : "Received");
+        viewHolder.transactionStatusIcon.setImageResource(transfer.isRejected ? android.R.drawable.ic_menu_close_clear_cancel :
+                 isOutgoingTx ? R.drawable.ic_arrow_upward_black_24dp : R.drawable.ic_arrow_downward_black_24dp);
     }
 
     private void fillPendingViewHolder(PendingApproval pending, ViewHolder viewHolder) {

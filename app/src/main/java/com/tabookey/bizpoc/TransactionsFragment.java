@@ -89,7 +89,7 @@ public class TransactionsFragment extends Fragment {
             List<PendingApproval> pendingApprovals;
             List<Transfer> transfers;
             try {
-                ethWallet = Global.ent.getWallets("teth").get(0);
+                ethWallet = Global.ent.getMergedWallets().get(0);
                 pendingApprovals = ethWallet.getPendingApprovals();
                 transfers = ethWallet.getTransfers();
             } catch (Exception e) {
@@ -102,8 +102,10 @@ public class TransactionsFragment extends Fragment {
             mActivity.runOnUiThread(() -> {
                 progressView.setVisibility(View.GONE);
                 TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate);
-                historyAdapter.addItem("Pending");
-                historyAdapter.addItems(pendingApprovals);
+                if ( pendingApprovals.size()>0) {
+                    historyAdapter.addItem("Pending");
+                    historyAdapter.addItems(pendingApprovals);
+                }
                 historyAdapter.addItem("History");
                 historyAdapter.addItems(transfers);
                 transactionsListView.setAdapter(historyAdapter);

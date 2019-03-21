@@ -140,7 +140,7 @@ class MergedWallet implements IBitgoWallet {
 
         ret.addAll(getAuditRejected());
 
-        ret.sort((a, b) -> a.date.compareTo(b.date));
+        ret.sort((a, b) -> b.date.compareTo(a.date));
         return ret;
     }
 
