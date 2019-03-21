@@ -14,8 +14,13 @@ public class Transfer {
     @JsonIgnore
     public TokenInfo token;
 
+    @JsonIgnore
+    public boolean isRejected;
+
     public Transfer(String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token) {
         this.txid = txid;
+        if ( txid==null )
+            isRejected=true;
         this.valueString = valueString;
         this.coin = coin;
         this.usd = usd;

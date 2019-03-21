@@ -29,5 +29,7 @@ public interface IBitgoEnterprise {
     //return a list of wallets - each wallet object for ether and all tokens available on that wallet address
     List<IBitgoWallet> getMergedWallets();
 
+    TokenInfo getToken(String token);
+
     Map<String,TokenInfo> getTokens();
 }

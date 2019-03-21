@@ -2,9 +2,7 @@ package com.tabookey.bizpoc.impl;
 
 import android.util.Log;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tabookey.bizpoc.R;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.EnterpriseInfo;
@@ -21,7 +19,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,20 +27,25 @@ import static com.tabookey.bizpoc.impl.Utils.toJson;
 
 public class BitgoEnterprise implements IBitgoEnterprise {
     private final boolean testNetwork;
+    final TokenInfo baseCoin;
     HttpReq http;
     private EnterpriseInfo info;
     private ArrayList<BitgoUser> users;
     private HashMap<String,List<IBitgoWallet>> wallets = new HashMap<>();
     private BitgoUser userMe;
 
-    String[] validTokens = { "terc", "tbst" }; //teth always added
     private HashMap<String, TokenInfo> allTokensInfo;
 
     public BitgoEnterprise(String accessKey, boolean test) {
         this.testNetwork=test;
         Global.http = http = new HttpReq(accessKey, true);
+        if ( testNetwork ) {
+            baseCoin = new TokenInfo("", "teth", "Kovan", "", 18, "tEthereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "tEthereum", "tEther");
+        }
+        else {
+            baseCoin = new TokenInfo("", "eth", "mainnet", "", 18, "Ethereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "Ethereum", "Ether");
+        }
     }
-
 
     static class EntResp {
         public EnterpriseInfo[] enterprises;
@@ -68,6 +70,11 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     static class BitgoToken {
 
         public String name, logo, fullDisplay, shortDisplay;
+    }
+
+    @Override
+    public TokenInfo getToken(String token) {
+        return getTokens().get(token);
     }
 
     @Override
@@ -108,11 +115,8 @@ public class BitgoEnterprise implements IBitgoEnterprise {
                 Log.w("TAG", "getTokens: failed  o read logo, extra info" );
             }
 
-
+            allTokensInfo.put(baseCoin.coin, baseCoin );
         }
-        TokenInfo eth = new TokenInfo("", "eth", "eth", "", 18, "Ethereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "Ethereum", "Ether");
-        TokenInfo teth = new TokenInfo("", "teth", "eth", "", 18, "tEthereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "tEthereum", "tEther");
-        allTokensInfo.put("teth", teth);
         return Collections.unmodifiableMap(allTokensInfo);
     }
 

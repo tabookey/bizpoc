@@ -7,9 +7,11 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.Transfer;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * merged wallet - represent all tokens supported by this wallet.
@@ -89,6 +91,45 @@ class MergedWallet implements IBitgoWallet {
         return ethWallet.getAddress();
     }
 
+    static class AuditResp {
+        public Log[] logs;
+
+        static class Log {
+            public String user, ip, walletId, type, coin;
+            public Date date;
+            public Data data;
+
+            public String getRecipient() {
+                try {
+                    return data.recipients[0].address;
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+        }
+
+        static class Data {
+            public String amount;
+            public Recipient[] recipients;
+        }
+        static class Recipient{
+            public String address;
+        }
+
+    }
+
+
+    List<Transfer> getAuditRejected() {
+        AuditResp resp = ent.http.get("/api/v2/auditlog?limit=1000&type=rejectTransaction&coin=%s&walletId=%s", AuditResp.class,
+                ent.baseCoin.coin, this.getId() );
+
+        return Arrays.asList(resp.logs).stream().map(log -> new Transfer(
+                null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, ent.getToken(log.coin)
+        )).collect(Collectors.toList());
+    }
+
+
     @Override
     public List<Transfer> getTransfers() {
 
@@ -96,6 +137,9 @@ class MergedWallet implements IBitgoWallet {
         for ( String c : coins ) {
             ret.addAll(getCoinWallet(c).getTransfers());
         }
+
+        ret.addAll(getAuditRejected());
+
         ret.sort((a, b) -> a.date.compareTo(b.date));
         return ret;
     }

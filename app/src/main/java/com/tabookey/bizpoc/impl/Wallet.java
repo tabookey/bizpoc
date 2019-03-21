@@ -117,7 +117,7 @@ class Wallet implements IBitgoWallet {
         TransferResp resp = ent.http.get("/api/v2/" + coin + "/wallet/" + id + "/transfer", TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (TransferResp.Trans t : resp.transfers) {
-            Transfer tx = new Transfer(t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getTokens().get(t.coin));
+            Transfer tx = new Transfer(t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin));
             //entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
             // looking for the other one, with its value different (actually, negative) of ours.

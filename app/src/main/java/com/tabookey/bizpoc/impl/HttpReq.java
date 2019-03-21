@@ -43,11 +43,15 @@ public class HttpReq {
 
     public OkHttpClient getClient() { return client; }
 
-    public String get(String api) {
+    public String get(String api, Object... params) {
+        if ( params.length>0 )
+            api = String.format(api, params);
         return sendRequest(api, null,null);
     }
 
-    public <T> T get(String api, Class<T> cls) {
+    public <T> T get(String api, Class<T> cls, Object... params) {
+        if ( params.length>0 )
+            api = String.format(api, params);
         return fromJson(sendRequest(api,null,null), cls);
     }
 

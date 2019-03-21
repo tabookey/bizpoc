@@ -2,8 +2,8 @@ package com.tabookey.bizpoc.api;
 
 public class TokenInfo {
     public String type; //the token TLA
-    public String coin; //always "eth"
-    public String network; //mainnet or kovan
+    public String coin; //always "eth" (or teth
+    public String network; //mainnet or Kovan
     public String tokenContractAddress;
     public int decimalPlaces;
     public String name;
