@@ -40,10 +40,10 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         this.testNetwork=test;
         Global.http = http = new HttpReq(accessKey, true);
         if ( testNetwork ) {
-            baseCoin = new TokenInfo("", "teth", "Kovan", "", 18, "tEthereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "tEthereum", "tEther");
+            baseCoin = new TokenInfo("teth", "teth", "Kovan", "", 18, "tEthereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "tEthereum", "tEther");
         }
         else {
-            baseCoin = new TokenInfo("", "eth", "mainnet", "", 18, "Ethereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "Ethereum", "Ether");
+            baseCoin = new TokenInfo("eth", "eth", "mainnet", "", 18, "Ethereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "Ethereum", "Ether");
         }
     }
 
@@ -117,6 +117,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
             allTokensInfo.put(baseCoin.coin, baseCoin );
         }
+
         return Collections.unmodifiableMap(allTokensInfo);
     }
 

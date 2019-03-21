@@ -52,13 +52,16 @@ public class TestSendActivity extends AppCompatActivity {
 
     private void sendfromwallet() {
         log("starting:");
-        //Global.setAccessToken("v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3");
-        Global.setAccessToken("v2xa3b02b7a841fd4a39bd565e8e672f7a530f2c38ee42f5879c39ef8d6386a7871");
+//        Global.setAccessToken("v2xe3de01b2a3394785d315b0723523f77ddab9114480ba96bd50828d5974c86ef3"); //dror? too many wallets...
+        Global.setAccessToken("v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8" );
+
+        //tomer:
+//        Global.setAccessToken("v2xa3b02b7a841fd4a39bd565e8e672f7a530f2c38ee42f5879c39ef8d6386a7871"); //tomer
         IBitgoEnterprise ent = Global.ent;
         Log.d(TAG, "rates: "+ent.getAllExchangeRates());
         log( "me: "+ent.getMe().name);
 
-        List<IBitgoWallet> allw = ent.getMergedWallets();
+            List<IBitgoWallet> allw = ent.getMergedWallets();
         IBitgoWallet w = allw.get(0);
 
 //        IBitgoWallet w = ent.getWallets("teth").get(3);
