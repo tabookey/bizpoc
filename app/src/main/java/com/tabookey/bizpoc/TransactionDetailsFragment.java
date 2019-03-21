@@ -43,6 +43,7 @@ public class TransactionDetailsFragment extends Fragment {
 
     View progressBar;
     TextView senderNameTextView;
+    TextView recipientNameTextView;
     TextView senderAddressTextView;
     TextView guardiansApprovalTitle;
     ListView guardiansListView;
@@ -70,6 +71,7 @@ public class TransactionDetailsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         senderNameTextView = view.findViewById(R.id.senderNameTextView);
+        recipientNameTextView = view.findViewById(R.id.recipientNameTextView);
         senderAddressTextView = view.findViewById(R.id.senderAddressTextView);
         recipientAddressTextView = view.findViewById(R.id.recipientAddressTextView);
         etherSendAmountTextView = view.findViewById(R.id.etherSendAmount);
@@ -124,9 +126,6 @@ public class TransactionDetailsFragment extends Fragment {
         } else {
             throw new RuntimeException("No transaction object");
         }
-        String name = Global.ent.getMe().name;
-        senderNameTextView.setText(name);
-        senderAddressTextView.setText(ethWallet.getAddress());
     }
 
     private void cancelTransaction() {
@@ -172,13 +171,30 @@ public class TransactionDetailsFragment extends Fragment {
         dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
         recipientAddressTextView.setText(pendingApproval.recipientAddr);
         transactionCommentTextView.setText(pendingApproval.comment);
+        String name = Global.ent.getMe().name;
+        senderNameTextView.setText(name);
+        senderAddressTextView.setText(ethWallet.getAddress());
+        recipientNameTextView.setVisibility(View.GONE);
     }
 
     private void fillTransfer() {
         double etherDouble = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
         etherSendAmountTextView.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
         dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
-        recipientAddressTextView.setText(transfer.remoteAddress);
         transactionCommentTextView.setText(transfer.comment);
+        boolean isOutgoingTx = transfer.valueString.contains("-");
+        String name = Global.ent.getMe().name;
+        if (isOutgoingTx){
+            recipientNameTextView.setVisibility(View.GONE);
+            senderNameTextView.setText(name);
+            senderAddressTextView.setText(ethWallet.getAddress());
+            recipientAddressTextView.setText(transfer.remoteAddress);
+        }
+        else {
+            senderNameTextView.setVisibility(View.GONE);
+            recipientNameTextView.setText(name);
+            recipientAddressTextView.setText(ethWallet.getAddress());
+            senderAddressTextView.setText(transfer.remoteAddress);
+        }
     }
 }
