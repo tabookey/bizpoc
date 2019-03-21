@@ -36,7 +36,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 
-class SecretStorge {
+class SecretStorage {
 
 
     static final String PREFS_API_KEY_ENCODED = "api_key_encoded";

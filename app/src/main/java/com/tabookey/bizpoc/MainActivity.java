@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     private void promptFingerprint() {
         try {
 
-            String encryptedApiKey = SecretStorge.getPrefs(this).getString(SecretStorge.PREFS_API_KEY_ENCODED, null);
+            String encryptedApiKey = SecretStorage.getPrefs(this).getString(SecretStorage.PREFS_API_KEY_ENCODED, null);
 
             if (encryptedApiKey == null) {
                 Fragment apiKeyFragment = new ImportApiKeyFragment();
@@ -47,10 +47,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 return;
             }
 
-            byte[] array = SecretStorge.getEncryptedBytes(encryptedApiKey);
+            byte[] array = SecretStorage.getEncryptedBytes(encryptedApiKey);
             FingerprintAuthenticationDialogFragment fragment
                     = new FingerprintAuthenticationDialogFragment();
-            fragment.mCryptoObject = SecretStorge.getCryptoObject();
+            fragment.mCryptoObject = SecretStorage.getCryptoObject();
             fragment.input = array;
             fragment.title = getString(R.string.sign_in);
             fragment.cancelled = this::finish;

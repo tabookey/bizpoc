@@ -26,14 +26,14 @@ import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.Arrays;
 
-import static com.tabookey.bizpoc.SecretStorge.PREFS_API_KEY_ENCODED;
-import static com.tabookey.bizpoc.SecretStorge.PREFS_PASSWORD_ENCODED;
+import static com.tabookey.bizpoc.SecretStorage.PREFS_API_KEY_ENCODED;
+import static com.tabookey.bizpoc.SecretStorage.PREFS_PASSWORD_ENCODED;
 
 //https://stackoverflow.com/questions/46875774/using-fingerprints-for-encryption-in-combination-with-a-password
 public class ImportApiKeyFragment extends Fragment {
 
     private View progressBar;
-    private SecretStorge secretStorge = new SecretStorge();
+    private SecretStorage secretStorage = new SecretStorage();
     String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
     private AppCompatActivity mActivity;
     private TextView testNameTextView;
@@ -114,11 +114,11 @@ public class ImportApiKeyFragment extends Fragment {
                         scanApiKeyButton.setVisibility(View.GONE);
                         testNameTextView.setText("wallet name is: " + name);
                     });
-                    byte[] encryptToken = secretStorge.encrypt(tokenPassword.token.getBytes());
+                    byte[] encryptToken = secretStorage.encrypt(tokenPassword.token.getBytes());
                     String encryptedToken = Arrays.toString(encryptToken);
-                    byte[] encryptPwd = secretStorge.encrypt(tokenPassword.password.getBytes());
+                    byte[] encryptPwd = secretStorage.encrypt(tokenPassword.password.getBytes());
                     String encryptedPassword = Arrays.toString(encryptPwd);
-                    SecretStorge.getPrefs(mActivity).edit()
+                    SecretStorage.getPrefs(mActivity).edit()
                             .putString(PREFS_API_KEY_ENCODED, encryptedToken)
                             .putString(PREFS_PASSWORD_ENCODED, encryptedPassword)
                             .apply();

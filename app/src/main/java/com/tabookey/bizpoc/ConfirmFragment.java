@@ -2,6 +2,7 @@ package com.tabookey.bizpoc;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.support.annotation.NonNull;
@@ -27,7 +28,6 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
-import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ConfirmFragment extends Fragment {
+    private static final String PREFS_TXID_COUNTER = "prefs_txid_counter";
     private AppCompatActivity mActivity;
     TextView recipientAddress;
     TextView dollarEquivalent;
@@ -110,15 +111,15 @@ public class ConfirmFragment extends Fragment {
             if (activity == null) {
                 return;
             }
-            String encryptedPassword = SecretStorge.getPrefs(activity).getString(SecretStorge.PREFS_PASSWORD_ENCODED, null);
+            String encryptedPassword = SecretStorage.getPrefs(activity).getString(SecretStorage.PREFS_PASSWORD_ENCODED, null);
             if (encryptedPassword == null) {
                 Toast.makeText(activity, "Something wrong - password not saved?", Toast.LENGTH_LONG).show();
                 return;
             }
-            byte[] array = SecretStorge.getEncryptedBytes(encryptedPassword);
+            byte[] array = SecretStorage.getEncryptedBytes(encryptedPassword);
             FingerprintAuthenticationDialogFragment fragment
                     = new FingerprintAuthenticationDialogFragment();
-            fragment.mCryptoObject = SecretStorge.getCryptoObject();
+            fragment.mCryptoObject = SecretStorage.getCryptoObject();
             fragment.input = array;
             fragment.title = "Authorize transaction";
             fragment.callback = result -> {
@@ -145,8 +146,10 @@ public class ConfirmFragment extends Fragment {
             @Override
             public void run() {
                 try {
-                    SendRequest req = new SendRequest("teth", sendRequest.amount, sendRequest.recipientAddress, otp, password, sendRequest.comment);
-                    String pendingTxId = mBitgoWallet.sendCoins(req, null);
+                    sendRequest.otp = otp;
+                    sendRequest.walletPassphrase = password;
+                    sendRequest.comment = getNewMemoID();
+                    String pendingTxId = mBitgoWallet.sendCoins(sendRequest, null);
                     dollarEquivalent.post(() -> progressBar.setVisibility(View.GONE));
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();
@@ -198,5 +201,25 @@ public class ConfirmFragment extends Fragment {
             return;
         }
         activity.promptOtp((otp) -> sendTransaction(password, otp));
+    }
+
+
+    /**
+     * The bitgo IDs are not reliable and not visible to the guardians.
+     * They require a way to tell similar transactions apart easily.
+     *
+     * @return a string that will be used as an ID by both client and guardians.
+     * It will be saved in 'comment' field of the transaction.
+     * ! Not reused between requests, threads - cannot generate 2 transactions with same id
+     */
+    private String getNewMemoID() {
+        synchronized (this) {
+            SharedPreferences prefs = SecretStorage.getPrefs(mActivity);
+            int txidCounter = prefs.getInt(PREFS_TXID_COUNTER, 1);
+            prefs.edit()
+                    .putInt(PREFS_TXID_COUNTER, txidCounter + 1)
+                    .apply();
+            return String.format(Locale.US, "TX-%03d", txidCounter);
+        }
     }
 }

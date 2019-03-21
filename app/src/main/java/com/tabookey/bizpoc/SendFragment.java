@@ -153,7 +153,7 @@ public class SendFragment extends Fragment {
         String destination = destinationEditText.getText().toString();
         String amountInput = etherSendAmountEditText.getText().toString();
         BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal("1000000000000000000")).toBigInteger();
-        SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination, "000000", "passphrase", getNewMemoID());
+        SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination, null, null, null);
         cf.setRequest(sendRequest);
         cf.exchangeRate = exchangeRate;
         cf.guardians = guardians;
@@ -206,18 +206,6 @@ public class SendFragment extends Fragment {
         }
         double etherDouble = Double.parseDouble(etherAmount);
         dollarEquivalent.setText(String.format(Locale.US, "$%.2f", etherDouble * exchangeRate.average24h));
-    }
-
-    /**
-     * The bitgo IDs are not reliable and not visible to the guardians.
-     * They require a way to tell similar transactions apart easily.
-     *
-     * @return a string that will be used as an ID by both client and guardians.
-     * It will be saved in 'comment' field of the transaction.
-     */
-    private String getNewMemoID() {
-        int memoId = 100000 + new Random().nextInt(899999);
-        return "TXID" + memoId;
     }
 
     @Override
