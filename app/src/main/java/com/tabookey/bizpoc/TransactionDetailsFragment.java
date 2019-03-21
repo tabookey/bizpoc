@@ -65,10 +65,6 @@ public class TransactionDetailsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Activity activity = getActivity();
-        if (activity == null) {
-            return;
-        }
         senderNameTextView = view.findViewById(R.id.senderNameTextView);
         senderAddressTextView = view.findViewById(R.id.senderAddressTextView);
         recipientAddressTextView = view.findViewById(R.id.recipientAddressTextView);
@@ -103,7 +99,7 @@ public class TransactionDetailsFragment extends Fragment {
             String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", pendingApproval.createDate).toString();
             transactionDateText.setText(dateFormat);
             cancelTransaction.setOnClickListener(v -> {
-                AlertDialog dialog = new AlertDialog.Builder(activity).create();
+                AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
                 dialog.setTitle("Are you sure you want to canccel the transaction?");
                 dialog.setMessage("This transaction will be cancelled (and your guardians will be notified about this change)");
                 dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes, I'm sure",

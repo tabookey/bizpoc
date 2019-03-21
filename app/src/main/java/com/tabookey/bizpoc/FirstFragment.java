@@ -52,11 +52,6 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Button sendButton = view.findViewById(R.id.sendButton);
-        FragmentActivity activity = getActivity();
-        if (activity == null) {
-            return;
-        }
-
         balancesListView = view.findViewById(R.id.balancesListView);
         progressView = view.findViewById(R.id.progressView);
         progressBar = view.findViewById(R.id.progressBar);
@@ -68,7 +63,7 @@ public class FirstFragment extends Fragment {
             sf.exchangeRate = exchangeRate;
             sf.guardians = guardians;
             sf.balances = balances;
-            activity.getSupportFragmentManager()
+            mActivity.getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.frame_layout, sf, MainActivity.SEND_FRAGMENT)
                     .addToBackStack("to_send").commit();
@@ -79,7 +74,7 @@ public class FirstFragment extends Fragment {
             TransactionsFragment tf = new TransactionsFragment();
             tf.mExchangeRate = exchangeRate;
             tf.mGuardians = guardians;
-            activity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
+            mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
         });
 
         fillWindow();

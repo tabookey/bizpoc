@@ -92,10 +92,6 @@ public class TransactionsFragment extends Fragment {
                 ethWallet = Global.ent.getWallets("teth").get(0);
                 pendingApprovals = ethWallet.getPendingApprovals();
                 transfers = ethWallet.getTransfers();
-                Activity activity = getActivity();
-                if (activity == null) {
-                    return;
-                }
             } catch (Exception e) {
                 mActivity.runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
@@ -105,7 +101,7 @@ public class TransactionsFragment extends Fragment {
             }
             mActivity.runOnUiThread(() -> {
                 progressView.setVisibility(View.GONE);
-                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(getActivity(), mExchangeRate);
+                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate);
                 historyAdapter.addItem("Pending");
                 historyAdapter.addItems(pendingApprovals);
                 historyAdapter.addItem("History");

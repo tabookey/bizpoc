@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
@@ -50,6 +51,8 @@ public class SendFragment extends Fragment {
 
     TextView amountRequiredNote;
     TextView destinationRequiredNote;
+    TextView balanceTextView;
+    double maximumTransferValue = 0;
 
 
     @Nullable
@@ -66,6 +69,15 @@ public class SendFragment extends Fragment {
 
         amountRequiredNote = view.findViewById(R.id.amountRequiredNote);
         destinationRequiredNote = view.findViewById(R.id.destinationRequiredNote);
+        balanceTextView = view.findViewById(R.id.balanceTextView);
+        for (BalancesAdapter.Balance b :
+                balances) {
+            if (b.coinName.toLowerCase().equals("teth")) { // TODO: support different currencies
+                maximumTransferValue = b.getValue();
+                balanceTextView.setText(String.format(Locale.US, "Maximum: %.6f %s", maximumTransferValue, b.coinName.toUpperCase()));
+                break;
+            }
+        }
 
         Button selectCoinButton = view.findViewById(R.id.selectCoinButton);
         selectCoinButton.setOnClickListener(v -> {
@@ -147,12 +159,36 @@ public class SendFragment extends Fragment {
     }
 
     private boolean isEnteredValueValid() {
-        boolean amount = etherSendAmountEditText.getText().toString().length() != 0;
-        boolean destination = destinationEditText.getText().toString().length() != 0;
-        amountRequiredNote.setVisibility(amount ? View.GONE : View.VISIBLE);
-        destinationRequiredNote.setVisibility(destination ? View.GONE : View.VISIBLE);
-        return amount
-                && destination;
+        amountRequiredNote.setText("Required");
+        destinationRequiredNote.setText("Required");
+        String amountString = etherSendAmountEditText.getText().toString();
+        boolean isAmountValid = amountString.length() != 0;
+        try {
+            double v = Double.parseDouble(amountString);
+            if (v > maximumTransferValue) {
+                amountRequiredNote.setText("Larger than balance");
+                isAmountValid = false;
+            }
+        } catch (Exception e) {
+            isAmountValid = false;
+        }
+        String destination = destinationEditText.getText().toString();
+        boolean isDestinationValid = AddressChecker.isValidAddress(destination);
+        boolean isDestinationChecksummed = AddressChecker.isCheckedAddress(destination);
+        if (!isDestinationValid) {
+            destinationRequiredNote.setText("Not a valid address");
+        } else if (!isDestinationChecksummed) {
+            AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
+            dialog.setTitle("The address is not checksummed");
+            dialog.setMessage("This address you have inserted does not seem to have a correct checksum. " +
+                    "This can indicate you got the address from a client  that does not support EIP-55 style checksum, " +
+                    "or that the address is invalid. Proceed on your own discretion.");
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "I understand", (d, w) -> d.dismiss());
+            dialog.show();
+        }
+        amountRequiredNote.setVisibility(isAmountValid ? View.GONE : View.VISIBLE);
+        destinationRequiredNote.setVisibility(isDestinationValid ? View.GONE : View.VISIBLE);
+        return isAmountValid && isDestinationValid;
     }
 
     private void setDollarEquivalent() {
