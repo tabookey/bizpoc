@@ -48,7 +48,7 @@ public class CoinSender extends WebViewExecutor {
     }
 
     public boolean checkPassphrase(IBitgoWallet wallet, String passphrase, IBitgoWallet.StatusCB cb) {
-        SendRequest req = new SendRequest(wallet.getCoins().get(0), null,null,null,passphrase,null);
+        SendRequest req = new SendRequest(wallet.getCoins().get(0), "", null,null,null,passphrase,null);
 
         AppObject appObject = new AppObject(wallet, req, cb);
         exec("www/verify.html", appObject);

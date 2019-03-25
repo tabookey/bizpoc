@@ -21,7 +21,7 @@ public class TokenInfo {
         if (type.length() == 0) {
             return coin;
         }
-        return type
+        return type;
     }
 
     public TokenInfo(String type, String coin, String network, String tokenContractAddress, int decimalPlaces, String name, String logo, String fullDisplay, String shortDisplay) {

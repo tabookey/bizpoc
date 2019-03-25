@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         promptFingerprint();
     }
 
-    private void promptFingerprint() {
+    public void promptFingerprint() {
         try {
 
             String encryptedApiKey = SecretStorage.getPrefs(this).getString(SecretStorage.PREFS_API_KEY_ENCODED, null);
@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 String apiKeyPlaintext = new String(apiKeyBytes);
                 Global.setAccessToken(apiKeyPlaintext);
                 mFirstFragment = new FirstFragment();
+                // If we re-scan fingerprint, we also re-show splash loading view
+                FirstFragment.didShowSplashScreen = false;
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.frame_layout, mFirstFragment).commit();
             };

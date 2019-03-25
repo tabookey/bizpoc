@@ -82,7 +82,7 @@ public class TestSendActivity extends AppCompatActivity {
         });
         if ( this==null ) return;
         String dest = "0xd21934eD8eAf27a67f0A70042Af50A1D6d195E81";
-        SendRequest req = new SendRequest("teth", "1122334455667788", dest,
+        SendRequest req = new SendRequest("teth", "", "1122334455667788", dest,
                 "0000000", "asd/asd-ASD", "comment");
 
         w.sendCoins(req, (type, msg) -> log("== "+type+": "+msg) );

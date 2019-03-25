@@ -3,6 +3,10 @@ package com.tabookey.bizpoc.impl;
 import android.app.Activity;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
+import android.widget.ImageView;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -23,23 +27,28 @@ import static com.bumptech.glide.util.Preconditions.checkArgument;
 public class Utils {
 
     public static String getDayOfMonthSuffix(Date date) {
-        SimpleDateFormat formatDayOfMonth  = new SimpleDateFormat("d");
+        SimpleDateFormat formatDayOfMonth = new SimpleDateFormat("d");
         int n = Integer.parseInt(formatDayOfMonth.format(date));
         checkArgument(n >= 1 && n <= 31, "illegal day of month: " + n);
         if (n >= 11 && n <= 13) {
             return "th";
         }
         switch (n % 10) {
-            case 1:  return "st";
-            case 2:  return "nd";
-            case 3:  return "rd";
-            default: return "th";
+            case 1:
+                return "st";
+            case 2:
+                return "nd";
+            case 3:
+                return "rd";
+            default:
+                return "th";
         }
     }
+
     static ObjectMapper sJson = new ObjectMapper()
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-            .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES,true)
-            .configure(JsonParser.Feature.ALLOW_COMMENTS,true)
+            .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+            .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -51,7 +60,7 @@ public class Utils {
         }
     }
 
-    public static <T>  T fromJson(String json, Class<T> cls) {
+    public static <T> T fromJson(String json, Class<T> cls) {
         try {
             return sJson.readValue(json, cls);
         } catch (IOException e) {
@@ -59,17 +68,17 @@ public class Utils {
         }
     }
 
-    public static double integerStringToCoinDouble(String weiString, int decimals){
+    public static double integerStringToCoinDouble(String weiString, int decimals) {
         try {
             BigDecimal bigIntBalance = new BigDecimal(weiString);
             BigDecimal divide = bigIntBalance.divide(new BigDecimal(Math.pow(10, decimals)), 10, RoundingMode.HALF_UP);
             return divide.doubleValue();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return 0;
         }
     }
+
     public static void showErrorDialog(Activity activity, String errorMessage) {
         if (activity == null) {
             return;
@@ -82,5 +91,16 @@ public class Utils {
         alertDialog.show();
     }
 
+    public static void animateImageView(ImageView progressImageView) {
+        RotateAnimation anim = new RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
+                0.5f);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setRepeatCount(Animation.INFINITE);
+        anim.setDuration(2700);
+        // Start animating the image
+        progressImageView.startAnimation(anim);
+        // Later, stop the animation
+        // splash.setAnimation(null);
+    }
 
 }

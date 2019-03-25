@@ -160,7 +160,7 @@ public class SendFragment extends Fragment {
         String destination = destinationEditText.getText().toString();
         String amountInput = etherSendAmountEditText.getText().toString();
         BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal(selectedToken.decimalPlaces)).toBigInteger();
-        SendRequest sendRequest = new SendRequest(selectedToken.getTokenCode(), amountBigInt.toString(), destination, null, null, null);
+        SendRequest sendRequest = new SendRequest(selectedToken.coin, selectedToken.type,amountBigInt.toString(), destination, null, null, null);
         cf.setRequest(sendRequest);
         cf.exchangeRate = exchangeRate;
         cf.guardians = guardians;

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,10 +16,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.ybq.android.spinkit.SpinKitView;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
@@ -30,8 +31,9 @@ import java.util.List;
 import java.util.Locale;
 
 public class FirstFragment extends Fragment {
+    public static boolean didShowSplashScreen = false;
     private View progressView;
-    private ProgressBar progressBar;
+    private SpinKitView progressBar;
     private Button retryButton;
     private ExchangeRate exchangeRate;
     private ListView balancesListView;
@@ -41,6 +43,7 @@ public class FirstFragment extends Fragment {
     List<BitgoUser> guardians;
     List<BalancesAdapter.Balance> balances;
     private IBitgoWallet mBitgoWallet;
+    private View mainContentsLayout;
 
     @Nullable
     @Override
@@ -52,6 +55,7 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Button sendButton = view.findViewById(R.id.sendButton);
+        mainContentsLayout = view.findViewById(R.id.mainContentsLayout);
         balancesListView = view.findViewById(R.id.balancesListView);
         progressView = view.findViewById(R.id.progressView);
         progressBar = view.findViewById(R.id.progressBar);
@@ -98,6 +102,11 @@ public class FirstFragment extends Fragment {
         progressView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);
         retryButton.setVisibility(View.GONE);
+        if (didShowSplashScreen){
+            progressView.setBackgroundColor(Color.WHITE);
+            progressBar.setColor(R.color.colorPrimaryDark);
+        }
+        didShowSplashScreen = true;
         new Thread() {
             public void run() {
                 double assetsWorth = 0;
@@ -130,6 +139,7 @@ public class FirstFragment extends Fragment {
                 double finalAssetsWorth = assetsWorth;
                 mActivity.runOnUiThread(() -> {
                     progressView.setVisibility(View.GONE);
+                    mainContentsLayout.setVisibility(View.VISIBLE);
                     View view = getView();
                     if (view == null) {
                         return;
