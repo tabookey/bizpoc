@@ -116,9 +116,9 @@ public class Utils {
 
         int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
         int totalHeight = 0;
-        View view = null;
+        View view;
         for (int i = 0; i < listAdapter.getCount(); i++) {
-            view = listAdapter.getView(i, view, listView);
+            view = listAdapter.getView(i, null, listView);
             if (i == 0)
                 view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
 

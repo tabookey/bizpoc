@@ -25,7 +25,9 @@ import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
+import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.TokenInfo;
+import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
@@ -37,7 +39,7 @@ public class FirstFragment extends Fragment {
     private View progressView;
     private SpinKitView progressBar;
     private Button retryButton;
-    private ExchangeRate exchangeRate;
+    private ExchangeRate mExchangeRate;
     private ListView balancesListView;
     BalancesAdapter adapter;
     private TextView balanceInDollarsText;
@@ -46,6 +48,9 @@ public class FirstFragment extends Fragment {
     List<BalancesAdapter.Balance> balances;
     private IBitgoWallet mBitgoWallet;
     private View mainContentsLayout;
+    private ListView historyListView;
+    private ListView pendingListView;
+    private TextView pendingTitle;
 
     @Nullable
     @Override
@@ -59,14 +64,17 @@ public class FirstFragment extends Fragment {
         FloatingActionButton sendButton = view.findViewById(R.id.sendButton);
         mainContentsLayout = view.findViewById(R.id.mainContentsLayout);
         balancesListView = view.findViewById(R.id.balancesListView);
+        historyListView = view.findViewById(R.id.historyListView);
+        pendingListView = view.findViewById(R.id.pendingListView);
         progressView = view.findViewById(R.id.progressView);
         progressBar = view.findViewById(R.id.progressBar);
         retryButton = view.findViewById(R.id.retryButton);
+        pendingTitle = view.findViewById(R.id.pendingTitle);
         retryButton.setOnClickListener(v -> fillWindow());
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
-            sf.exchangeRate = exchangeRate;
+            sf.exchangeRate = mExchangeRate;
             sf.guardians = guardians;
             sf.balances = balances;
             sf.mBitgoWallet = mBitgoWallet;
@@ -79,7 +87,7 @@ public class FirstFragment extends Fragment {
         Button transactionsButton = view.findViewById(R.id.transactionsButton);
         transactionsButton.setOnClickListener(v -> {
             TransactionsFragment tf = new TransactionsFragment();
-            tf.mExchangeRate = exchangeRate;
+            tf.mExchangeRate = mExchangeRate;
             tf.mGuardians = guardians;
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
         });
@@ -115,7 +123,7 @@ public class FirstFragment extends Fragment {
                 try {
                     List<IBitgoWallet> allw = Global.ent.getMergedWallets();
                     mBitgoWallet = allw.get(0);
-                    exchangeRate = Global.ent.getMarketData("teth");
+                    mExchangeRate = Global.ent.getMarketData("teth");
                     List<String> coins = mBitgoWallet.getCoins();
                     balances = new ArrayList<>();
                     for (String coin : coins) {
@@ -131,6 +139,36 @@ public class FirstFragment extends Fragment {
                         assetsWorth += balance.getDollarValue();
                     }
                     guardians = mBitgoWallet.getGuardians();
+
+                    /* * * */
+                    List<PendingApproval> pendingApprovals;
+                    List<Transfer> transfers;
+                    try {
+                        pendingApprovals = mBitgoWallet.getPendingApprovals();
+                        transfers = mBitgoWallet.getTransfers();
+                    } catch (Exception e) {
+                        mActivity.runOnUiThread(() -> {
+                            progressBar.setVisibility(View.GONE);
+                            retryButton.setVisibility(View.VISIBLE);
+                        });
+                        return;
+                    }
+                    mActivity.runOnUiThread(() -> {
+                        progressView.setVisibility(View.GONE);
+                        TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate);
+                        if ( pendingApprovals.size()>0) {
+                            pendingTitle.setVisibility(View.VISIBLE);
+                            pendingListView.setVisibility(View.VISIBLE);
+                            TransactionHistoryAdapter pendingAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate);
+                            pendingAdapter.addItems(pendingApprovals);
+                            pendingListView.setAdapter(pendingAdapter);
+                            Utils.setListViewHeightBasedOnChildren(pendingListView);
+                        }
+                        historyAdapter.addItem("History");
+                        historyAdapter.addItems(transfers);
+                        historyListView.setAdapter(historyAdapter);
+                        Utils.setListViewHeightBasedOnChildren(historyListView);
+                    });
                 } catch (Exception e) {
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);

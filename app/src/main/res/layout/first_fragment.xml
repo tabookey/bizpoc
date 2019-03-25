@@ -102,6 +102,7 @@
                     android:layout_height="wrap_content" />
 
                 <TextView
+                    android:id="@+id/pendingTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="16dp"
@@ -173,7 +174,7 @@
             android:backgroundTint="@color/colorPrimaryDark"
             android:elevation="21dp"
             android:onClick="onCreateTransactionClick"
-            android:src="@drawable/ic_share_blue_24dp" />
+            android:src="@drawable/ic_plus_white_24dp" />
     </FrameLayout>
 
     <FrameLayout
