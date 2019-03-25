@@ -151,7 +151,7 @@ public class FirstFragment extends Fragment {
                     owner.setText(String.format("Welcome %s", Global.ent.getMe().name));
                     adapter = new BalancesAdapter(mActivity, 0, balances);
                     balancesListView.setAdapter(adapter);
-                    ImageButton copyButton = view.findViewById(R.id.copyButton);
+                    ImageButton copyButton = view.findViewById(R.id.shareButton);
                     copyButton.setOnClickListener(v -> {
                         ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
                         if (clipboard == null) {
