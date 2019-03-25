@@ -14,6 +14,16 @@ public class TokenInfo {
     public TokenInfo() {
     }
 
+    /**
+     * @return {@link TokenInfo::coin} for native token, {@link TokenInfo::type} for tokens
+     */
+    public String getTokenCode() {
+        if (type.length() == 0) {
+            return coin;
+        }
+        return type
+    }
+
     public TokenInfo(String type, String coin, String network, String tokenContractAddress, int decimalPlaces, String name, String logo, String fullDisplay, String shortDisplay) {
         this.type = type;
         this.coin = coin;

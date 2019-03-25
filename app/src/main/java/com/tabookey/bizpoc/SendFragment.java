@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
+import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
@@ -36,7 +37,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
@@ -55,7 +55,7 @@ public class SendFragment extends Fragment {
     TextView destinationRequiredNote;
     TextView balanceTextView;
     double maximumTransferValue = 0;
-
+    TokenInfo selectedToken = Global.ent.getTokens().get("teth");
 
     @Nullable
     @Override
@@ -72,14 +72,7 @@ public class SendFragment extends Fragment {
         amountRequiredNote = view.findViewById(R.id.amountRequiredNote);
         destinationRequiredNote = view.findViewById(R.id.destinationRequiredNote);
         balanceTextView = view.findViewById(R.id.balanceTextView);
-        for (BalancesAdapter.Balance b :
-                balances) {
-            if (b.coinName.toLowerCase().equals("teth")) { // TODO: support different currencies
-                maximumTransferValue = b.getValue();
-                balanceTextView.setText(String.format(Locale.US, "Maximum: %.6f %s", maximumTransferValue, b.coinName.toUpperCase()));
-                break;
-            }
-        }
+        updateTokenBalance();
 
         Button selectCoinButton = view.findViewById(R.id.selectCoinButton);
         selectCoinButton.setOnClickListener(v -> {
@@ -87,7 +80,10 @@ public class SendFragment extends Fragment {
             CryptoCurrencySpinnerAdapter cryptoCurrencySpinnerAdapter = new CryptoCurrencySpinnerAdapter(mActivity, collect);
             new AlertDialog.Builder(mActivity)
                     .setTitle("Select token")
-                    .setAdapter(cryptoCurrencySpinnerAdapter, (a, which) -> {
+                    .setAdapter(cryptoCurrencySpinnerAdapter, (dialog, index) -> {
+                        selectedToken = collect.get(index);
+                        selectCoinButton.setText(selectedToken.getTokenCode().toUpperCase());
+                        updateTokenBalance();
                     })
                     .create().show();
         });
@@ -145,6 +141,17 @@ public class SendFragment extends Fragment {
         });
     }
 
+    private void updateTokenBalance() {
+        for (BalancesAdapter.Balance b :
+                balances) {
+            if (b.coinName.toLowerCase().equals(selectedToken.getTokenCode())) {
+                maximumTransferValue = b.getValue();
+                balanceTextView.setText(String.format(Locale.US, "Maximum: %.6f %s", maximumTransferValue, b.coinName.toUpperCase()));
+                break;
+            }
+        }
+    }
+
     private void moveToContinue() {
         if (!isEnteredValueValid()) {
             return;
@@ -152,8 +159,8 @@ public class SendFragment extends Fragment {
         ConfirmFragment cf = new ConfirmFragment();
         String destination = destinationEditText.getText().toString();
         String amountInput = etherSendAmountEditText.getText().toString();
-        BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal("1000000000000000000")).toBigInteger();
-        SendRequest sendRequest = new SendRequest("teth", amountBigInt.toString(), destination, null, null, null);
+        BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal(selectedToken.decimalPlaces)).toBigInteger();
+        SendRequest sendRequest = new SendRequest(selectedToken.getTokenCode(), amountBigInt.toString(), destination, null, null, null);
         cf.setRequest(sendRequest);
         cf.exchangeRate = exchangeRate;
         cf.guardians = guardians;
