@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.TokenInfo;
+import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +56,7 @@ public class FirstFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Button sendButton = view.findViewById(R.id.sendButton);
+        FloatingActionButton sendButton = view.findViewById(R.id.sendButton);
         mainContentsLayout = view.findViewById(R.id.mainContentsLayout);
         balancesListView = view.findViewById(R.id.balancesListView);
         progressView = view.findViewById(R.id.progressView);
@@ -102,7 +104,7 @@ public class FirstFragment extends Fragment {
         progressView.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);
         retryButton.setVisibility(View.GONE);
-        if (didShowSplashScreen){
+        if (didShowSplashScreen) {
             progressView.setBackgroundColor(Color.WHITE);
             progressBar.setColor(R.color.colorPrimaryDark);
         }
@@ -151,6 +153,7 @@ public class FirstFragment extends Fragment {
                     owner.setText(String.format("Welcome %s", Global.ent.getMe().name));
                     adapter = new BalancesAdapter(mActivity, 0, balances);
                     balancesListView.setAdapter(adapter);
+                    Utils.setListViewHeightBasedOnChildren(balancesListView);
                     ImageButton copyButton = view.findViewById(R.id.shareButton);
                     copyButton.setOnClickListener(v -> {
                         ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
