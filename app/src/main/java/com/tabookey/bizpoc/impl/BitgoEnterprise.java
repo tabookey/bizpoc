@@ -157,6 +157,11 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         }
     }
 
+    public String getFullName(String userid) {
+        UserMeResp.User u = http.get("/api/v2/user/"+userid, UserMeResp.class).user;
+        return u.name==null ? null : u.name.full;
+    }
+
     @Override
     public BitgoUser getMe() {
         if ( userMe==null ) {
@@ -256,10 +261,13 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         public UserResp[] nonAdminUsers;
     }
 
-    public BitgoUser getUserById(String id) {
+    public BitgoUser getUserById(String id, boolean withFullName) {
         for (BitgoUser u : getUsers()) {
-            if (u.id.equals(id))
+            if (u.id.equals(id)) {
+                if ( withFullName && u.name.equals(u.email) )
+                    u.name = getFullName(u.id);
                 return u;
+            }
         }
         return null;
     }

@@ -24,7 +24,8 @@ public interface IBitgoEnterprise {
     List<BitgoUser> getUsers();
 
     //return specific user by ID, or "null" if not found.
-    BitgoUser getUserById(String id);
+    // @param withFullName - if true, make an extra call to fill in full name.
+    BitgoUser getUserById(String id, boolean withFullName);
 
     //return a list of wallets - each wallet object for ether and all tokens available on that wallet address
     List<IBitgoWallet> getMergedWallets();

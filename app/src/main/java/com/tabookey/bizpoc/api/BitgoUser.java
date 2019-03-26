@@ -8,7 +8,9 @@ public class BitgoUser {
     public enum Perm {view, spend, admin }
     public enum OtpType { yubikey, totp }
 
-    final public String id, email, name;
+    final public String id;
+    final public String email;
+    public String name;
     final public List<Perm> permissions;
 
     public List<OtpType> otpTypes;

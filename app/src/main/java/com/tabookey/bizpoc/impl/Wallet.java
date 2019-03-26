@@ -48,7 +48,7 @@ class Wallet implements IBitgoWallet {
         for (WalletUser user : walletData.users) {
             if (user.user.equals(ent.getMe().id))
                 continue;
-            BitgoUser g = new BitgoUser(ent.getUserById(user.user), Arrays.asList(user.permissions));
+            BitgoUser g = new BitgoUser(ent.getUserById(user.user,true), Arrays.asList(user.permissions));
             if ( hiddenUsers.contains(g.email)) {
                 Log.w("wallet", "hidden guardian:"+ g.email);
                 continue;
