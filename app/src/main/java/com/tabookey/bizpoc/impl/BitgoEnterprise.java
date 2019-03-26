@@ -38,7 +38,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
     public BitgoEnterprise(String accessKey, boolean test) {
         this.testNetwork=test;
-        Global.http = http = new HttpReq(accessKey, true);
+        Global.http = http = new HttpReq(accessKey, test);
         if ( testNetwork ) {
             baseCoin = new TokenInfo("teth", "teth", "Kovan", "", 18, "tEthereum", "https://cdn.iconscout.com/icon/free/png-256/ethereum-3-569581.png", "tEthereum", "tEther");
         }

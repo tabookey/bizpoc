@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -15,6 +17,7 @@ import static com.tabookey.bizpoc.impl.Utils.fromJson;
 import static com.tabookey.bizpoc.impl.Utils.toJson;
 
 public class HttpReq {
+    public static final String TAG = "http";
 
     boolean debug=true;
 
@@ -33,13 +36,16 @@ public class HttpReq {
         return host;
     }
 
+    //unfortunately, production bitgo uses a multi-domain certificate, which can't be pinned
+    // (changes too often), so there's no reason to pin the test certificate either..
+    // probably its an LB certificate of their service provider.
     //from: https://square.github.io/okhttp/3.x/okhttp/okhttp3/CertificatePinner.html
-    CertificatePinner certPinner = new CertificatePinner.Builder()
-            .add("*.bitgo.com", "sha256/rlM24Z6HZfQm71GKuqEO25xb7XP3AXTAU5kvJdkR9TI=")
-            .build();
+//    CertificatePinner certPinner = new CertificatePinner.Builder()
+//            .add("*.bitgo.com", "sha256/rlM24Z6HZfQm71GKuqEO25xb7XP3AXTAU5kvJdkR9TI=")
+//            .build();
 
     private OkHttpClient client = new OkHttpClient.Builder()
-            .certificatePinner(certPinner).build();
+            .build();
 
     public OkHttpClient getClient() { return client; }
 
@@ -76,11 +82,11 @@ public class HttpReq {
         try {
             Request request = bld.build();
             if ( debug )
-                System.err.println( "> "+request.method()+" "+ request.url());
+                Log.d(TAG, ">" + request.method() + " " + request.url());
             Response res = client.newCall(request).execute();
             String str = res.body().string();
             if ( debug )
-                System.err.println( "< "+str);
+                Log.d(TAG, "< "+str);
             if ( str.contains("\"error\"") ) {
                 JsonNode errdecs = fromJson(str, JsonNode.class);
                 throw new BitgoError(errdecs.get("name").asText(), errdecs.get("error").asText());

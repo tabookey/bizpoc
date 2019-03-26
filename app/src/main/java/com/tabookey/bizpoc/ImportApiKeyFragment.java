@@ -42,6 +42,7 @@ public class ImportApiKeyFragment extends Fragment {
     public static class TokenPassword {
         @SuppressWarnings("WeakerAccess")
         public String token, password;
+        public boolean prod;
     }
 
     @Nullable
@@ -103,6 +104,7 @@ public class ImportApiKeyFragment extends Fragment {
             new Thread(() -> {
                 try {
                     TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
+                    Global.setIsTest( !tokenPassword.prod );
                     Global.setAccessToken(tokenPassword.token);
                     String name = Global.ent.getMe().name;
                     IBitgoWallet wallet = Global.ent.getMergedWallets().get(0);
@@ -129,6 +131,7 @@ public class ImportApiKeyFragment extends Fragment {
                         mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, f).commit();
                     });
                 } catch (Exception e) {
+                    e.printStackTrace();
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
                         Utils.showErrorDialog(getActivity(), "Error", e.getMessage());
