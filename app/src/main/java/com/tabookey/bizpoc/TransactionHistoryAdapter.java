@@ -2,15 +2,17 @@ package com.tabookey.bizpoc;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
+import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
@@ -24,13 +26,15 @@ import java.util.Locale;
 class TransactionHistoryAdapter extends BaseAdapter {
 
     private final ExchangeRate mExchangeRate;
+    private final Context mContext;
+    List<BitgoUser> mGuardians;
 
     private void fillHistoryViewHolder(Transfer transfer, ViewHolder viewHolder) {
         String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", transfer.date).toString();
         viewHolder.dateTextView.setText(dateFormat);
         double value = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
         viewHolder.valueTextView.setText(String.format(Locale.US, "%.6f %s", value, transfer.coin.toUpperCase()));
-        if ( transfer.usd!=null ) {
+        if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
             viewHolder.dollarTextView.setText(String.format(Locale.US, "$%s", usd));
         }
@@ -39,7 +43,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
         boolean isOutgoingTx = transfer.valueString.contains("-");
         viewHolder.transactionStatus.setText(transfer.isRejected ? "Rejected" : isOutgoingTx ? "Sent" : "Received");
         viewHolder.transactionStatusIcon.setImageResource(transfer.isRejected ? android.R.drawable.ic_menu_close_clear_cancel :
-                 isOutgoingTx ? R.drawable.ic_arrow_upward_black_24dp : R.drawable.ic_arrow_downward_black_24dp);
+                isOutgoingTx ? R.drawable.ic_arrow_upward_black_24dp : R.drawable.ic_arrow_downward_black_24dp);
     }
 
     private void fillPendingViewHolder(PendingApproval pending, ViewHolder viewHolder) {
@@ -51,6 +55,11 @@ class TransactionHistoryAdapter extends BaseAdapter {
         viewHolder.dollarTextView.setText(String.format(Locale.US, "$%.2f", value * mExchangeRate.average24h));
         viewHolder.remoteTextView.setText(pending.recipientAddr);
         viewHolder.transactionComment.setText(String.format("Memo %s", pending.comment));
+
+//        viewHolder.guardiansRecyclerView.addItemDecoration(new MarginDecoration(this));
+        viewHolder.guardiansRecyclerView.setHasFixedSize(true);
+        viewHolder.guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mContext, 2));
+        viewHolder.guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(pending.getApprovals(mGuardians)));
     }
 
     private static final int TYPE_ITEM_PENDING = 0;
@@ -62,10 +71,12 @@ class TransactionHistoryAdapter extends BaseAdapter {
 
     private LayoutInflater mInflater;
 
-    TransactionHistoryAdapter(Context context, ExchangeRate exchangeRate) {
+    TransactionHistoryAdapter(Context context, ExchangeRate exchangeRate, List<BitgoUser> guardians) {
+        mContext = context;
         mInflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mExchangeRate = exchangeRate;
+        this.mGuardians = guardians;
     }
 
     void addItems(List item) {
@@ -129,7 +140,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
                     break;
                 case TYPE_ITEM_PENDING:
                     convertView = mInflater.inflate(R.layout.pending_transaction_line, null);
-                    holder.guardiansListView = convertView.findViewById(R.id.guardiansListView);
+                    holder.guardiansRecyclerView = convertView.findViewById(R.id.guardiansRecyclerView);
                     holder.dateTextView = convertView.findViewById(R.id.transactionDate);
                     holder.valueTextView = convertView.findViewById(R.id.transactionValue);
                     holder.dollarTextView = convertView.findViewById(R.id.transactionDollarValue);
@@ -169,7 +180,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
 
     public static class ViewHolder {
         TextView dateTextView, idTextView, valueTextView, dollarTextView, remoteTextView, transactionComment, transactionStatus;
-        ListView guardiansListView;
+        RecyclerView guardiansRecyclerView;
         ImageView transactionStatusIcon;
     }
 

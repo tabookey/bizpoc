@@ -155,11 +155,11 @@ public class FirstFragment extends Fragment {
                     }
                     mActivity.runOnUiThread(() -> {
                         progressView.setVisibility(View.GONE);
-                        TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate);
+                        TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate, null);
                         if ( pendingApprovals.size()>0) {
                             pendingTitle.setVisibility(View.VISIBLE);
                             pendingListView.setVisibility(View.VISIBLE);
-                            TransactionHistoryAdapter pendingAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate);
+                            TransactionHistoryAdapter pendingAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate, guardians);
                             pendingAdapter.addItems(pendingApprovals);
                             pendingListView.setAdapter(pendingAdapter);
                             Utils.setListViewHeightBasedOnChildren(pendingListView);

@@ -1,12 +1,10 @@
 package com.tabookey.bizpoc;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -30,7 +28,6 @@ import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 public class TransactionDetailsFragment extends Fragment {
 
@@ -155,16 +152,7 @@ public class TransactionDetailsFragment extends Fragment {
     private void fillPending() {
         double etherDouble = Utils.integerStringToCoinDouble(pendingApproval.amount, pendingApproval.token.decimalPlaces);
 
-        List<ApprovalsAdapter.Approval> collect = guardians.stream().map(b -> {
-            boolean isApproved = false;
-
-            for (BitgoUser user : pendingApproval.approvedByUsers) {
-                if (user.email.equals(b.email))
-                    isApproved = true;
-            }
-            return new ApprovalsAdapter.Approval(b.name, isApproved);
-
-        }).collect(Collectors.toList());
+        List<Approval> collect = pendingApproval.getApprovals(guardians);
         ApprovalsAdapter adapter = new ApprovalsAdapter(mActivity, 0, collect);
         guardiansListView.setAdapter(adapter);
         etherSendAmountTextView.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
@@ -184,13 +172,12 @@ public class TransactionDetailsFragment extends Fragment {
         transactionCommentTextView.setText(transfer.comment);
         boolean isOutgoingTx = transfer.valueString.contains("-");
         String name = Global.ent.getMe().name;
-        if (isOutgoingTx){
+        if (isOutgoingTx) {
             recipientNameTextView.setVisibility(View.GONE);
             senderNameTextView.setText(name);
             senderAddressTextView.setText(ethWallet.getAddress());
             recipientAddressTextView.setText(transfer.remoteAddress);
-        }
-        else {
+        } else {
             senderNameTextView.setVisibility(View.GONE);
             recipientNameTextView.setText(name);
             recipientAddressTextView.setText(ethWallet.getAddress());

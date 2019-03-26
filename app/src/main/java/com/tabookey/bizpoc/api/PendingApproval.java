@@ -1,7 +1,10 @@
 package com.tabookey.bizpoc.api;
 
+import com.tabookey.bizpoc.Approval;
+
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PendingApproval {
     public String id, recipientAddr, comment, coin, amount;
@@ -24,5 +27,18 @@ public class PendingApproval {
         this.approvedByUsers = approvedByUsers;
         this.creator = creator;
         this.token = token;
+    }
+
+    public List<Approval> getApprovals(List<BitgoUser> guardians) {
+        return guardians.stream().map(b -> {
+            boolean isApproved = false;
+
+            for (BitgoUser user : approvedByUsers) {
+                if (user.email.equals(b.email))
+                    isApproved = true;
+            }
+            return new Approval(b.name, isApproved);
+
+        }).collect(Collectors.toList());
     }
 }

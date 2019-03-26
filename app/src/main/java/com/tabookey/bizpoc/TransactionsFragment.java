@@ -101,7 +101,7 @@ public class TransactionsFragment extends Fragment {
             }
             mActivity.runOnUiThread(() -> {
                 progressView.setVisibility(View.GONE);
-                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate);
+                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate, null);
                 if ( pendingApprovals.size()>0) {
                     historyAdapter.addItem("Pending");
                     historyAdapter.addItems(pendingApprovals);

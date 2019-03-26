@@ -9,21 +9,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tabookey.bizpoc.api.PendingApproval;
-
 import java.util.List;
 
-public class ApprovalsAdapter extends ArrayAdapter<ApprovalsAdapter.Approval> {
+public class ApprovalsAdapter extends ArrayAdapter<Approval> {
 
-    static class Approval {
-        String name;
-        boolean isApproved;
-
-        public Approval(String name, boolean isApproved) {
-            this.name = name;
-            this.isApproved = isApproved;
-        }
-    }
 
     private Context context;
     private List<Approval> data;
@@ -39,10 +28,7 @@ public class ApprovalsAdapter extends ArrayAdapter<ApprovalsAdapter.Approval> {
         return data.size();
     }
 
-    //
-//    public String id, createDate, recipientAddr, comment, coin, amount;
-//    public List<BitgoUser> approvedByUsers;    //users who already approved (e.g sender himself)
-//    public BitgoUser creator;
+    @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
