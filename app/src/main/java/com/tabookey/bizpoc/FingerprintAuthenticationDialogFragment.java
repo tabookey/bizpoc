@@ -110,6 +110,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
 
     public interface Callback {
         void done(byte[] result);
+        void failed();
     }
 
     @Override
@@ -119,7 +120,9 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
         try {
             output = cipher.doFinal(input);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
+            callback.failed();
+            dismiss();
+            return;
         }
         callback.done(output);
         dismiss();

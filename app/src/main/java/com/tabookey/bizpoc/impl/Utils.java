@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
 import android.app.Activity;
+import android.content.Context;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
@@ -83,12 +84,12 @@ public class Utils {
         }
     }
 
-    public static void showErrorDialog(Activity activity, String errorMessage) {
-        if (activity == null) {
+    public static void showErrorDialog(Context context, String title, String errorMessage) {
+        if (context == null) {
             return;
         }
-        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-        alertDialog.setTitle("Transaction failed!");
+        AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+        alertDialog.setTitle(title);
         alertDialog.setMessage(errorMessage);
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                 (dialog, which) -> dialog.dismiss());

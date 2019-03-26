@@ -10,6 +10,8 @@ import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 import android.support.annotation.NonNull;
 
+import com.tabookey.bizpoc.impl.Utils;
+
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -118,10 +120,11 @@ class SecretStorage {
         void done(byte[] result);
     }
 
-    static CancellationSignal decrypt(Context context, final byte[] input, final Callback callback) throws KeyPermanentlyInvalidatedException {
+    /*
+    static CancellationSignal decrypt(Context context, final byte[] input, final Callback callback) {
         CancellationSignal cancellationSignal = new CancellationSignal();
         FingerprintManager fingerprintManager = (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
-        FingerprintManager.CryptoObject cryptoObject = getCryptoObject();
+        FingerprintManager.CryptoObject cryptoObject = getCryptoObject(context);
         fingerprintManager.authenticate(cryptoObject, cancellationSignal, 0, new FingerprintManager.AuthenticationCallback() {
             @Override
             public void onAuthenticationSucceeded(FingerprintManager.AuthenticationResult result) {
@@ -138,10 +141,15 @@ class SecretStorage {
         }, null);
         return cancellationSignal;
     }
-
-    @NonNull
-    static FingerprintManager.CryptoObject getCryptoObject() throws KeyPermanentlyInvalidatedException {
-        return new FingerprintManager.CryptoObject(getCipher(Cipher.DECRYPT_MODE, getPrivateKey()));
+*/
+    static FingerprintManager.CryptoObject getCryptoObject(Context context) {
+        try {
+            return new FingerprintManager.CryptoObject(getCipher(Cipher.DECRYPT_MODE, getPrivateKey()));
+        } catch (KeyPermanentlyInvalidatedException e) {
+            Utils.showErrorDialog(context, "Error", "You have changed the device authentication settings. You need to log in again.");
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private static Cipher getCipher(int mode, Key key) throws KeyPermanentlyInvalidatedException {

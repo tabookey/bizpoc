@@ -131,7 +131,7 @@ public class ImportApiKeyFragment extends Fragment {
                 } catch (Exception e) {
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
-                        Utils.showErrorDialog(getActivity(), e.getMessage());
+                        Utils.showErrorDialog(getActivity(), "Error", e.getMessage());
                     });
                 }
             }).start();

@@ -59,6 +59,7 @@ public class OtpDialogFragment extends DialogFragment {
                 Global.ent.getMe().hasOtp(BitgoUser.OtpType.totp)) {
             new Thread(() -> {
                 SystemClock.sleep(2000);
+                // TODO: this will crash if click 'cancel' too soon.
                 getActivity().runOnUiThread(() -> {
                     Toast.makeText(getActivity(), "Google Authenticator 000000", Toast.LENGTH_LONG).show();
                     onOtpTagRecognised("000000");

@@ -139,7 +139,7 @@ public class TransactionDetailsFragment extends Fragment {
                     mActivity.onBackPressed();
                 });
             } catch (Exception e) {
-                Utils.showErrorDialog(mActivity, e.getMessage());
+                Utils.showErrorDialog(mActivity, "Error", e.getMessage());
             }
         }).start();
     }

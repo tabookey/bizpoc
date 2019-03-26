@@ -105,35 +105,39 @@ public class ConfirmFragment extends Fragment {
     }
 
     private void promptFingerprint(PasswordCallback pc) {
-        try {
 
-            FragmentActivity activity = getActivity();
-            if (activity == null) {
-                return;
-            }
-            String encryptedPassword = SecretStorage.getPrefs(activity).getString(SecretStorage.PREFS_PASSWORD_ENCODED, null);
-            if (encryptedPassword == null) {
-                Toast.makeText(activity, "Something wrong - password not saved?", Toast.LENGTH_LONG).show();
-                return;
-            }
-            byte[] array = SecretStorage.getEncryptedBytes(encryptedPassword);
-            FingerprintAuthenticationDialogFragment fragment
-                    = new FingerprintAuthenticationDialogFragment();
-            fragment.mCryptoObject = SecretStorage.getCryptoObject();
-            fragment.input = array;
-            fragment.title = "Authorize transaction";
-            fragment.callback = result -> {
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        String encryptedPassword = SecretStorage.getPrefs(activity).getString(SecretStorage.PREFS_PASSWORD_ENCODED, null);
+        if (encryptedPassword == null) {
+            Toast.makeText(activity, "Something wrong - password not saved?", Toast.LENGTH_LONG).show();
+            return;
+        }
+        byte[] array = SecretStorage.getEncryptedBytes(encryptedPassword);
+        FingerprintAuthenticationDialogFragment fragment
+                = new FingerprintAuthenticationDialogFragment();
+        fragment.mCryptoObject = SecretStorage.getCryptoObject(mActivity);
+        fragment.input = array;
+        fragment.title = "Authorize transaction";
+        fragment.callback = new FingerprintAuthenticationDialogFragment.Callback() {
+            @Override
+            public void done(byte[] result) {
                 String password = new String(result);
                 pc.run(password);
-            };
-            FragmentManager fragmentManager = getFragmentManager();
-            if (fragmentManager == null) {
-                return;
             }
-            fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
-        } catch (KeyPermanentlyInvalidatedException e) {
-            e.printStackTrace();
+
+            @Override
+            public void failed() {
+
+            }
+        };
+        FragmentManager fragmentManager = getFragmentManager();
+        if (fragmentManager == null) {
+            return;
         }
+        fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
     }
 
     public void setRequest(SendRequest sendRequest) {
@@ -170,7 +174,7 @@ public class ConfirmFragment extends Fragment {
                     Log.e("TAG", "ex: ", e);
                     dollarEquivalent.post(() -> {
                         progressBar.setVisibility(View.GONE);
-                        Utils.showErrorDialog(getActivity(), e.getMessage());
+                        Utils.showErrorDialog(getActivity(), "Transaction failed!", e.getMessage());
                     });
                 }
             }
