@@ -207,7 +207,7 @@ public class FirstFragment extends Fragment {
                     TextView owner = view.findViewById(R.id.ownerText);
                     balanceInDollarsText.setText(String.format(Locale.US, "%.2f USD", finalAssetsWorth));
                     address.setText(mBitgoWallet.getAddress());
-                    owner.setText(String.format("Welcome %s%s", Global.ent.getMe().name, Global.isTest() ? "\nTEST NETWORK":""));
+                    owner.setText(String.format("%s's safe%s", Global.ent.getMe().name, Global.isTest() ? " (testnet)":""));
                     adapter = new BalancesAdapter(mActivity, 0, balances);
                     balancesListView.setAdapter(adapter);
                     Utils.setListViewHeightBasedOnChildren(balancesListView);
