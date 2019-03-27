@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/nonwhite_background_2"
     android:clickable="false"
+    android:descendantFocusability="blocksDescendants"
     android:focusable="false"
     android:focusableInTouchMode="false"
-    android:descendantFocusability="blocksDescendants">
+    card_view:cardBackgroundColor="@android:color/white"
+    card_view:cardElevation="5dp"
+    card_view:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,55 +20,46 @@
         android:layout_marginTop="0dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:background="@color/bluish_background"
         android:orientation="vertical"
         android:padding="16dp">
-
-        <TextView
-            android:id="@+id/transactionDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            tools:text="February 26th 2019, 11:07:43 AM" />
-
-        <com.tabookey.bizpoc.NonClickableRecyclerView
-            android:id="@+id/guardiansRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            android:clickable="false"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            tools:layout_height="50dp"
-            tools:listitem="@layout/approvals_line" />
-
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/transactionValue"
+                android:id="@+id/transactionComment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                tools:text="ETH 674.15" />
+                tools:text="TX-101" />
 
             <View
-                android:layout_width="60dp"
-                android:layout_height="0dp" />
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/transactionDollarValue"
+                android:id="@+id/transactionDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                tools:text="$100,000.00" />
+                android:layout_marginBottom="12dp"
+                tools:text="February 26th 2019, 11:07:43 AM" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_keyboard_arrow_right_black_24dp" />
 
         </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/transactionValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:text="674.015 ETH | 10,000 USD" />
 
         <TextView
             android:id="@+id/transactionRemoteAddress"
@@ -72,10 +68,21 @@
             tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
         <TextView
-            android:id="@+id/transactionComment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="TX-101" />
+            android:layout_marginTop="20dp"
+            android:text="Guardians" />
 
+        <com.tabookey.bizpoc.NonClickableRecyclerView
+            android:id="@+id/guardiansRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:divider="@null"
+            android:dividerHeight="0dp"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            tools:layout_height="30dp"
+            tools:listitem="@layout/approvals_line" />
     </LinearLayout>
-</LinearLayout>
+</android.support.v7.widget.CardView>

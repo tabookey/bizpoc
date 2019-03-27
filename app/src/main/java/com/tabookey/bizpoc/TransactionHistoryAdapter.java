@@ -33,13 +33,13 @@ class TransactionHistoryAdapter extends BaseAdapter {
         String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", transfer.date).toString();
         viewHolder.dateTextView.setText(dateFormat);
         double value = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
-        viewHolder.valueTextView.setText(String.format(Locale.US, "%.6f %s", value, transfer.coin.toUpperCase()));
+        String valueFormat = String.format(Locale.US, "%.6f %s", value, transfer.coin.toUpperCase());
         if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
-            viewHolder.dollarTextView.setText(String.format(Locale.US, "$%s", usd));
+            valueFormat += String.format(Locale.US, " | %s USD", usd);
         }
+        viewHolder.valueTextView.setText(valueFormat);
 
-        viewHolder.remoteTextView.setText(transfer.remoteAddress);
         boolean isOutgoingTx = transfer.valueString.contains("-");
         viewHolder.transactionStatus.setText(transfer.isRejected ? "Rejected" : isOutgoingTx ? "Sent" : "Received");
         viewHolder.transactionStatusIcon.setImageResource(transfer.isRejected ? android.R.drawable.ic_menu_close_clear_cancel :
@@ -51,12 +51,13 @@ class TransactionHistoryAdapter extends BaseAdapter {
         dateFormat = dateFormat.replaceAll("QQQQ", Utils.getDayOfMonthSuffix(pending.createDate));
         viewHolder.dateTextView.setText(dateFormat);
         double value = Utils.integerStringToCoinDouble(pending.amount, pending.token.decimalPlaces);
-        viewHolder.valueTextView.setText(String.format(Locale.US, "%.6f %s", value, pending.coin.toUpperCase()));
-        viewHolder.dollarTextView.setText(String.format(Locale.US, "$%.2f", value * mExchangeRate.average24h));
-        viewHolder.remoteTextView.setText(pending.recipientAddr);
-        viewHolder.transactionComment.setText(String.format("Memo %s", pending.comment));
 
-//        viewHolder.guardiansRecyclerView.addItemDecoration(new MarginDecoration(this));
+        String valueFormat = String.format(Locale.US, "%.6f %s", value, pending.coin.toUpperCase());
+        valueFormat += String.format(Locale.US, " | %.2f USD", value * mExchangeRate.average24h);
+        viewHolder.valueTextView.setText(valueFormat);
+        viewHolder.remoteTextView.setText(pending.recipientAddr);
+        viewHolder.transactionComment.setText(String.format("%s", pending.comment));
+
         viewHolder.guardiansRecyclerView.setHasFixedSize(true);
         viewHolder.guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mContext, 2));
         viewHolder.guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(pending.getApprovals(mGuardians)));
@@ -133,8 +134,6 @@ class TransactionHistoryAdapter extends BaseAdapter {
                     convertView = mInflater.inflate(R.layout.transaction_line, null);
                     holder.dateTextView = convertView.findViewById(R.id.transactionDate);
                     holder.valueTextView = convertView.findViewById(R.id.transactionValue);
-                    holder.dollarTextView = convertView.findViewById(R.id.transactionDollarValue);
-                    holder.remoteTextView = convertView.findViewById(R.id.transactionRemoteAddress);
                     holder.transactionStatus = convertView.findViewById(R.id.transactionStatus);
                     holder.transactionStatusIcon = convertView.findViewById(R.id.transactionStatusIcon);
                     break;
@@ -143,7 +142,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
                     holder.guardiansRecyclerView = convertView.findViewById(R.id.guardiansRecyclerView);
                     holder.dateTextView = convertView.findViewById(R.id.transactionDate);
                     holder.valueTextView = convertView.findViewById(R.id.transactionValue);
-                    holder.dollarTextView = convertView.findViewById(R.id.transactionDollarValue);
+//                    holder.dollarTextView = convertView.findViewById(R.id.transactionDollarValue);
                     holder.remoteTextView = convertView.findViewById(R.id.transactionRemoteAddress);
                     holder.transactionComment = convertView.findViewById(R.id.transactionComment);
                     break;
@@ -179,7 +178,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
 
 
     public static class ViewHolder {
-        TextView dateTextView, idTextView, valueTextView, dollarTextView, remoteTextView, transactionComment, transactionStatus;
+        TextView dateTextView, idTextView, valueTextView, remoteTextView, transactionComment, transactionStatus;
         RecyclerView guardiansRecyclerView;
         ImageView transactionStatusIcon;
     }
