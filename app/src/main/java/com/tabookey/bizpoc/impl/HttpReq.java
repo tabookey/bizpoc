@@ -3,6 +3,7 @@ package com.tabookey.bizpoc.impl;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tabookey.bizpoc.BuildConfig;
 
 import java.io.IOException;
 
@@ -19,7 +20,7 @@ import static com.tabookey.bizpoc.impl.Utils.toJson;
 public class HttpReq {
     public static final String TAG = "http";
 
-    boolean debug=true;
+    boolean debug= BuildConfig.DEBUG;
 
     static String testUrl = "https://test.bitgo.com";
 //    static String testUrl = "https://relay1.duckdns.org";
@@ -70,8 +71,6 @@ public class HttpReq {
     }
 
     public String sendRequest(String api, Object data, String method ) {
-        Request.Builder bld = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + accessKey);
 
         bld.url(host+api);
         if ( data!=null ) {
@@ -79,11 +78,17 @@ public class HttpReq {
             bld.method(method==null ? "PUT":method, body);
         }
 
+        BitgoHmac.addRequestHeaders(bld, accessKey);
         try {
             Request request = bld.build();
-            if ( debug )
+            if ( debug ) {
                 Log.d(TAG, ">" + request.method() + " " + request.url());
+                for ( String s : request.headers().names() ) {
+                    Log.d(TAG, "> "+s+": "+request.header(s));
+                }
+            }
             Response res = client.newCall(request).execute();
+            BitgoHmac.verifyResponse(res, accessKey);
             String str = res.body().string();
             if ( debug )
                 Log.d(TAG, "< "+str);
@@ -92,7 +97,10 @@ public class HttpReq {
                 throw new BitgoError(errdecs.get("name").asText(), errdecs.get("error").asText());
             }
             return str;
-        } catch (IOException e) {
+        } catch (Exception e) {
+            Log.e(TAG, "sendRequest: ex", e);
+            if ( e instanceof RuntimeException)
+                throw (RuntimeException)e;
             throw new RuntimeException(e);
         }
     }

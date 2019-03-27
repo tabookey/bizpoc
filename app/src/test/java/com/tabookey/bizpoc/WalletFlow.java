@@ -49,7 +49,7 @@ public class WalletFlow {
     @Test public void sendCoin() {
         IBitgoEnterprise ent = new BitgoEnterprise(fullAccessKey, true);
         IBitgoWallet w = ent.getWallets("teth").get(0);
-        SendRequest req = new SendRequest("teth", "10000000000000000", "0xd21934ed8eaf27a67f0a70042af50a1d6d195e81",
+        SendRequest req = new SendRequest("teth", "teth", "10000000000000000", "0xd21934ed8eaf27a67f0a70042af50a1d6d195e81",
                 "000000", "walletphrase", "");
         w.sendCoins(req,null);
 
