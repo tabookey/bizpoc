@@ -46,6 +46,7 @@ public class SendFragment extends Fragment {
 
     public List<BalancesAdapter.Balance> balances;
     EditText etherSendAmountEditText;
+    EditText dollarEquivalent;
     ExchangeRate exchangeRate;
     EditText destinationEditText;
     List<BitgoUser> guardians;
@@ -64,6 +65,8 @@ public class SendFragment extends Fragment {
         return inflater.inflate(R.layout.send_fragment, container, false);
     }
 
+    boolean isEthChange = false;
+    boolean isUsdChange = false;
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -106,17 +109,11 @@ public class SendFragment extends Fragment {
         scanDestinationButton.setPaintFlags(scanDestinationButton.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         pasteDestinationButton.setPaintFlags(pasteDestinationButton.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(mActivity, ScanActivity.class), 1));
-        ListView guardiansListView = view.findViewById(R.id.guardiansListView);
         etherSendAmountEditText = view.findViewById(R.id.etherSendAmountEditText);
+        dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         etherSendAmountEditText.setPaintFlags(etherSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
         continueButton.setOnClickListener(v -> moveToContinue());
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(mActivity, android.R.layout.simple_list_item_1);
-
-        for (BitgoUser guardian : guardians) {
-            adapter.add(guardian.name);
-        }
-        guardiansListView.setAdapter(adapter);
         etherSendAmountEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -126,7 +123,38 @@ public class SendFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
                 try {
-                    setDollarEquivalent();
+                    isEthChange = true;
+                    if (!isUsdChange) {
+                        setDollarEquivalent();
+                    }
+                    isUsdChange = false;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editable.toString().equals(".")) {
+                    etherSendAmountEditText.setText("0.");
+                    etherSendAmountEditText.setSelection(etherSendAmountEditText.getText().length());
+                }
+            }
+        });
+        dollarEquivalent.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
+                try {
+                    isUsdChange = true;
+                    if (!isEthChange) {
+                        setCoinEquivalent();
+                    }
+                    isEthChange = false;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -207,13 +235,25 @@ public class SendFragment extends Fragment {
         if (view == null || exchangeRate == null) {
             return;
         }
-        TextView dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         String etherAmount = etherSendAmountEditText.getText().toString();
         if (etherAmount.length() == 0) {
-            dollarEquivalent.setText("0.00 USD");
+            dollarEquivalent.setText("0.00");
         }
         double etherDouble = Double.parseDouble(etherAmount);
-        dollarEquivalent.setText(String.format(Locale.US, "$%.2f", etherDouble * exchangeRate.average24h));
+        dollarEquivalent.setText(String.format(Locale.US, "%.2f", etherDouble * exchangeRate.average24h));
+    }
+
+    private void setCoinEquivalent() {
+        View view = getView();
+        if (view == null || exchangeRate == null) {
+            return;
+        }
+        String dollarAmount = dollarEquivalent.getText().toString();
+        if (dollarAmount.length() == 0) {
+            etherSendAmountEditText.setText("0.00");
+        }
+        double dollarDouble = Double.parseDouble(dollarAmount);
+        etherSendAmountEditText.setText(String.format(Locale.US, "%.2f", dollarDouble / exchangeRate.average24h));
     }
 
     @Override
@@ -221,6 +261,7 @@ public class SendFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Activity) {
             mActivity = (AppCompatActivity) context;
+            mActivity.getSupportActionBar().setTitle("History");
         }
     }
 

@@ -6,15 +6,6 @@
     android:background="@color/nonwhite_background"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:paddingLeft="16dp"
-        android:text="Send"
-        android:textSize="27sp" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -26,6 +17,7 @@
             android:id="@+id/recipientTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
             android:layout_marginBottom="8dp"
             android:text="Recipient Address" />
 
@@ -41,6 +33,7 @@
             android:inputType="text"
             android:lines="1"
             android:maxLines="1"
+            android:textColorHighlight="@color/text_color"
             android:textSize="14sp"
             tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
@@ -56,27 +49,34 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:gravity="right"
             android:orientation="horizontal">
-
-
-            <Button
-                android:id="@+id/scanDestinationButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:text="Scan" />
 
             <View
                 android:layout_width="50dp"
                 android:layout_height="0dp" />
 
             <Button
+                android:id="@+id/scanDestinationButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/button_background_selector_white"
+                android:drawableLeft="@drawable/ic_qr"
+                android:elevation="10dp"
+                android:text="Scan QR"
+                android:textAllCaps="false"
+                android:textColor="@color/text_color" />
+
+            <Button
                 android:id="@+id/pasteDestinationButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:text="Paste" />
+                android:background="@drawable/button_background_selector_white"
+                android:drawableLeft="@drawable/ic_copy"
+                android:text="Paste"
+                android:textAllCaps="false"
+                android:textColor="@color/text_color" />
         </LinearLayout>
 
         <TextView
@@ -86,49 +86,75 @@
             android:text="Amount" />
 
         <LinearLayout
+            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/long_field_background"
             android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/etherSendAmountEditText"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@null"
-                android:hint="0.00"
-                android:imeOptions="actionDone"
-                android:inputType="numberDecimal"
-                android:padding="6dp"
-                android:textAlignment="textEnd"
-                tools:text="123456.78" />
+                android:orientation="vertical">
 
-            <Button
-                android:id="@+id/selectCoinButton"
-                android:layout_width="20dp"
+                <Button
+                    android:id="@+id/selectCoinButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:drawableRight="@drawable/ic_arrow_drop_down_black_24dp"
+                    android:lines="1"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:text="ETH"
+                    android:textAlignment="textStart"
+                    android:textColor="@color/text_color"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/etherSendAmountEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="0.00"
+                    android:imeOptions="actionDone"
+                    android:inputType="numberDecimal"
+                    android:textAlignment="textStart"
+                    android:textColorHighlight="@color/text_color"
+                    tools:text="123456.78" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="60dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.2"
-                android:background="@android:color/transparent"
-                android:lines="1"
-                android:text="ETH"
-                android:textAlignment="center" />
+                android:layout_gravity="center"
+                android:src="@drawable/ic_switch" />
 
-            <TextView
-                android:id="@+id/dollarEquivalent"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="0"
-                android:textAlignment="textEnd"
-                tools:text="1,234,567,890.99" />
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.2"
-                android:text="USD"
-                android:textAlignment="center" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_weight="0.2"
+                    android:text="USD"
+                    android:textAlignment="center"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/dollarEquivalent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="0.00"
+                    android:imeOptions="actionDone"
+                    android:textAlignment="textStart"
+                    android:textColorHighlight="@color/text_color"
+                    tools:text="1,234,567,890.99" />
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
@@ -147,34 +173,32 @@
             tools:text="Maximum: 123.4567 ETH" />
     </LinearLayout>
 
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
     <TextView
         android:id="@+id/validatorsTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
         android:text="The transaction will be submitted after guardians approval"
-        android:textSize="16sp" />
+        android:textAlignment="center"
+        android:textSize="12sp" />
 
-    <ListView
-        android:id="@+id/guardiansListView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout_height="80dp" />
-
-    <View
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
 
     <Button
         android:id="@+id/continueButton"
-        android:layout_width="140dp"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
         android:layout_gravity="center"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/button_background_selector"
+        android:background="@color/colorPrimary"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:padding="0dp"
         android:text="Continue"
         android:textAlignment="center"
-        android:textAllCaps="false"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
 </LinearLayout>

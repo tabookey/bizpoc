@@ -46,6 +46,7 @@ public class TransactionsFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof MainActivity) {
             mActivity = (MainActivity) context;
+            mActivity.getSupportActionBar().setTitle("History");
         }
     }
 
@@ -85,7 +86,6 @@ public class TransactionsFragment extends Fragment {
             mActivity.runOnUiThread(() -> {
                 progressView.setVisibility(View.GONE);
                 TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate, null);
-                historyAdapter.addItem("History");
                 historyAdapter.addItems(transfers);
                 transactionsListView.setAdapter(historyAdapter);
             });
