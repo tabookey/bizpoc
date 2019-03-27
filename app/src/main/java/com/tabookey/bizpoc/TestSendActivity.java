@@ -72,7 +72,7 @@ public class TestSendActivity extends AppCompatActivity {
 
         w.getGuardians().forEach(user->log("guardian: "+user.email+(user.hasPerm(BitgoUser.Perm.admin)?" admin":"")));
 
-        List<Transfer> transfers = w.getTransfers();
+        List<Transfer> transfers = w.getTransfers(0);
         log( "transfers: "+transfers.size());
         transfers.forEach(t->log(t.coin+" "+t.valueString+"="+t.usd+" "+t.isRejected));
         List<PendingApproval> pending = w.getPendingApprovals();

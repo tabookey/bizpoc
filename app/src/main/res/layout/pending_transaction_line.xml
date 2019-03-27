@@ -2,7 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:clickable="false"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:descendantFocusability="blocksDescendants">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,12 +26,15 @@
             android:layout_marginBottom="12dp"
             tools:text="February 26th 2019, 11:07:43 AM" />
 
-        <android.support.v7.widget.RecyclerView
+        <com.tabookey.bizpoc.NonClickableRecyclerView
             android:id="@+id/guardiansRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:divider="@null"
             android:dividerHeight="0dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
             tools:layout_height="50dp"
             tools:listitem="@layout/approvals_line" />
 

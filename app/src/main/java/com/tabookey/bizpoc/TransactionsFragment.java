@@ -31,7 +31,7 @@ public class TransactionsFragment extends Fragment {
     private View progressView;
     private Button retryButton;
     ExchangeRate mExchangeRate;
-    private AppCompatActivity mActivity;
+    private MainActivity mActivity;
     List<BitgoUser> mGuardians;
     private IBitgoWallet ethWallet;
 
@@ -44,8 +44,8 @@ public class TransactionsFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof Activity) {
-            mActivity = (AppCompatActivity) context;
+        if (context instanceof MainActivity) {
+            mActivity = (MainActivity) context;
         }
     }
 
@@ -56,22 +56,7 @@ public class TransactionsFragment extends Fragment {
         transactionsListView = view.findViewById(R.id.list_view_transactions);
         transactionsListView.setOnItemClickListener((adapterView, view1, position, id) -> {
             Object item = transactionsListView.getItemAtPosition(position);
-            if (item instanceof String) {
-                return;
-            }
-            TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.exchangeRate = mExchangeRate;
-            tdf.guardians = mGuardians;
-            tdf.ethWallet = ethWallet;
-            if (item instanceof PendingApproval) {
-                tdf.pendingApproval = (PendingApproval) item;
-            } else if (item instanceof Transfer) {
-                tdf.transfer = (Transfer) item;
-            }
-            mActivity.getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame_layout, tdf)
-                    .addToBackStack(null)
-                    .commit();
+            mActivity.openPendingDetails(item, mExchangeRate, mGuardians, ethWallet);
         });
 
         progressBar = view.findViewById(R.id.progressBar);
@@ -86,12 +71,10 @@ public class TransactionsFragment extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         retryButton.setVisibility(View.GONE);
         new Thread(() -> {
-            List<PendingApproval> pendingApprovals;
             List<Transfer> transfers;
             try {
                 ethWallet = Global.ent.getMergedWallets().get(0);
-                pendingApprovals = ethWallet.getPendingApprovals();
-                transfers = ethWallet.getTransfers();
+                transfers = ethWallet.getTransfers(0);
             } catch (Exception e) {
                 mActivity.runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
@@ -102,10 +85,6 @@ public class TransactionsFragment extends Fragment {
             mActivity.runOnUiThread(() -> {
                 progressView.setVisibility(View.GONE);
                 TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate, null);
-                if ( pendingApprovals.size()>0) {
-                    historyAdapter.addItem("Pending");
-                    historyAdapter.addItems(pendingApprovals);
-                }
                 historyAdapter.addItem("History");
                 historyAdapter.addItems(transfers);
                 transactionsListView.setAdapter(historyAdapter);

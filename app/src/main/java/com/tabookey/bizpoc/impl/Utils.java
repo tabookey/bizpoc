@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -84,6 +85,11 @@ public class Utils {
         }
     }
 
+    public static BigInteger doubleStringToBigInteger(String weiString, int decimals) {
+        BigDecimal bigIntBalance = new BigDecimal(weiString);
+        return bigIntBalance.multiply(new BigDecimal(Math.pow(10, decimals))).toBigInteger();
+    }
+
     public static void showErrorDialog(Context context, String title, String errorMessage) {
         if (context == null) {
             return;
@@ -107,6 +113,7 @@ public class Utils {
         // Later, stop the animation
         // splash.setAnimation(null);
     }
+
     /**** Method for Setting the Height of the ListView dynamically.
      **** Hack to fix the issue of not showing all the items of the ListView
      **** when placed inside a ScrollView  ****/

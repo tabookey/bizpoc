@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
 import com.tabookey.bizpoc.api.BitgoUser;
+import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
@@ -29,7 +30,7 @@ class MergedWallet implements IBitgoWallet {
 
     public MergedWallet(BitgoEnterprise ent, MergedWalletsData.WalletData walletData) {
         this.data = walletData;
-        this.ent=ent;
+        this.ent = ent;
         this.ethWallet = getCoinWallet(data.coin);
 
         coins = new ArrayList<>();
@@ -50,10 +51,10 @@ class MergedWallet implements IBitgoWallet {
     private Wallet getCoinWallet(String coin) {
 
         Wallet w = wallets.get(coin);
-        if ( w==null ) {
+        if (w == null) {
             List<IBitgoWallet> wlist = ent.getWallets(coin);
-            for ( IBitgoWallet w1 :wlist ) {
-                if ( w1.getId().equals(data.id) ) {
+            for (IBitgoWallet w1 : wlist) {
+                if (w1.getId().equals(data.id)) {
                     return (Wallet) w1;
                 }
             }
@@ -113,16 +114,20 @@ class MergedWallet implements IBitgoWallet {
             public String amount;
             public Recipient[] recipients;
         }
-        static class Recipient{
+
+        static class Recipient {
             public String address;
         }
 
     }
 
 
-    List<Transfer> getAuditRejected() {
-        AuditResp resp = ent.http.get("/api/v2/auditlog?limit=1000&type=rejectTransaction&coin=%s&walletId=%s", AuditResp.class,
-                ent.baseCoin.coin, this.getId() );
+    List<Transfer> getAuditRejected(int limit) {
+        if (limit == 0){
+            limit = 1000;
+        }
+        AuditResp resp = ent.http.get("/api/v2/auditlog?limit=" + limit + "&type=rejectTransaction&coin=%s&walletId=%s", AuditResp.class,
+                ent.baseCoin.coin, this.getId());
 
         return Arrays.asList(resp.logs).stream().map(log -> new Transfer(
                 null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, ent.getToken(log.coin)
@@ -131,24 +136,46 @@ class MergedWallet implements IBitgoWallet {
 
 
     @Override
-    public List<Transfer> getTransfers() {
+    public List<Transfer> getTransfers(int limit) {
 
-        ArrayList<Transfer> ret = new ArrayList();
-        for ( String c : coins ) {
-            ret.addAll(getCoinWallet(c).getTransfers());
+        ArrayList<Transfer> ret = new ArrayList<>();
+
+
+        String request = "/api/v2/" + Global.ent.coinName() + "/wallet/" + ethWallet.id + "/transfer?allTokens=true";
+        // TODO: use requests library to work with URL parameters.
+        if (limit != 0) {
+            request += "&limit=" + limit;
         }
-
-        ret.addAll(getAuditRejected());
+        Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class);
+        ArrayList<Transfer> xfers = new ArrayList<>();
+        for (Wallet.TransferResp.Trans t : resp.transfers) {
+            Transfer tx = new Transfer(t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin));
+            // entries have the add/sub of each transaction "participant".
+            // on ethereum there are exactly 2 such participants. one is our wallet, so we're
+            // looking for the other one, with its value different (actually, negative) of ours.
+            for (Wallet.TransferResp.Entry e : t.entries) {
+                if (!e.valueString.equals(tx.valueString)) {
+                    tx.remoteAddress = e.address;
+                    break;
+                }
+            }
+            xfers.add(tx);
+        }
+        ret.addAll(xfers);
+        ret.addAll(getAuditRejected(limit));
 
         ret.sort((a, b) -> b.date.compareTo(a.date));
+        if (limit != 0 && ret.size() > limit) {
+            return ret.subList(0, limit);
+        }
         return ret;
     }
 
     @Override
     public String sendCoins(SendRequest req, StatusCB cb) {
-        if ( !getCoins().contains(req.coin))
-            throw new IllegalArgumentException("Unsopported coin \""+req.coin+"\": not one of "+getCoins());
-        return getCoinWallet(req.coin).sendCoins(req,cb);
+        if (!getCoins().contains(req.coin))
+            throw new IllegalArgumentException("Unsopported coin \"" + req.coin + "\": not one of " + getCoins());
+        return getCoinWallet(req.coin).sendCoins(req, cb);
     }
 
     @Override
@@ -160,7 +187,7 @@ class MergedWallet implements IBitgoWallet {
     public List<PendingApproval> getPendingApprovals() {
 
         ArrayList<PendingApproval> ret = new ArrayList();
-        for ( String c : coins ) {
+        for (String c : coins) {
             ret.addAll(getCoinWallet(c).getPendingApprovals());
         }
         ret.sort((a, b) -> a.createDate.compareTo(b.createDate));

@@ -1,5 +1,6 @@
 package com.tabookey.bizpoc;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,9 +10,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.tabookey.bizpoc.api.BitgoUser;
+import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
+import com.tabookey.bizpoc.api.IBitgoWallet;
+import com.tabookey.bizpoc.api.PendingApproval;
+import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +36,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         //Handle when activity is recreated like on orientation Change
         shouldDisplayHomeUp();
         ActionBar actionBar = getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setLogo(R.drawable.tabookey_safe);
@@ -50,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         FingerprintAuthenticationDialogFragment fragment
                 = new FingerprintAuthenticationDialogFragment();
         fragment.mCryptoObject = SecretStorage.getCryptoObject(this);
-        if (fragment.mCryptoObject == null){
+        if (fragment.mCryptoObject == null) {
             return;
         }
         fragment.input = array;
@@ -121,10 +131,15 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         shouldDisplayHomeUp();
     }
 
+    @SuppressLint("RestrictedApi")
     public void shouldDisplayHomeUp() {
         //Enable Up button only  if there are entries in the back stack
         boolean canGoBack = getSupportFragmentManager().getBackStackEntryCount() > 0;
         ActionBar actionBar = getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
+        actionBar.setShowHideAnimationEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(canGoBack);
         actionBar.setDisplayUseLogoEnabled(!canGoBack);
         if (canGoBack) {
@@ -164,5 +179,24 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
+    }
+
+    public void openPendingDetails(Object item, ExchangeRate exchangeRate, List<BitgoUser> guardians, IBitgoWallet ethWallet) {
+        if (item instanceof String) {
+            return;
+        }
+        TransactionDetailsFragment tdf = new TransactionDetailsFragment();
+        tdf.exchangeRate = exchangeRate;
+        tdf.guardians = guardians;
+        tdf.ethWallet = ethWallet;
+        if (item instanceof PendingApproval) {
+            tdf.pendingApproval = (PendingApproval) item;
+        } else if (item instanceof Transfer) {
+            tdf.transfer = (Transfer) item;
+        }
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame_layout, tdf)
+                .addToBackStack(null)
+                .commit();
     }
 }

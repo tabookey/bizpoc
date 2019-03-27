@@ -48,13 +48,14 @@ class Wallet implements IBitgoWallet {
         for (WalletUser user : walletData.users) {
             if (user.user.equals(ent.getMe().id))
                 continue;
-            BitgoUser g = new BitgoUser(ent.getUserById(user.user,true), Arrays.asList(user.permissions));
-            if ( hiddenUsers.contains(g.email)) {
-                Log.w("wallet", "hidden guardian:"+ g.email);
+            BitgoUser g = new BitgoUser(ent.getUserById(user.user, true), Arrays.asList(user.permissions));
+            if (hiddenUsers.contains(g.email)) {
+                Log.w("wallet", "hidden guardian:" + g.email);
                 continue;
             }
             guardians.add(g);
         }
+        guardians.add(new BitgoUser("", "did@approve", "Test test one"));
         coinSender = new CoinSender(Global.applicationContext, ent.http);
     }
 
@@ -113,7 +114,9 @@ class Wallet implements IBitgoWallet {
     }
 
     @Override
-    public List<Transfer> getTransfers() {
+    public List<Transfer> getTransfers(int limit) {
+        // TODO: there is currently no use for this method.
+        if (true) throw new RuntimeException("Use MergedWallet instead.");
         TransferResp resp = ent.http.get("/api/v2/" + coin + "/wallet/" + id + "/transfer", TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (TransferResp.Trans t : resp.transfers) {
@@ -139,7 +142,7 @@ class Wallet implements IBitgoWallet {
 
     @Override
     public boolean checkPassphrase(String passphrase) {
-        return coinSender.checkPassphrase(this,passphrase,null);
+        return coinSender.checkPassphrase(this, passphrase, null);
     }
 
     static class PendingApprovalResp {

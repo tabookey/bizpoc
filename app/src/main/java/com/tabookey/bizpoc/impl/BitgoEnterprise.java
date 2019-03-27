@@ -226,7 +226,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     }
 
     @NotNull
-    private String coinName() {
+    public String coinName() {
         return testNetwork ? "teth" : "eth";
     }
 

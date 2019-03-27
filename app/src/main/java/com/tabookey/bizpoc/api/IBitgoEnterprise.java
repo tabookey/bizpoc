@@ -33,4 +33,6 @@ public interface IBitgoEnterprise {
     TokenInfo getToken(String token);
 
     Map<String,TokenInfo> getTokens();
+
+    String coinName();
 }

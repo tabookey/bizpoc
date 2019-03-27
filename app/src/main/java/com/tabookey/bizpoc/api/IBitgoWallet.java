@@ -18,7 +18,7 @@ public interface IBitgoWallet {
     String getAddress();
 
     //get past transfers from or to this wallet.
-    List<Transfer> getTransfers();
+    List<Transfer> getTransfers(int limit);
 
     /**
      * send coins

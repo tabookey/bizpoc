@@ -32,6 +32,7 @@ import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
+import com.tabookey.bizpoc.impl.Utils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -159,8 +160,8 @@ public class SendFragment extends Fragment {
         ConfirmFragment cf = new ConfirmFragment();
         String destination = destinationEditText.getText().toString();
         String amountInput = etherSendAmountEditText.getText().toString();
-        BigInteger amountBigInt = new BigDecimal(amountInput).multiply(new BigDecimal(selectedToken.decimalPlaces)).toBigInteger();
-        SendRequest sendRequest = new SendRequest(selectedToken.coin, selectedToken.type,amountBigInt.toString(), destination, null, null, null);
+        BigInteger amountBigInt = Utils.doubleStringToBigInteger(amountInput, selectedToken.decimalPlaces);
+        SendRequest sendRequest = new SendRequest(selectedToken.coin, selectedToken.type, amountBigInt.toString(), destination, null, null, null);
         cf.setRequest(sendRequest);
         cf.exchangeRate = exchangeRate;
         cf.guardians = guardians;
