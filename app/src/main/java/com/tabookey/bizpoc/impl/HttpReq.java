@@ -71,6 +71,7 @@ public class HttpReq {
     }
 
     public String sendRequest(String api, Object data, String method ) {
+        Request.Builder bld = new Request.Builder();
 
         bld.url(host+api);
         if ( data!=null ) {
