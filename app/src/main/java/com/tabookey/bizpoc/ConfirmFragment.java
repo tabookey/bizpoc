@@ -70,16 +70,10 @@ public class ConfirmFragment extends Fragment {
         dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         etherSendAmount = view.findViewById(R.id.etherSendAmount);
         progressBar = view.findViewById(R.id.progressBar);
-        ListView guardiansListView = view.findViewById(R.id.guardiansListView);
         FragmentActivity activity = getActivity();
         if (activity == null) {
             return;
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1);
-        for (BitgoUser guardian : guardians) {
-            adapter.add(guardian.name);
-        }
-        guardiansListView.setAdapter(adapter);
         fakeSubmitButton.setOnClickListener(v ->
         {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();

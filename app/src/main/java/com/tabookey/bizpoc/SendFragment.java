@@ -163,8 +163,8 @@ public class SendFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 if (editable.toString().equals(".")) {
-                    etherSendAmountEditText.setText("0.");
-                    etherSendAmountEditText.setSelection(etherSendAmountEditText.getText().length());
+                    dollarEquivalent.setText("0.");
+                    dollarEquivalent.setSelection(etherSendAmountEditText.getText().length());
                 }
             }
         });

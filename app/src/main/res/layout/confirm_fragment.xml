@@ -1,108 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingTop="47dp"
         android:orientation="vertical">
 
-
-        <TextView
-            android:id="@+id/textView"
+        <android.support.v7.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:paddingLeft="16dp"
-            android:text="Review transaction"
-            android:textSize="27sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/recipientTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="0dp"
-                android:text="Recipient Address"
-                android:textColor="@android:color/black" />
-
-            <TextView
-                android:id="@+id/recipientAddressTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginRight="16dp"
-                android:autoSizeMinTextSize="8dp"
-                android:autoSizeTextType="uniform"
-                android:lines="1"
-                android:textColor="@android:color/black"
-                tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
-
-            <TextView
-                android:id="@+id/amountTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="6dp"
-                android:text="Amount"
-                android:textColor="@android:color/black" />
+            android:layout_margin="16dp"
+            android:backgroundTint="@color/nonwhite_background"
+            app:cardElevation="8dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="16dp"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
                     android:id="@+id/etherSendAmount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
                     android:lines="1"
-                    android:textColor="@android:color/black"
-                    android:textSize="24sp"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:layout_gravity="center"
                     tools:text="674.15 ETH" />
 
                 <TextView
                     android:id="@+id/dollarEquivalent"
-                    android:layout_width="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/text_color"
                     android:gravity="right"
                     android:lines="1"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     tools:text="100,000.00 USD" />
 
+
+                <TextView
+                    android:id="@+id/recipientAddressTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="16dp"
+                    android:autoSizeMinTextSize="8dp"
+                    android:autoSizeTextType="uniform"
+                    android:textSize="12sp"
+                    android:lines="1"
+                    tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
+
+                <View
+                    android:background="@color/colorPrimary"
+                    android:layout_marginTop="36dp"
+                    android:layout_marginBottom="36dp"
+                    android:layout_gravity="center"
+                    android:layout_width="100dp"
+                    android:layout_height="1dp" />
+
+                <TextView
+                    android:id="@+id/validatorsTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:paddingBottom="24dp"
+                    android:text="The transaction will be submitted\nafter guardians approval"
+                    android:textSize="12sp" />
+
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/validatorsTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:text="The transaction will be submitted after guardians approval"
-                android:textSize="16sp" />
-
-            <ListView
-                android:id="@+id/guardiansListView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:layout_height="80dp" />
-        </LinearLayout>
+        </android.support.v7.widget.CardView>
 
         <View
             android:layout_width="0dp"
@@ -111,15 +89,17 @@
 
         <Button
             android:id="@+id/submitButton"
-            android:layout_width="140dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
             android:layout_gravity="center"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/button_background_selector"
+            android:background="@color/colorPrimary"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
             android:text="Submit"
             android:textAlignment="center"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
 
         <Button
             android:id="@+id/fakeSubmitButton"
@@ -129,10 +109,10 @@
             android:layout_marginBottom="16dp"
             android:background="@drawable/button_background_selector"
             android:text="Fake Submit"
-            android:visibility="gone"
             android:textAlignment="center"
             android:textAllCaps="false"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
 
     </LinearLayout>
 
