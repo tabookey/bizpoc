@@ -74,7 +74,7 @@ public class TestSendActivity extends AppCompatActivity {
 
         List<Transfer> transfers = w.getTransfers(0);
         log( "transfers: "+transfers.size());
-        transfers.forEach(t->log(t.coin+" "+t.valueString+"="+t.usd+" "+t.isRejected));
+        transfers.forEach(t->log(t.coin+" "+t.valueString+"="+t.usd+" "+t.state));
         List<PendingApproval> pending = w.getPendingApprovals();
         log( "pending: "+pending.size());
         pending.forEach(p->{

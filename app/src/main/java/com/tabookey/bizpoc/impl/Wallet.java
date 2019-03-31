@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import kotlin.NotImplementedError;
+
 /**
  * single-coin wallet.
  * This is the low-level coin API.
@@ -48,7 +50,12 @@ class Wallet implements IBitgoWallet {
         for (WalletUser user : walletData.users) {
             if (user.user.equals(ent.getMe().id))
                 continue;
-            BitgoUser g = new BitgoUser(ent.getUserById(user.user, true), Arrays.asList(user.permissions));
+            BitgoUser userById = ent.getUserById(user.user, true);
+            if (userById == null) {
+                // TODO: These are users that are not part of selected enterprise
+                continue;
+            }
+            BitgoUser g = new BitgoUser(userById, Arrays.asList(user.permissions));
             if (hiddenUsers.contains(g.email)) {
                 Log.w("wallet", "hidden guardian:" + g.email);
                 continue;
@@ -116,23 +123,7 @@ class Wallet implements IBitgoWallet {
     @Override
     public List<Transfer> getTransfers(int limit) {
         // TODO: there is currently no use for this method.
-        if (true) throw new RuntimeException("Use MergedWallet instead.");
-        TransferResp resp = ent.http.get("/api/v2/" + coin + "/wallet/" + id + "/transfer", TransferResp.class);
-        ArrayList<Transfer> xfers = new ArrayList<>();
-        for (TransferResp.Trans t : resp.transfers) {
-            Transfer tx = new Transfer(t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin));
-            //entries have the add/sub of each transaction "participant".
-            // on ethereum there are exactly 2 such participants. one is our wallet, so we're
-            // looking for the other one, with its value different (actually, negative) of ours.
-            for (TransferResp.Entry e : t.entries) {
-                if (!e.valueString.equals(tx.valueString)) {
-                    tx.remoteAddress = e.address;
-                    break;
-                }
-            }
-            xfers.add(tx);
-        }
-        return xfers;
+        throw new NotImplementedError("Use MergedWallet instead.");
     }
 
     @Override

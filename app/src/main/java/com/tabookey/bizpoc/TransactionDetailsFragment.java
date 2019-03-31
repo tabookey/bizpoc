@@ -5,17 +5,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -28,6 +30,8 @@ import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class TransactionDetailsFragment extends Fragment {
 
@@ -39,18 +43,17 @@ public class TransactionDetailsFragment extends Fragment {
     IBitgoWallet ethWallet;
 
     View progressBar;
-    TextView senderNameTextView;
-    TextView recipientNameTextView;
     TextView senderAddressTextView;
-    TextView guardiansApprovalTitle;
-    ListView guardiansListView;
-    View guardiansView;
+    TextView senderTitleTextView;
+    TextView recipientTitleTextView;
+    TextView guardiansTitleTextView;
+    RecyclerView guardiansRecyclerView;
 
     TextView recipientAddressTextView;
-    TextView etherSendAmountTextView;
-    TextView dollarSentAmountTextView;
+    TextView sendAmountTextView;
     TextView transactionCommentTextView;
     TextView transactionDateText;
+    TextView validatorsTitle;
     Button transactionsHashButton;
     Button cancelTransaction;
     Button greatThanksButton;
@@ -61,51 +64,52 @@ public class TransactionDetailsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.transaction_details, container, false);
+        View view = inflater.inflate(R.layout.transaction_details, container, false);
+
+        senderAddressTextView = view.findViewById(R.id.senderAddressTextView);
+        recipientAddressTextView = view.findViewById(R.id.recipientAddressTextView);
+        sendAmountTextView = view.findViewById(R.id.sendAmount);
+        senderTitleTextView = view.findViewById(R.id.senderTitleTextView);
+        recipientTitleTextView = view.findViewById(R.id.recipientTitleTextView);
+        guardiansTitleTextView = view.findViewById(R.id.guardiansTitleTextView);
+        validatorsTitle = view.findViewById(R.id.validatorsTitle);
+        transactionCommentTextView = view.findViewById(R.id.transactionCommentTextView);
+        transactionsHashButton = view.findViewById(R.id.transactionsHashButton);
+        guardiansRecyclerView = view.findViewById(R.id.guardiansRecyclerView);
+        transactionDateText = view.findViewById(R.id.transactionDateText);
+        successPopup = view.findViewById(R.id.successPopup);
+        progressBar = view.findViewById(R.id.progressBar);
+        cancelTransaction = view.findViewById(R.id.cancelTransaction);
+        greatThanksButton = view.findViewById(R.id.greatThanksButton);
+        return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        senderNameTextView = view.findViewById(R.id.senderNameTextView);
-        recipientNameTextView = view.findViewById(R.id.recipientNameTextView);
-        senderAddressTextView = view.findViewById(R.id.senderAddressTextView);
-        recipientAddressTextView = view.findViewById(R.id.recipientAddressTextView);
-        etherSendAmountTextView = view.findViewById(R.id.etherSendAmount);
-        dollarSentAmountTextView = view.findViewById(R.id.dollarEquivalent);
-        transactionCommentTextView = view.findViewById(R.id.transactionCommentTextView);
-        transactionsHashButton = view.findViewById(R.id.transactionsHashButton);
-        guardiansListView = view.findViewById(R.id.guardiansListView);
-        transactionDateText = view.findViewById(R.id.transactionDateText);
-        guardiansView = view.findViewById(R.id.guardiansView);
-        successPopup = view.findViewById(R.id.successPopup);
-        guardiansApprovalTitle = view.findViewById(R.id.guardiansApprovalTitle);
-        progressBar = view.findViewById(R.id.progressBar);
-        cancelTransaction = view.findViewById(R.id.cancelTransaction);
-        greatThanksButton = view.findViewById(R.id.greatThanksButton);
-
         if (transfer != null) {
-            transactionsHashButton.setVisibility(View.VISIBLE);
             cancelTransaction.setVisibility(View.GONE);
-            guardiansView.setVisibility(View.GONE);
-            guardiansApprovalTitle.setVisibility(View.GONE);
 
             String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", transfer.date).toString();
             transactionDateText.setText(dateFormat);
-            transactionsHashButton.setOnClickListener(v -> {
-                String url = "https://kovan.etherscan.io/tx/" + transfer.txid;
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
-            });
+            if (transfer.txid != null) {
+                transactionsHashButton.setVisibility(View.VISIBLE);
+                transactionsHashButton.setOnClickListener(v -> {
+                    String url = "https://kovan.etherscan.io/tx/" + transfer.txid;
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(url));
+                    startActivity(i);
+                });
+            }
             fillTransfer();
+            mActivity.getSupportActionBar().setTitle("History");
         } else if (pendingApproval != null) {
             transactionsHashButton.setVisibility(View.GONE);
             String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", pendingApproval.createDate).toString();
             transactionDateText.setText(dateFormat);
             cancelTransaction.setOnClickListener(v -> {
                 AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
-                dialog.setTitle("Are you sure you want to canccel the transaction?");
+                dialog.setTitle("Are you sure you want to cancel the transaction?");
                 dialog.setMessage("This transaction will be cancelled (and your guardians will be notified about this change)");
                 dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes, I'm sure",
                         (d, w) -> {
@@ -114,15 +118,45 @@ public class TransactionDetailsFragment extends Fragment {
                         });
                 dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Go back", (d, w) -> d.dismiss());
                 dialog.show();
+                Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+
+                int pL = positiveButton.getPaddingLeft();
+                int pT = positiveButton.getPaddingTop();
+                int pR = positiveButton.getPaddingRight();
+                int pB = positiveButton.getPaddingBottom();
+
+                positiveButton.setBackgroundResource(R.drawable.custom_button);
+                positiveButton.setPadding(pL, pT, pR, pB);
+
+                positiveButton.setAllCaps(false);
+                positiveButton.setTextColor(mActivity.getColor(android.R.color.white));
+
+
+                negativeButton.setAllCaps(false);
+                negativeButton.setTextColor(mActivity.getColor(R.color.text_color));
             });
             fillPending();
-            if (showSuccessPopup) {
-                successPopup.setVisibility(View.VISIBLE);
-                greatThanksButton.setOnClickListener(v -> successPopup.setVisibility(View.GONE));
-            }
+            mActivity.getSupportActionBar().setTitle("Pending");
         } else {
             throw new RuntimeException("No transaction object");
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        new Handler().post(() -> {
+            if (showSuccessPopup) {
+                mActivity.getSupportActionBar().hide();
+                successPopup.setVisibility(View.VISIBLE);
+                greatThanksButton.setOnClickListener(v -> {
+                    mActivity.getSupportActionBar().show();
+                    successPopup.setVisibility(View.GONE);
+                });
+            }
+        });
     }
 
     private void cancelTransaction() {
@@ -136,7 +170,10 @@ public class TransactionDetailsFragment extends Fragment {
                     mActivity.onBackPressed();
                 });
             } catch (Exception e) {
-                Utils.showErrorDialog(mActivity, "Error", e.getMessage());
+                mActivity.runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    Utils.showErrorDialog(mActivity, "Error", e.getMessage());
+                });
             }
         }).start();
     }
@@ -153,34 +190,45 @@ public class TransactionDetailsFragment extends Fragment {
         double etherDouble = Utils.integerStringToCoinDouble(pendingApproval.amount, pendingApproval.token.decimalPlaces);
 
         List<Approval> collect = pendingApproval.getApprovals(guardians);
-        ApprovalsAdapter adapter = new ApprovalsAdapter(mActivity, 0, collect);
-        guardiansListView.setAdapter(adapter);
-        etherSendAmountTextView.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
-        dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
+        guardiansRecyclerView.setHasFixedSize(true);
+        guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
+        guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(collect, ApprovalsRecyclerAdapter.State.NORMAL));
+        sendAmountTextView.setText(String.format(Locale.US, "%.2f ETH | %.2f USD", etherDouble, etherDouble * exchangeRate.average24h));
         recipientAddressTextView.setText(pendingApproval.recipientAddr);
         transactionCommentTextView.setText(pendingApproval.comment);
-        String name = Global.ent.getMe().name;
-        senderNameTextView.setText(name);
+        senderTitleTextView.setVisibility(View.GONE);
+        senderAddressTextView.setVisibility(View.GONE);
         senderAddressTextView.setText(ethWallet.getAddress());
-        recipientNameTextView.setVisibility(View.GONE);
     }
 
     private void fillTransfer() {
+        guardiansRecyclerView.setHasFixedSize(true);
+        guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
+        validatorsTitle.setVisibility(View.GONE);
+        // TODO: Not known if approved or rejected here
+        List<Approval> collect = guardians.stream().map(g -> new Approval(g.name, Approval.State.APPROVED)).collect(Collectors.toList());
+        ApprovalsRecyclerAdapter.State state = ApprovalsRecyclerAdapter.State.HISTORY_APPROVED;
+        guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(collect, state));
         double etherDouble = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
-        etherSendAmountTextView.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
-        dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
+        sendAmountTextView.setText(String.format(Locale.US, "%.3f ETH", etherDouble));
+//        dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
         transactionCommentTextView.setText(transfer.comment);
         boolean isOutgoingTx = transfer.valueString.contains("-");
-        String name = Global.ent.getMe().name;
         if (isOutgoingTx) {
-            recipientNameTextView.setVisibility(View.GONE);
-            senderNameTextView.setText(name);
-            senderAddressTextView.setText(ethWallet.getAddress());
+            senderTitleTextView.setVisibility(View.GONE);
+            senderAddressTextView.setVisibility(View.GONE);
             recipientAddressTextView.setText(transfer.remoteAddress);
         } else {
-            senderNameTextView.setVisibility(View.GONE);
-            recipientNameTextView.setText(name);
-            recipientAddressTextView.setText(ethWallet.getAddress());
+
+            guardiansTitleTextView.setVisibility(View.GONE);
+            guardiansRecyclerView.setVisibility(View.GONE);
+            validatorsTitle.setVisibility(View.GONE);
+
+
+            recipientTitleTextView.setVisibility(View.GONE);
+            recipientAddressTextView.setVisibility(View.GONE);
+
+            senderTitleTextView.setVisibility(View.VISIBLE);
             senderAddressTextView.setText(transfer.remoteAddress);
         }
     }

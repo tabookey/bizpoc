@@ -19,10 +19,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,7 +32,6 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Locale;
@@ -55,7 +52,7 @@ public class SendFragment extends Fragment {
 
     TextView amountRequiredNote;
     TextView destinationRequiredNote;
-    TextView balanceTextView;
+    Button maximumAmountButton;
     double maximumTransferValue = 0;
     TokenInfo selectedToken = Global.ent.getTokens().get("teth");
 
@@ -67,6 +64,7 @@ public class SendFragment extends Fragment {
 
     boolean isEthChange = false;
     boolean isUsdChange = false;
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -75,7 +73,7 @@ public class SendFragment extends Fragment {
 
         amountRequiredNote = view.findViewById(R.id.amountRequiredNote);
         destinationRequiredNote = view.findViewById(R.id.destinationRequiredNote);
-        balanceTextView = view.findViewById(R.id.balanceTextView);
+        maximumAmountButton = view.findViewById(R.id.maximumAmountButton);
         updateTokenBalance();
 
         Button selectCoinButton = view.findViewById(R.id.selectCoinButton);
@@ -106,13 +104,16 @@ public class SendFragment extends Fragment {
                 Toast.makeText(mActivity, "Destination address pasted", Toast.LENGTH_LONG).show();
             }
         });
-        scanDestinationButton.setPaintFlags(scanDestinationButton.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-        pasteDestinationButton.setPaintFlags(pasteDestinationButton.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(mActivity, ScanActivity.class), 1));
         etherSendAmountEditText = view.findViewById(R.id.etherSendAmountEditText);
         dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         etherSendAmountEditText.setPaintFlags(etherSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
-        continueButton.setOnClickListener(v -> moveToContinue());
+        continueButton.setOnClickListener(v -> {
+            if (!isEnteredValueValid(true)) {
+                return;
+            }
+            moveToContinue();
+        });
 
         etherSendAmountEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -168,6 +169,14 @@ public class SendFragment extends Fragment {
                 }
             }
         });
+        View.OnFocusChangeListener focusChangeListener = (v, hasFocus) -> {
+            if (!hasFocus) {
+                isEnteredValueValid(false);
+            }
+        };
+        destinationEditText.setOnFocusChangeListener(focusChangeListener);
+        dollarEquivalent.setOnFocusChangeListener(focusChangeListener);
+        etherSendAmountEditText.setOnFocusChangeListener(focusChangeListener);
     }
 
     private void updateTokenBalance() {
@@ -175,16 +184,15 @@ public class SendFragment extends Fragment {
                 balances) {
             if (b.coinName.toLowerCase().equals(selectedToken.getTokenCode())) {
                 maximumTransferValue = b.getValue();
-                balanceTextView.setText(String.format(Locale.US, "Maximum: %.6f %s", maximumTransferValue, b.coinName.toUpperCase()));
+                maximumAmountButton.setOnClickListener(v ->
+                        etherSendAmountEditText.setText(String.format(Locale.US, "%.3f", maximumTransferValue))
+                );
                 break;
             }
         }
     }
 
     private void moveToContinue() {
-        if (!isEnteredValueValid()) {
-            return;
-        }
         ConfirmFragment cf = new ConfirmFragment();
         String destination = destinationEditText.getText().toString();
         String amountInput = etherSendAmountEditText.getText().toString();
@@ -197,9 +205,9 @@ public class SendFragment extends Fragment {
         mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
     }
 
-    private boolean isEnteredValueValid() {
-        amountRequiredNote.setText("Required");
-        destinationRequiredNote.setText("Required");
+    private boolean isEnteredValueValid(boolean showDialog) {
+        amountRequiredNote.setText("Please enter amount");
+        destinationRequiredNote.setText("Please enter address");
         String amountString = etherSendAmountEditText.getText().toString();
         boolean isAmountValid = amountString.length() != 0;
         try {
@@ -213,22 +221,32 @@ public class SendFragment extends Fragment {
         }
         String destination = destinationEditText.getText().toString();
         boolean isDestinationValid = AddressChecker.isValidAddress(destination);
+        // Ban sending to self
+        isDestinationValid &= !destination.toLowerCase().equals(mBitgoWallet.getAddress());
         boolean isDestinationChecksummed = AddressChecker.isCheckedAddress(destination);
         if (!isDestinationValid) {
             destinationRequiredNote.setText("Not a valid address");
-        } else if (!isDestinationChecksummed) {
+        } else if (!isDestinationChecksummed && showDialog) {
             AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
             dialog.setTitle("The address is not checksummed");
             dialog.setMessage("This address you have inserted does not seem to have a correct checksum. " +
                     "This can indicate you got the address from a client  that does not support EIP-55 style checksum, " +
                     "or that the address is invalid. Proceed on your own discretion.");
-            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "I understand", (d, w) -> d.dismiss());
+            boolean finalIsAmountValid = isAmountValid;
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "I understand", (d, w) -> {
+                if (finalIsAmountValid) {
+                    moveToContinue();
+                }
+                d.dismiss();
+            });
+            dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Let me check", (d, w) -> d.dismiss());
             dialog.show();
         }
         amountRequiredNote.setVisibility(isAmountValid ? View.GONE : View.VISIBLE);
         destinationRequiredNote.setVisibility(isDestinationValid ? View.GONE : View.VISIBLE);
-        return isAmountValid && isDestinationValid;
+        return isAmountValid && isDestinationValid && isDestinationChecksummed;
     }
+
 
     private void setDollarEquivalent() {
         View view = getView();
@@ -238,6 +256,7 @@ public class SendFragment extends Fragment {
         String etherAmount = etherSendAmountEditText.getText().toString();
         if (etherAmount.length() == 0) {
             dollarEquivalent.setText("0.00");
+            return;
         }
         double etherDouble = Double.parseDouble(etherAmount);
         dollarEquivalent.setText(String.format(Locale.US, "%.2f", etherDouble * exchangeRate.average24h));
@@ -250,10 +269,11 @@ public class SendFragment extends Fragment {
         }
         String dollarAmount = dollarEquivalent.getText().toString();
         if (dollarAmount.length() == 0) {
-            etherSendAmountEditText.setText("0.00");
+            etherSendAmountEditText.setText("0.000");
+            return;
         }
         double dollarDouble = Double.parseDouble(dollarAmount);
-        etherSendAmountEditText.setText(String.format(Locale.US, "%.2f", dollarDouble / exchangeRate.average24h));
+        etherSendAmountEditText.setText(String.format(Locale.US, "%.3f", dollarDouble / exchangeRate.average24h));
     }
 
     @Override
@@ -261,7 +281,7 @@ public class SendFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Activity) {
             mActivity = (AppCompatActivity) context;
-            mActivity.getSupportActionBar().setTitle("History");
+            mActivity.getSupportActionBar().setTitle("Send");
         }
     }
 

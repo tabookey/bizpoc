@@ -64,7 +64,7 @@ public class FirstFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        FloatingActionButton sendButton = view.findViewById(R.id.sendButton);
+        ImageButton sendButton = view.findViewById(R.id.sendButton);
         mainContentsLayout = view.findViewById(R.id.mainContentsLayout);
         mainContentsScrollView = view.findViewById(R.id.mainContentsScrollView);
         overlayInfoCardView = view.findViewById(R.id.overlayInfoCardView);
@@ -207,12 +207,13 @@ public class FirstFragment extends Fragment {
                     TextView owner = view.findViewById(R.id.ownerText);
                     balanceInDollarsText.setText(String.format(Locale.US, "%.2f USD", finalAssetsWorth));
                     address.setText(mBitgoWallet.getAddress());
-                    owner.setText(String.format("%s's safe%s", Global.ent.getMe().name, Global.isTest() ? " (testnet)":""));
+                    owner.setText(String.format("%s's safe%s", Global.ent.getMe().name, Global.isTest() ? " (testnet)" : ""));
                     adapter = new BalancesAdapter(mActivity, 0, balances);
                     balancesListView.setAdapter(adapter);
                     Utils.setListViewHeightBasedOnChildren(balancesListView);
                     ImageButton shareButton = view.findViewById(R.id.shareButton);
-                    shareButton.setOnClickListener(v -> {;
+                    shareButton.setOnClickListener(v -> {
+                        ;
                         String shareBody = mBitgoWallet.getAddress();
                         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
                         sharingIntent.setType("text/plain");

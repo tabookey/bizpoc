@@ -53,12 +53,10 @@
                     android:id="@+id/recipientAddressTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
                     android:layout_marginTop="8dp"
-                    android:layout_marginRight="16dp"
                     android:autoSizeMinTextSize="8dp"
+                    android:autoSizeMaxTextSize="20dp"
                     android:autoSizeTextType="uniform"
-                    android:textSize="12sp"
                     android:lines="1"
                     tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 

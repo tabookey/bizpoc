@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,9 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +55,7 @@ public class ConfirmFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Activity) {
             mActivity = (AppCompatActivity) context;
+            mActivity.getSupportActionBar().setTitle("Review");
         }
     }
 
@@ -89,7 +87,7 @@ public class ConfirmFragment extends Fragment {
         }
         double etherDouble = Utils.integerStringToCoinDouble(sendRequest.amount, token.decimalPlaces);
         dollarEquivalent.setText(String.format(Locale.US, "%.2f USD", etherDouble * exchangeRate.average24h));
-        etherSendAmount.setText(String.format(Locale.US, "%.6f ETH", etherDouble));
+        etherSendAmount.setText(String.format(Locale.US, "%.3f ETH", etherDouble));
         recipientAddress.setText(sendRequest.recipientAddress);
     }
 
@@ -217,7 +215,7 @@ public class ConfirmFragment extends Fragment {
             prefs.edit()
                     .putInt(PREFS_TXID_COUNTER, txidCounter + 1)
                     .apply();
-            return String.format(Locale.US, "TX-%03d", txidCounter);
+            return String.format(Locale.US, "Txn#%03d", txidCounter);
         }
     }
 }

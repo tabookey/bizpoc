@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/nonwhite_background"
+    android:background="@android:color/white"
     android:orientation="vertical">
 
     <LinearLayout
@@ -25,23 +25,21 @@
             android:id="@+id/destinationEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="-4dp"
             android:layout_weight="1"
-            android:autoSizeMaxTextSize="12dp"
-            android:autoSizeMinTextSize="8dp"
-            android:autoSizeTextType="uniform"
             android:hint="Enter address"
             android:inputType="text"
             android:lines="1"
             android:maxLines="1"
             android:textColorHighlight="@color/text_color"
-            android:textSize="14sp"
+            android:textSize="15sp"
+            android:theme="@style/EditTextTheme"
             tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
         <TextView
             android:id="@+id/destinationRequiredNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="* Required"
             android:textColor="@android:color/holo_red_dark"
             android:textSize="12sp"
             android:visibility="gone" />
@@ -60,7 +58,9 @@
                 android:id="@+id/scanDestinationButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="16dp"
+                android:layout_marginBottom="4dp"
                 android:background="@drawable/button_background_selector_white"
                 android:drawableLeft="@drawable/ic_qr"
                 android:elevation="10dp"
@@ -72,8 +72,12 @@
                 android:id="@+id/pasteDestinationButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginBottom="4dp"
                 android:background="@drawable/button_background_selector_white"
                 android:drawableLeft="@drawable/ic_copy"
+                android:elevation="10dp"
                 android:text="Paste"
                 android:textAllCaps="false"
                 android:textColor="@color/text_color" />
@@ -83,12 +87,13 @@
             android:id="@+id/amountTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="52dp"
             android:text="Amount" />
 
         <LinearLayout
-            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -109,17 +114,19 @@
                     android:text="ETH"
                     android:textAlignment="textStart"
                     android:textColor="@color/text_color"
+                    android:textStyle="bold"
                     android:textSize="14sp" />
 
                 <EditText
                     android:id="@+id/etherSendAmountEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="-4dp"
                     android:hint="0.00"
                     android:imeOptions="actionDone"
                     android:inputType="numberDecimal"
                     android:textAlignment="textStart"
-                    android:textColorHighlight="@color/text_color"
+                    android:theme="@style/EditTextTheme"
                     tools:text="123456.78" />
 
             </LinearLayout>
@@ -148,29 +155,39 @@
                     android:id="@+id/dollarEquivalent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="-4dp"
                     android:layout_weight="1"
                     android:hint="0.00"
                     android:imeOptions="actionDone"
+                    android:inputType="numberDecimal"
                     android:textAlignment="textStart"
-                    android:textColorHighlight="@color/text_color"
+                    android:theme="@style/EditTextTheme"
                     tools:text="1,234,567,890.99" />
             </LinearLayout>
         </LinearLayout>
+
+        <Button
+            android:id="@+id/maximumAmountButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/button_background_selector_white"
+            android:elevation="10dp"
+            android:text="Max"
+            android:textAllCaps="false"
+            android:textColor="@color/text_color" />
 
         <TextView
             android:id="@+id/amountRequiredNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="* Required"
             android:textColor="@android:color/holo_red_dark"
             android:textSize="12sp"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/balanceTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="Maximum: 123.4567 ETH" />
     </LinearLayout>
 
     <View
@@ -182,7 +199,7 @@
         android:id="@+id/validatorsTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
+        android:layout_marginBottom="24dp"
         android:text="The transaction will be submitted after guardians approval"
         android:textAlignment="center"
         android:textSize="12sp" />

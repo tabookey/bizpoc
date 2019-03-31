@@ -30,10 +30,10 @@ class TransactionHistoryAdapter extends BaseAdapter {
     List<BitgoUser> mGuardians;
 
     private void fillHistoryViewHolder(Transfer transfer, ViewHolder viewHolder) {
-        String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", transfer.date).toString();
+        String dateFormat = DateFormat.format("MMMM dd, yyyy", transfer.date).toString();
         viewHolder.dateTextView.setText(dateFormat);
         double value = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
-        String valueFormat = String.format(Locale.US, "%.6f %s", value, transfer.coin.toUpperCase());
+        String valueFormat = String.format(Locale.US, "%.3f %s", value, transfer.coin.toUpperCase());
         if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
             valueFormat += String.format(Locale.US, " | %s USD", usd);
@@ -41,18 +41,45 @@ class TransactionHistoryAdapter extends BaseAdapter {
         viewHolder.valueTextView.setText(valueFormat);
 
         boolean isOutgoingTx = transfer.valueString.contains("-");
-        viewHolder.transactionStatus.setText(transfer.isRejected ? "Rejected" : isOutgoingTx ? "Sent" : "Received");
-        viewHolder.transactionStatusIcon.setImageResource(transfer.isRejected ? android.R.drawable.ic_menu_close_clear_cancel :
-                isOutgoingTx ? R.drawable.ic_arrow_upward_black_24dp : R.drawable.ic_arrow_downward_black_24dp);
+        String label;
+        int drawable;
+        int labelColor;
+        switch (transfer.state) {
+            case REJECTED:
+                labelColor = mContext.getColor(R.color.reddish_brown);
+                label = "Declined";
+                drawable = R.drawable.ic_declined;
+                break;
+            case CANCELLED:
+                labelColor = mContext.getColor(R.color.reddish_brown);
+                label = "Cancelled";
+                drawable = R.drawable.ic_cancelled;
+                break;
+            case APPROVED:
+            default:
+                labelColor = mContext.getColor(R.color.black54);
+                if (isOutgoingTx) {
+                    label = "Sent";
+                    drawable = R.drawable.ic_sent;
+                } else {
+                    label = "Received";
+                    drawable = R.drawable.ic_recieved;
+                }
+                break;
+
+        }
+
+        viewHolder.transactionStatus.setTextColor(labelColor);
+        viewHolder.transactionStatus.setText(label);
+        viewHolder.transactionStatusIcon.setImageResource(drawable);
     }
 
     private void fillPendingViewHolder(PendingApproval pending, ViewHolder viewHolder) {
-        String dateFormat = DateFormat.format("MMMM ddQQQQ yyyy, hh:mm:ss a", pending.createDate).toString();
-        dateFormat = dateFormat.replaceAll("QQQQ", Utils.getDayOfMonthSuffix(pending.createDate));
+        String dateFormat = DateFormat.format("MMMM dd, yyyy", pending.createDate).toString();
         viewHolder.dateTextView.setText(dateFormat);
         double value = Utils.integerStringToCoinDouble(pending.amount, pending.token.decimalPlaces);
 
-        String valueFormat = String.format(Locale.US, "%.6f %s", value, pending.coin.toUpperCase());
+        String valueFormat = String.format(Locale.US, "%.3f %s", value, pending.coin.toUpperCase());
         valueFormat += String.format(Locale.US, " | %.2f USD", value * mExchangeRate.average24h);
         viewHolder.valueTextView.setText(valueFormat);
         viewHolder.remoteTextView.setText(pending.recipientAddr);
@@ -60,7 +87,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
 
         viewHolder.guardiansRecyclerView.setHasFixedSize(true);
         viewHolder.guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mContext, 2));
-        viewHolder.guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(pending.getApprovals(mGuardians)));
+        viewHolder.guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(pending.getApprovals(mGuardians), ApprovalsRecyclerAdapter.State.NORMAL));
     }
 
     private static final int TYPE_ITEM_PENDING = 0;

@@ -37,10 +37,10 @@ public class PendingApproval {
                 if (user.email.equals(b.email))
                     isApproved = true;
             }
-            if (b.email.equals("did@approve")){
+            if (b.email.equals("did@approve")) {
                 isApproved = true;
             }
-            return new Approval(b.name, isApproved);
+            return new Approval(b.name, isApproved ? Approval.State.APPROVED : Approval.State.WAITING);
 
         }).collect(Collectors.toList());
     }

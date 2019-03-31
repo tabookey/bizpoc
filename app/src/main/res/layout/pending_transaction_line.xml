@@ -4,12 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/nonwhite_background"
     android:clickable="false"
     android:descendantFocusability="blocksDescendants"
     android:focusable="false"
     android:focusableInTouchMode="false"
-    card_view:cardBackgroundColor="@android:color/white"
+    card_view:cardBackgroundColor="@color/nonwhite_background"
     card_view:cardElevation="5dp"
     card_view:cardUseCompatPadding="true">
 
@@ -31,7 +30,7 @@
                 android:id="@+id/transactionComment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="TX-101" />
+                tools:text="Txn#101" />
 
             <View
                 android:layout_width="0dp"

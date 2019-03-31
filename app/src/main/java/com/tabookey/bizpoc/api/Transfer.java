@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tabookey.bizpoc.Approval;
 
 import java.util.Date;
 
@@ -15,12 +16,11 @@ public class Transfer {
     public TokenInfo token;
 
     @JsonIgnore
-    public boolean isRejected;
+    public Approval.State state;
 
-    public Transfer(String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token) {
+    public Transfer(String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token, Approval.State state) {
         this.txid = txid;
-        if ( txid==null )
-            isRejected=true;
+        this.state = state;
         this.valueString = valueString;
         this.coin = coin;
         this.usd = usd;

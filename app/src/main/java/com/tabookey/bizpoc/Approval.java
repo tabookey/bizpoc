@@ -2,10 +2,18 @@ package com.tabookey.bizpoc;
 
 public class Approval {
     String name;
-    boolean isApproved;
+    State state;
 
-    public Approval(String name, boolean isApproved) {
+    public enum State {
+        WAITING,
+        // So far, incoming transfers are also "approved"
+        APPROVED,
+        REJECTED,
+        CANCELLED
+    }
+
+    public Approval(String name, State state) {
         this.name = name;
-        this.isApproved = isApproved;
+        this.state = state;
     }
 }

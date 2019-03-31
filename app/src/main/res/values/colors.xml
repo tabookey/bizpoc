@@ -11,4 +11,6 @@
     <color name="text_color">#0c7489</color>
     <color name="bluish_background">#D3E2E3</color>
     <color name="nonwhite_background">#f7f7f7</color>
+    <color name="reddish_brown">#890c0c</color>
+    <color name="black54">#8a000000</color>
 </resources>

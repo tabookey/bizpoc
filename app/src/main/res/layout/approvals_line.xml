@@ -8,8 +8,9 @@
     <TextView
         android:id="@+id/guardianName"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:textColor="@android:color/black"
+        android:textSize="16sp"
         tools:text="Tabookey" />
 
     <VideoView
@@ -20,6 +21,7 @@
         android:id="@+id/approvedCheckbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_check_circle_green_24dp" />
+        android:src="@drawable/ic_check_circle_green_24dp"
+        tools:ignore="ContentDescription" />
 
 </LinearLayout>
