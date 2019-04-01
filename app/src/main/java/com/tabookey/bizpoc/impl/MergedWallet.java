@@ -185,13 +185,43 @@ class MergedWallet implements IBitgoWallet {
         return ethWallet.checkPassphrase(passphrase);
     }
 
+    public BitgoUser getUserById(String id) {
+        for (BitgoUser u : ent.getUsers()) {
+            if (u.id.equals(id))
+                return u;
+        }
+        return null;
+    }
+
     @Override
     public List<PendingApproval> getPendingApprovals() {
-
-        ArrayList<PendingApproval> ret = new ArrayList();
-        for (String c : coins) {
-            ret.addAll(getCoinWallet(c).getPendingApprovals());
+        Wallet.PendingApprovalResp resp = ent.http.get("/api/v2/" + data.coin + "/pendingapprovals?allTokens=true", Wallet.PendingApprovalResp.class);
+        ArrayList<PendingApproval> ret = new ArrayList<>();
+        for (Wallet.PendingApprovalResp.PendingApproval r : resp.pendingApprovals) {
+            if (r.info == null
+                    || r.info.transactionRequest == null
+                    || r.info.transactionRequest.recipients == null) {
+                continue;
+            }
+            PendingApproval p = new PendingApproval();
+            p.id = r.id;
+            p.createDate = r.createDate;
+            p.coin = r.coin;
+            p.creator = getUserById(r.creator);
+            p.recipientAddr = r.info.transactionRequest.recipients[0].address;
+            p.amount = r.info.transactionRequest.recipients[0].amount;
+            p.comment = r.info.transactionRequest.comment;
+            p.token = Global.ent.getTokens().get(p.coin);
+            if (r.resolvers != null) {
+                ArrayList<BitgoUser> approvedBy = new ArrayList<BitgoUser>();
+                for (Wallet.PendingApprovalResp.Resolver rs : r.resolvers) {
+                    approvedBy.add(getUserById(rs.user));
+                }
+                p.approvedByUsers = approvedBy;
+            }
+            ret.add(p);
         }
+
         ret.sort((a, b) -> a.createDate.compareTo(b.createDate));
         return ret;
     }
