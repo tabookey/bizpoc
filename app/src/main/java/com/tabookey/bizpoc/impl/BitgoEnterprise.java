@@ -47,6 +47,10 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         }
     }
 
+    public TokenInfo getBaseCoin() {
+        return baseCoin;
+    }
+
     static class EntResp {
         public EnterpriseInfo[] enterprises;
     }

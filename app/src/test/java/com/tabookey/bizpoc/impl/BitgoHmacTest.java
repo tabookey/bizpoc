@@ -2,7 +2,14 @@ package com.tabookey.bizpoc.impl;
 
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
+
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okio.Buffer;
+import okio.BufferedSink;
 
 import static com.tabookey.bizpoc.impl.BitgoHmac.calculateHMACSubject;
 import static com.tabookey.bizpoc.impl.BitgoHmac.calculateRequestHMAC;
@@ -14,15 +21,28 @@ import static org.junit.Assert.*;
 
 public class BitgoHmacTest {
 
-    static String requrl="https://test.bitgo.com/api/v2/teth/wallet";
-    static long reqTimestamp = 1553680781437l;
-    static String req_hmac = "3e95c3f67c0b5462f439d904c870c066abdc4350228039182e24214e5889f1d1";
-    static String reqToken = "v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8";
-    static String[] reqheaders= {"Authorization: Bearer d1b770b72a96a7b639958ea94934164e44a03ea686ae44a7161f08dba2708c30",
-            "HMAC: 3e95c3f67c0b5462f439d904c870c066abdc4350228039182e24214e5889f1d1",
-            "Auth-Timestamp: 1553680781437",
-            "BitGo-Auth-Version: 2.0"
-    };
+    @Test
+    public void test_req_body() throws IOException {
+        Request.Builder bld = new Request.Builder();
+        String content = "{\"this\":false}";
+        bld.url("http://url").method("PUT", RequestBody.create( MediaType.parse("application/json"), content));
+
+
+        Buffer s = new Buffer();
+        bld.build().body().writeTo(s);
+        assertEquals(content, s.readUtf8());
+    }
+    static class GetRequest {
+        static String requrl="https://test.bitgo.com/api/v2/teth/wallet";
+        static long reqTimestamp = 1553680781437l;
+        static String req_hmac = "3e95c3f67c0b5462f439d904c870c066abdc4350228039182e24214e5889f1d1";
+        static String reqToken = "v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8";
+        static String[] reqheaders= {"Authorization: Bearer d1b770b72a96a7b639958ea94934164e44a03ea686ae44a7161f08dba2708c30",
+                "HMAC: 3e95c3f67c0b5462f439d904c870c066abdc4350228039182e24214e5889f1d1",
+                "Auth-Timestamp: 1553680781437",
+                "BitGo-Auth-Version: 2.0"
+        };
+    }
 
     static long respTimestamp=1553680782788l;
     static String respHmac = "0f9f084a6ab3e355d2b1d2029993febba2147d27bcd9f10febe6b34fb9810017";
@@ -55,36 +75,36 @@ public class BitgoHmacTest {
     @Test
     public void test_calculateRequestHeaders() {
 
-        HashMap<String, String> ret = calculateRequestHeaders(requrl,"", reqTimestamp, reqToken);
-        assertEquals( headersToMap(reqheaders).toString().replace(",", ",\n"), ret.toString().replace(",", ",\n"));
+        HashMap<String, String> ret = calculateRequestHeaders(GetRequest.requrl,"", GetRequest.reqTimestamp, GetRequest.reqToken);
+        assertEquals( headersToMap(GetRequest.reqheaders).toString().replace(",", ",\n"), ret.toString().replace(",", ",\n"));
     }
 
     @Test
     public void test_verifyResponse() {
-        verifyResponse(requrl, 200, respBody, respTimestamp, reqToken, respHmac);
+        verifyResponse(GetRequest.requrl, 200, respBody, respTimestamp, GetRequest.reqToken, respHmac);
     }
 
     @Test(expected = RuntimeException.class)
     public void test_verifyResponse_old() {
-        verifyResponse(requrl, 200, respBody, respTimestamp-1000, reqToken, respHmac);
+        verifyResponse(GetRequest.requrl, 200, respBody, respTimestamp-1000, GetRequest.reqToken, respHmac);
     }
 
     @Test(expected = RuntimeException.class)
     public void test_verifyResponse_wrong_hmac() {
-        verifyResponse(requrl, 200, respBody, respTimestamp-1000, reqToken, respHmac+"1");
+        verifyResponse(GetRequest.requrl, 200, respBody, respTimestamp-1000, GetRequest.reqToken, respHmac+"1");
     }
 
     @Test
     public void test_subject() {
 
-        assertEquals(req_subject, calculateHMACSubject(requrl, "", reqTimestamp, 0) );
+        assertEquals(req_subject, calculateHMACSubject(GetRequest.requrl, "", GetRequest.reqTimestamp, 0) );
     }
     @Test
     public void test_calculateRequestHMAC() {
         String hmac = calculateRequestHMAC(
-                requrl,"",reqTimestamp,reqToken
+                GetRequest.requrl,"",GetRequest.reqTimestamp,GetRequest.reqToken
         );
-        assertEquals(req_hmac, hmac);
+        assertEquals(GetRequest.req_hmac, hmac);
     }
 
 

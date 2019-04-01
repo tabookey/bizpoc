@@ -1,7 +1,5 @@
 package com.tabookey.bizpoc;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -9,8 +7,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +17,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.ybq.android.spinkit.SpinKitView;
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -36,6 +33,9 @@ import java.util.List;
 import java.util.Locale;
 
 public class FirstFragment extends Fragment {
+
+    public static String TAG="1frag";
+
     public static boolean didShowSplashScreen = false;
     private View progressView;
     private SpinKitView progressBar;
@@ -188,6 +188,7 @@ public class FirstFragment extends Fragment {
                         new Handler().post(() -> mainContentsScrollView.scrollTo(0, 0));
                     });
                 } catch (Exception e) {
+                    Log.e(TAG, "ex", e );
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
                         retryButton.setVisibility(View.VISIBLE);
@@ -215,10 +216,10 @@ public class FirstFragment extends Fragment {
                     shareButton.setOnClickListener(v -> {
                         ;
                         String shareBody = mBitgoWallet.getAddress();
-                        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                         sharingIntent.setType("text/plain");
-                        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Wallet Ethereum address");
-                        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+                        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Wallet Ethereum address");
+                        sharingIntent.putExtra(Intent.EXTRA_TEXT, shareBody);
                         startActivity(Intent.createChooser(sharingIntent, "Share address..."));
                     });
 

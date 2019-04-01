@@ -16,7 +16,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.Buffer;
 
 public class BitgoHmac {
 
@@ -37,9 +39,22 @@ public class BitgoHmac {
             bld.header("Authorization", "Bearer " + token);
             return;
         }
-        String body = req.method().equals("GET") ? "" : req.body().toString();
+        Buffer bodyBuffer = new Buffer();
+        String bodyString;
+        try {
+            RequestBody body = bld.build().body();
+            if ( body==null )
+                bodyString="";
+            else {
+                body.writeTo(bodyBuffer);
+                bodyString = bodyBuffer.readUtf8();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("unexpected (in memory url)");
+        }
+
         long timestamp = new Date().getTime();
-        HashMap<String, String> headers = calculateRequestHeaders(req.url().toString(), body, timestamp, token);
+        HashMap<String, String> headers = calculateRequestHeaders(req.url().toString(), bodyString, timestamp, token);
         for (String k : headers.keySet())
             bld.header(k, headers.get(k));
     }
@@ -52,7 +67,7 @@ public class BitgoHmac {
      */
     public static void verifyResponse(Response resp, String token) throws IOException {
 
-        String body = resp.peekBody(10000).string();
+        String body = resp.peekBody(Integer.MAX_VALUE).string();
         if ( body.contains("\"error\":\"unauthorized\""))
             throw new RuntimeException(body);
 

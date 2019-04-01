@@ -31,7 +31,7 @@ public class WalletFlow {
         System.out.println( "me: "+toJson(ent.getMe()) );
         IBitgoWallet w = ent.getWallets("teth").get(0);
         System.out.println("wallet balance: "+ w.getBalance("teth"));
-        List<Transfer> transfers = w.getTransfers();
+        List<Transfer> transfers = w.getTransfers(0);
         for ( Transfer t : transfers)
             System.out.println( "tx: "+toJson(t));
         List<PendingApproval> pendingApprovals = w.getPendingApprovals();
