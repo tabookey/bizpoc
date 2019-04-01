@@ -164,6 +164,7 @@ public class TransactionDetailsFragment extends Fragment {
         new Thread(() -> {
             try {
                 Global.ent.getMergedWallets().get(0).rejectPending(pendingApproval);
+                ethWallet.update(null);
                 mActivity.runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
                     mActivity.onBackPressed();

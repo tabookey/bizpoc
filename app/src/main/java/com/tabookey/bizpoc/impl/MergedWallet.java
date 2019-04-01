@@ -97,7 +97,7 @@ class MergedWallet implements IBitgoWallet {
         public Log[] logs;
 
         static class Log {
-            public String user, ip, walletId, type, coin;
+            public String id, user, ip, walletId, type, coin;
             public Date date;
             public Data data;
 
@@ -135,7 +135,7 @@ class MergedWallet implements IBitgoWallet {
         AuditResp resp = ent.http.get("/api/v2/auditlog?limit=%d&type=rejectTransaction&%swalletId=%s", AuditResp.class,
                 limit, coinParams, this.getId());
 
-        return Arrays.stream(resp.logs).map(log -> new Transfer(
+        return Arrays.stream(resp.logs).map(log -> new Transfer(log.id,
                 null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, ent.getToken(log.coin),
                 log.user.equals(Global.ent.getMe().id) ? Approval.State.CANCELLED : Approval.State.REJECTED
         )).collect(Collectors.toList());
@@ -156,7 +156,7 @@ class MergedWallet implements IBitgoWallet {
         Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (Wallet.TransferResp.Trans t : resp.transfers) {
-            Transfer tx = new Transfer(t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin), Approval.State.APPROVED);
+            Transfer tx = new Transfer(t.id, t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin), Approval.State.APPROVED);
             // entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
             // looking for the other one, with its value different (actually, negative) of ours.
@@ -176,6 +176,10 @@ class MergedWallet implements IBitgoWallet {
             return ret.subList(0, limit);
         }
         return ret;
+    }
+
+    @Override
+    public void update(Runnable onChange) {
     }
 
     @Override

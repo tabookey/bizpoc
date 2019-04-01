@@ -76,9 +76,9 @@ public class BitgoHmac {
 
         long resp_timestamp = Long.parseLong(resp.header("timestamp","0"));
         long req_timestamp = Long.parseLong(resp.request().header("auth-timestamp"));
-        if ( resp_timestamp<req_timestamp ) {
-            throw new RuntimeException("invalid response: timestamp prior request timestamp");
-        }
+//        if ( resp_timestamp<req_timestamp ) {
+//            throw new RuntimeException("invalid response: timestamp prior request timestamp");
+//        }
         verifyResponse(resp.request().url().toString(), resp.code(),
                 body, resp_timestamp, token, resp.header("HMAC"));
     }

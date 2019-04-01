@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,6 +27,7 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.api.Transfer;
+import com.tabookey.bizpoc.impl.CachedEnterprise;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
@@ -109,9 +111,35 @@ public class FirstFragment extends Fragment {
         }
     }
 
+    Thread refresher;
+
     @Override
     public void onResume() {
+        refresher = new Thread(() -> {
+            while (!Thread.interrupted()) {
+                try {
+                    Thread.sleep(10000);
+                    Global.ent.update(() -> {
+                        //TODO: can't be really used, since it TERC/TBST areupdated on EACH call (with random data, probably...)
+                        Log.d("TAG", "========= ENTERPRISE CHANGE");
+                    });
+                    mBitgoWallet.update(() ->
+                                getActivity().runOnUiThread(() -> fillWindow())
+                        );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        refresher.start();
+
         super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        refresher.interrupt();
+        super.onPause();
     }
 
     void fillWindow() {

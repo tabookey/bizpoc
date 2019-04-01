@@ -12,7 +12,6 @@ import java.util.List;
 public class CachedWallet implements IBitgoWallet {
 
     private final IBitgoWallet netwallet;
-    private final Runnable walletChange;
     private List<String> coins;
     private List<BitgoUser> guardians;
     private HashMap<String, String> balances = new HashMap<>();
@@ -22,42 +21,51 @@ public class CachedWallet implements IBitgoWallet {
 
     private final String id, label, address;
 
-    public CachedWallet(IBitgoWallet netwallet, Runnable walletChange) {
-        this.walletChange = walletChange;
+    /**
+     * initialize a cached wallet.
+     * initial call will fill the object (so must be called from a background thread)
+     * later calls return cached values, except for update()
+     *
+     * @param netwallet - network-connected wallet, to fetch dated data.
+     */
+    public CachedWallet(IBitgoWallet netwallet) {
         this.netwallet = netwallet;
         this.id = netwallet.getId();
         this.label = netwallet.getLabel();
         this.address = netwallet.getAddress();
         this.coins = netwallet.getCoins();
         this.guardians = netwallet.getGuardians();
-        update();
+        update(null);
     }
 
     /**
-     * update all items that might modify over time:
+     * Force update all items that might modify over time
+     * MUST be called from a background thread, since it blocks until network access is complete
+     * <p>
      * - coin balances
      * - transfers
      * - pending approvals
+     *
+     * @param onChange - callback to call (from the background thread!) in case of change.
      */
-    public void update() {
+    @Override
+    public void update(Runnable onChange) {
         HashMap<String, String> newBalance = new HashMap<>();
         for (String coin : getCoins())
             newBalance.put(coin, netwallet.getBalance(coin));
         List<Transfer> newTransfers = netwallet.getTransfers(0);
-        List<PendingApproval> newPendingapprovals = getPendingApprovals();
-        //we check only first transfer and first pendingApproval, since these are ordered list: a new item is always put first, pushing
-        // the rest down.
+        List<PendingApproval> newPendingapprovals = netwallet.getPendingApprovals();
         if (newBalance.equals(balances) &&  //no changes in balance
-                (newTransfers.size() == 0 || newTransfers.get(0).txid.equals(transfers.get(0).txid)) &&
-                (newPendingapprovals.size() == 0 || newPendingapprovals.get(0).id.equals(pendingapprovals.get(0).id))
-        ) {
+                newTransfers.equals(transfers) &&
+                newPendingapprovals.equals(pendingapprovals) ) {
             //no change. return.
             return;
         }
         balances = newBalance;
         transfers = newTransfers;
         pendingapprovals = newPendingapprovals;
-        walletChange.run();
+        if (onChange != null)
+            onChange.run();
     }
 
     @Override

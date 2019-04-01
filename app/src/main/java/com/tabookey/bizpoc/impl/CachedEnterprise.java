@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
+import android.util.Log;
+
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.EnterpriseInfo;
 import com.tabookey.bizpoc.api.ExchangeRate;
@@ -17,15 +19,13 @@ import java.util.Map;
 
 public class CachedEnterprise implements IBitgoEnterprise {
     private final BitgoEnterprise networkEnterprise;
-    private final Runnable ratesChange;
-    private final Runnable walletChange;
     TokenInfo baseCoin;
     private EnterpriseInfo info;
     private ArrayList<BitgoUser> users;
     private BitgoUser userMe;
 
     private HashMap<String, TokenInfo> allTokensInfo;
-    private CachedWallet theWallet;
+    public CachedWallet theWallet;
     private Map<String, Double> allExchangeRates;
 
     @Override
@@ -33,48 +33,63 @@ public class CachedEnterprise implements IBitgoEnterprise {
         return getTokens().get(token);
     }
 
-    public CachedEnterprise(BitgoEnterprise networkEnterprise, Runnable walletChange, Runnable ratesChange) {
-        this.ratesChange =ratesChange;
-        this.walletChange = walletChange;
+    public CachedEnterprise(BitgoEnterprise networkEnterprise) {
         this.networkEnterprise = networkEnterprise;
         baseCoin = networkEnterprise.getBaseCoin();
+    }
+
+    void init() {
+        if ( info!=null )
+            return;
         info = networkEnterprise.getInfo();
         userMe = networkEnterprise.getMe();
         users = new ArrayList<>(networkEnterprise.getUsers());
         allTokensInfo = new HashMap<>(networkEnterprise.getTokens());
-        IBitgoWallet netwallet = networkEnterprise.getMergedWallets().get(0);
+        update(null);
 
-        theWallet = new CachedWallet(netwallet, walletChange);
-        update();
+        getCachedWallet();
+    }
+
+    CachedWallet getCachedWallet() {
+        if ( theWallet==null )
+            theWallet = new CachedWallet(networkEnterprise.getMergedWallets().get(0));
+        return theWallet;
     }
 
     /**
      * update all items that might change over time:
      * - exchange rates.
      */
-    public void update() {
+    public void update(Runnable onChange) {
         HashMap<String, Double> newExchangeRates = new HashMap<>(networkEnterprise.getAllExchangeRates());
-        if ( newExchangeRates.equals(allExchangeRates))
+        if ( allExchangeRates!=null && newExchangeRates.toString().equals(allExchangeRates.toString()))
             return;
-        ratesChange.run();
+
+        Log.d("cache", "OLD: "+String.valueOf(allExchangeRates));
+        Log.d("cache", "NEW: "+String.valueOf(newExchangeRates));
+        allExchangeRates = newExchangeRates;
+
+        if ( onChange!=null )
+            onChange.run();
     }
 
 
     @Override
     public Map<String, TokenInfo> getTokens() {
-
+        init();
         return allTokensInfo;
     }
 
     //TODO: read tokens, decimals from:  https://test.bitgo.com/api/v1/client/constants
     @Override
     public EnterpriseInfo getInfo() {
+        init();
         return info;
     }
 
     @Override
     public BitgoUser getMe() {
-
+        init();
         return userMe;
     }
 
@@ -83,17 +98,19 @@ public class CachedEnterprise implements IBitgoEnterprise {
      * @return map of token=>usd-value
      */
     public Map<String,Double> getAllExchangeRates() {
+        init();
         return allExchangeRates;
     }
 
     @Override
     public ExchangeRate getMarketData(String coin) {
-
+        init();
         return new ExchangeRate(getAllExchangeRates().get(coin));
     }
 
     public List<IBitgoWallet> getMergedWallets() {
-        return Arrays.asList(theWallet);
+        init();
+        return Arrays.asList(getCachedWallet());
     }
 
     @NotNull
@@ -103,7 +120,8 @@ public class CachedEnterprise implements IBitgoEnterprise {
 
     @Override
     public List<IBitgoWallet> getWallets(String coin) {
-        return Arrays.asList(theWallet);
+        init();
+        return Arrays.asList(getCachedWallet());
     }
 
     public BitgoUser getUserById(String id, boolean withFullName) {
@@ -117,6 +135,7 @@ public class CachedEnterprise implements IBitgoEnterprise {
 
     @Override
     public List<BitgoUser> getUsers() {
+        init();
         return users;
     }
 }

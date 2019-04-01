@@ -4,7 +4,10 @@ import com.tabookey.bizpoc.Approval;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import androidx.annotation.Nullable;
 
 public class PendingApproval {
     public String id, recipientAddr, comment, coin, amount;
@@ -15,6 +18,13 @@ public class PendingApproval {
 
     public PendingApproval() {
 
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if ( !(obj instanceof PendingApproval) )
+            return false;
+        return Objects.equals(((PendingApproval) obj).id, this.id);
     }
 
     public PendingApproval(String id, Date createDate, String recipientAddr, String comment, String coin, String amount, List<BitgoUser> approvedByUsers, BitgoUser creator, TokenInfo token) {

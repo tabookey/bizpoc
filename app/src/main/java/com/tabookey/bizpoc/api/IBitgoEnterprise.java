@@ -18,6 +18,12 @@ public interface IBitgoEnterprise {
 
     ExchangeRate getMarketData(String coin);
 
+    /**
+     * update all items that might change over time:
+     * - exchange rates.
+     */
+    public void update(Runnable onChange);
+
     List<IBitgoWallet> getWallets(String coin);
 
     //return enterprise users (NOTE: "role" are not set on enterprise-level, only on wallet level)

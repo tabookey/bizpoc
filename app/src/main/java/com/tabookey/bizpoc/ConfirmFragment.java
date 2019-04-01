@@ -147,6 +147,7 @@ public class ConfirmFragment extends Fragment {
                     sendRequest.walletPassphrase = password;
                     sendRequest.comment = getNewMemoID();
                     String pendingTxId = mBitgoWallet.sendCoins(sendRequest, null);
+                    mBitgoWallet.update(null);
                     dollarEquivalent.post(() -> progressBar.setVisibility(View.GONE));
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();

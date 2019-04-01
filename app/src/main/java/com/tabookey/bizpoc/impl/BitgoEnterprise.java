@@ -217,6 +217,10 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         return e;
     }
 
+    @Override
+    public void update(Runnable onChange) {
+    }
+
     public List<IBitgoWallet> getMergedWallets() {
         String coin = coinName();
         //must specify at least one coin name, to get back all tokens.

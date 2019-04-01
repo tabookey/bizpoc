@@ -3,8 +3,11 @@ package com.tabookey.bizpoc.api;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.SystemClock;
+import android.util.Log;
 
 import com.tabookey.bizpoc.impl.BitgoEnterprise;
+import com.tabookey.bizpoc.impl.CachedEnterprise;
 import com.tabookey.bizpoc.impl.HttpReq;
 
 public class Global {
@@ -13,7 +16,7 @@ public class Global {
 
 
     public static boolean isTest() {
-        return getPrefs().getBoolean("istest",true);
+        return getPrefs().getBoolean("istest", true);
     }
 
     public static void setIsTest(boolean isTest) {
@@ -22,7 +25,9 @@ public class Global {
 
     public static void setAccessToken(String accessToken) {
         Global.accessToken = accessToken;
-        ent = new BitgoEnterprise(Global.accessToken, isTest());
+        BitgoEnterprise netent = new BitgoEnterprise(Global.accessToken, isTest());
+        CachedEnterprise cached = new CachedEnterprise(netent);
+        ent = cached;
     }
 
     private static SharedPreferences getPrefs() {

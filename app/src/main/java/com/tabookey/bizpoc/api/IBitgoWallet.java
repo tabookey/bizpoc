@@ -21,6 +21,18 @@ public interface IBitgoWallet {
     List<Transfer> getTransfers(int limit);
 
     /**
+     * Force update all items that might modify over time
+     * MUST be called from a background thread, since it blocks until network access is complete
+     * <p>
+     * - coin balances
+     * - transfers
+     * - pending approvals
+     *
+     * @param onChange - callback to call (from the background thread!) in case of change.
+     */
+    public void update(Runnable onChange);
+
+    /**
      * send coins
      * @param req - request paramters
      * @param cb - optional callback. type is "state" for for interim state changes, "result" for final result, or "error" in case of error.

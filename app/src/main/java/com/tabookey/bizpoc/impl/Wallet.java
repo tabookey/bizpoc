@@ -102,7 +102,7 @@ class Wallet implements IBitgoWallet {
         public Trans[] transfers;
 
         static class Trans {
-            public String txid, coin, valueString, usd, comment;
+            public String id, txid, coin, valueString, usd, comment;
             public Date date;
             public Entry[] entries;
         }
@@ -116,6 +116,10 @@ class Wallet implements IBitgoWallet {
     public List<Transfer> getTransfers(int limit) {
         // TODO: there is currently no use for this method.
         throw new NotImplementedError("Use MergedWallet instead.");
+    }
+
+    @Override
+    public void update(Runnable onChange) {
     }
 
     @Override
