@@ -48,8 +48,9 @@
                 tools:text="13/01/18 05:24 PM" />
 
             <ImageView
+                android:layout_marginTop="2dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="22dp"
                 android:src="@drawable/ic_keyboard_arrow_right_black_24dp" />
         </LinearLayout>
 

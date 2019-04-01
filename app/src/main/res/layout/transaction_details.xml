@@ -88,7 +88,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Transaction #" />
+                android:text="Memo" />
 
             <TextView
                 android:id="@+id/transactionCommentTextView"
@@ -99,6 +99,7 @@
 
 
             <View
+                android:layout_marginTop="12dp"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@android:color/darker_gray" />
@@ -116,8 +117,9 @@
                 android:id="@+id/validatorsTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
                 android:text="The transaction will be submitted after guardians approval"
-                android:textSize="12sp" />
+                android:textSize="14sp" />
 
             <com.tabookey.bizpoc.NonClickableRecyclerView
                 android:id="@+id/guardiansRecyclerView"

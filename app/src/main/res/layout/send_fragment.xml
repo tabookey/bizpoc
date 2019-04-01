@@ -114,8 +114,8 @@
                     android:text="ETH"
                     android:textAlignment="textStart"
                     android:textColor="@color/text_color"
-                    android:textStyle="bold"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/etherSendAmountEditText"
@@ -131,11 +131,10 @@
 
             </LinearLayout>
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_switch" />
+            <View
+                android:layout_width="48dp"
+                android:layout_height="0dp"
+                android:layout_gravity="center" />
 
             <LinearLayout
                 android:layout_width="0dp"

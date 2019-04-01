@@ -90,7 +90,7 @@ public class TransactionDetailsFragment extends Fragment {
         if (transfer != null) {
             cancelTransaction.setVisibility(View.GONE);
 
-            String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", transfer.date).toString();
+            String dateFormat = DateFormat.format("MMMM dd, yyyy, hh:mm a", transfer.date).toString();
             transactionDateText.setText(dateFormat);
             if (transfer.txid != null) {
                 transactionsHashButton.setVisibility(View.VISIBLE);
@@ -105,7 +105,7 @@ public class TransactionDetailsFragment extends Fragment {
             mActivity.getSupportActionBar().setTitle("History");
         } else if (pendingApproval != null) {
             transactionsHashButton.setVisibility(View.GONE);
-            String dateFormat = DateFormat.format("dd/MM/yy, hh:mm a", pendingApproval.createDate).toString();
+            String dateFormat = DateFormat.format("MMMM dd, yyyy, hh:mm a", pendingApproval.createDate).toString();
             transactionDateText.setText(dateFormat);
             cancelTransaction.setOnClickListener(v -> {
                 AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
@@ -193,7 +193,7 @@ public class TransactionDetailsFragment extends Fragment {
         guardiansRecyclerView.setHasFixedSize(true);
         guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
         guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(collect, ApprovalsRecyclerAdapter.State.NORMAL));
-        sendAmountTextView.setText(String.format(Locale.US, "%.2f ETH | %.2f USD", etherDouble, etherDouble * exchangeRate.average24h));
+        sendAmountTextView.setText(String.format(Locale.US, "%.3f ETH | %.2f USD", etherDouble, etherDouble * exchangeRate.average24h));
         recipientAddressTextView.setText(pendingApproval.recipientAddr);
         transactionCommentTextView.setText(pendingApproval.comment);
         senderTitleTextView.setVisibility(View.GONE);
@@ -210,8 +210,7 @@ public class TransactionDetailsFragment extends Fragment {
         ApprovalsRecyclerAdapter.State state = ApprovalsRecyclerAdapter.State.HISTORY_APPROVED;
         guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(collect, state));
         double etherDouble = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
-        sendAmountTextView.setText(String.format(Locale.US, "%.3f ETH", etherDouble));
-//        dollarSentAmountTextView.setText(String.format(Locale.US, "$%.2f USD", etherDouble * exchangeRate.average24h));
+        sendAmountTextView.setText(String.format(Locale.US, "%.3f ETH", Math.abs(etherDouble)));
         transactionCommentTextView.setText(transfer.comment);
         boolean isOutgoingTx = transfer.valueString.contains("-");
         if (isOutgoingTx) {

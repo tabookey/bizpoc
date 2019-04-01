@@ -32,7 +32,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
     private void fillHistoryViewHolder(Transfer transfer, ViewHolder viewHolder) {
         String dateFormat = DateFormat.format("MMMM dd, yyyy", transfer.date).toString();
         viewHolder.dateTextView.setText(dateFormat);
-        double value = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
+        double value = Math.abs(Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces));
         String valueFormat = String.format(Locale.US, "%.3f %s", value, transfer.coin.toUpperCase());
         if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
