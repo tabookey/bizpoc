@@ -24,11 +24,11 @@ import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
-import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,7 +39,7 @@ public class ConfirmFragment extends Fragment {
     TextView dollarEquivalent;
     TextView etherSendAmount;
     private SendRequest sendRequest;
-    ExchangeRate exchangeRate;
+    HashMap<String, ExchangeRate> mExchangeRates;
     View progressBar;
     List<BitgoUser> guardians;
     IBitgoWallet mBitgoWallet;
@@ -81,13 +81,14 @@ public class ConfirmFragment extends Fragment {
         });
         submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
 
-        TokenInfo token = Global.ent.getTokens().get(sendRequest.coin);
-        if (token == null) {
-            throw new RuntimeException("No TokenInfo selected");
+        double etherDouble = Utils.integerStringToCoinDouble(sendRequest.amount, sendRequest.tokenInfo.decimalPlaces);
+        ExchangeRate exchangeRate = mExchangeRates.get(sendRequest.tokenInfo.type);
+        double average24h = 0;
+        if (exchangeRate != null) {
+            average24h = exchangeRate.average24h;
         }
-        double etherDouble = Utils.integerStringToCoinDouble(sendRequest.amount, token.decimalPlaces);
-        dollarEquivalent.setText(String.format(Locale.US, "%.2f USD", etherDouble * exchangeRate.average24h));
-        etherSendAmount.setText(String.format(Locale.US, "%.3f ETH", etherDouble));
+        dollarEquivalent.setText(String.format(Locale.US, "%.2f USD", etherDouble * average24h));
+        etherSendAmount.setText(String.format(Locale.US, "%.3f %s", etherDouble, sendRequest.tokenInfo.getTokenCode().toUpperCase()));
         recipientAddress.setText(sendRequest.recipientAddress);
     }
 
@@ -175,7 +176,7 @@ public class ConfirmFragment extends Fragment {
 
     private void goToDetails(TransactionDetailsFragment tdf) {
         tdf.showSuccessPopup = true;
-        tdf.exchangeRate = exchangeRate;
+        tdf.mExchangeRates = mExchangeRates;
         tdf.guardians = guardians;
         tdf.ethWallet = mBitgoWallet;
         mActivity.runOnUiThread(() -> {

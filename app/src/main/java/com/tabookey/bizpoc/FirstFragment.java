@@ -29,18 +29,19 @@ import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 public class FirstFragment extends Fragment {
 
-    public static String TAG="1frag";
+    public static String TAG = "1frag";
 
     public static boolean didShowSplashScreen = false;
     private View progressView;
     private SpinKitView progressBar;
     private Button retryButton;
-    private ExchangeRate mExchangeRate;
+    HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     private ListView balancesListView;
     BalancesAdapter adapter;
     private TextView balanceInDollarsText;
@@ -79,7 +80,7 @@ public class FirstFragment extends Fragment {
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
-            sf.exchangeRate = mExchangeRate;
+            sf.mExchangeRates = mExchangeRates;
             sf.guardians = mGuardians;
             sf.balances = balances;
             sf.mBitgoWallet = mBitgoWallet;
@@ -92,7 +93,7 @@ public class FirstFragment extends Fragment {
         Button transactionsButton = view.findViewById(R.id.viewAllTransactionsButton);
         transactionsButton.setOnClickListener(v -> {
             TransactionsFragment tf = new TransactionsFragment();
-            tf.mExchangeRate = mExchangeRate;
+            tf.mExchangeRates = mExchangeRates;
             tf.mGuardians = mGuardians;
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
         });
@@ -130,18 +131,17 @@ public class FirstFragment extends Fragment {
                 try {
                     List<IBitgoWallet> allw = Global.ent.getMergedWallets();
                     mBitgoWallet = allw.get(0);
-                    mExchangeRate = Global.ent.getMarketData("teth");
                     List<String> coins = mBitgoWallet.getCoins();
                     balances = new ArrayList<>();
                     for (String coin : coins) {
                         String coinBalance = mBitgoWallet.getBalance(coin);
-                        double exRate = Global.ent.getMarketData(coin).average24h;
-
+                        ExchangeRate exchangeRate = Global.ent.getMarketData(coin);
+                        mExchangeRates.put(coin, exchangeRate);
                         TokenInfo token = Global.ent.getTokens().get(coin);
                         if (token == null) {
                             throw new RuntimeException("Unknown token balance!");
                         }
-                        BalancesAdapter.Balance balance = new BalancesAdapter.Balance(coin, coinBalance, exRate, token);
+                        BalancesAdapter.Balance balance = new BalancesAdapter.Balance(coin, coinBalance, exchangeRate.average24h, token);
                         balances.add(balance);
                         assetsWorth += balance.getDollarValue();
                     }
@@ -162,17 +162,17 @@ public class FirstFragment extends Fragment {
                     }
                     mActivity.runOnUiThread(() -> {
                         progressView.setVisibility(View.GONE);
-                        TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate, null);
+                        TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRates, null);
                         if (pendingApprovals.size() > 0) {
                             pendingListView.setVisibility(View.VISIBLE);
                             emptyPendingTextView.setVisibility(View.GONE);
-                            TransactionHistoryAdapter pendingAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate, mGuardians);
+                            TransactionHistoryAdapter pendingAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRates, mGuardians);
                             pendingAdapter.addItems(pendingApprovals);
                             pendingListView.setAdapter(pendingAdapter);
                             Utils.setListViewHeightBasedOnChildren(pendingListView);
                             pendingListView.setOnItemClickListener((adapterView, view1, position, id) -> {
                                 Object item = pendingListView.getItemAtPosition(position);
-                                mActivity.openPendingDetails(item, mExchangeRate, mGuardians, mBitgoWallet);
+                                mActivity.openPendingDetails(item, mExchangeRates, mGuardians, mBitgoWallet);
                             });
                         } else {
                             pendingListView.setVisibility(View.GONE);
@@ -182,13 +182,13 @@ public class FirstFragment extends Fragment {
                         historyListView.setAdapter(historyAdapter);
                         historyListView.setOnItemClickListener((adapterView, view1, position, id) -> {
                             Object item = historyListView.getItemAtPosition(position);
-                            mActivity.openPendingDetails(item, mExchangeRate, mGuardians, mBitgoWallet);
+                            mActivity.openPendingDetails(item, mExchangeRates, mGuardians, mBitgoWallet);
                         });
                         Utils.setListViewHeightBasedOnChildren(historyListView);
                         new Handler().post(() -> mainContentsScrollView.scrollTo(0, 0));
                     });
                 } catch (Exception e) {
-                    Log.e(TAG, "ex", e );
+                    Log.e(TAG, "ex", e);
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
                         retryButton.setVisibility(View.VISIBLE);
@@ -214,7 +214,6 @@ public class FirstFragment extends Fragment {
                     Utils.setListViewHeightBasedOnChildren(balancesListView);
                     ImageButton shareButton = view.findViewById(R.id.shareButton);
                     shareButton.setOnClickListener(v -> {
-                        ;
                         String shareBody = mBitgoWallet.getAddress();
                         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                         sharingIntent.setType("text/plain");

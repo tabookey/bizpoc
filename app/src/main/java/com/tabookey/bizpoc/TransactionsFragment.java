@@ -23,6 +23,7 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class TransactionsFragment extends Fragment {
@@ -30,7 +31,7 @@ public class TransactionsFragment extends Fragment {
     private ProgressBar progressBar;
     private View progressView;
     private Button retryButton;
-    ExchangeRate mExchangeRate;
+    HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     private MainActivity mActivity;
     List<BitgoUser> mGuardians;
     private IBitgoWallet ethWallet;
@@ -57,7 +58,7 @@ public class TransactionsFragment extends Fragment {
         transactionsListView = view.findViewById(R.id.list_view_transactions);
         transactionsListView.setOnItemClickListener((adapterView, view1, position, id) -> {
             Object item = transactionsListView.getItemAtPosition(position);
-            mActivity.openPendingDetails(item, mExchangeRate, mGuardians, ethWallet);
+            mActivity.openPendingDetails(item, mExchangeRates, mGuardians, ethWallet);
         });
 
         progressBar = view.findViewById(R.id.progressBar);
@@ -85,7 +86,7 @@ public class TransactionsFragment extends Fragment {
             }
             mActivity.runOnUiThread(() -> {
                 progressView.setVisibility(View.GONE);
-                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRate, null);
+                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRates, null);
                 historyAdapter.addItems(transfers);
                 transactionsListView.setAdapter(historyAdapter);
             });

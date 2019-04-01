@@ -12,6 +12,7 @@ import com.tabookey.bizpoc.api.IBitgoEnterprise;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
+import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.api.Transfer;
 
 import java.util.List;
@@ -82,7 +83,8 @@ public class TestSendActivity extends AppCompatActivity {
         });
         if ( this==null ) return;
         String dest = "0xd21934eD8eAf27a67f0A70042Af50A1D6d195E81";
-        SendRequest req = new SendRequest("teth", "", "1122334455667788", dest,
+        TokenInfo tokenInfo = Global.ent.getTokens().get("teth");
+        SendRequest req = new SendRequest(tokenInfo, "", dest,
                 "0000000", "asd/asd-ASD", "comment");
 
         w.sendCoins(req, (type, msg) -> log("== "+type+": "+msg) );

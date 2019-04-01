@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.SendRequest;
+import com.tabookey.bizpoc.api.TokenInfo;
 
 import static com.tabookey.bizpoc.impl.Utils.fromJson;
 
@@ -29,7 +30,7 @@ public class CoinSender extends WebViewExecutor {
             }
         }
 
-        if (appObject.error!=null )
+        if (appObject.error != null)
             throw new RuntimeException(appObject.error);
 
         if (appObject.result == null) {
@@ -38,7 +39,7 @@ public class CoinSender extends WebViewExecutor {
         }
 
         JsonNode node = fromJson(appObject.result, JsonNode.class);
-        if ( node.has("pendingApproval") ) {
+        if (node.has("pendingApproval")) {
             return node.get("pendingApproval").get("id").asText();
         } else {
             //special case: configured to pass transactions without approval
@@ -48,7 +49,9 @@ public class CoinSender extends WebViewExecutor {
     }
 
     public boolean checkPassphrase(IBitgoWallet wallet, String passphrase, IBitgoWallet.StatusCB cb) {
-        SendRequest req = new SendRequest(wallet.getCoins().get(0), "", null,null,null,passphrase,null);
+        String coin = wallet.getCoins().get(0);
+        TokenInfo tokenInfo = Global.ent.getTokens().get(coin);
+        SendRequest req = new SendRequest(tokenInfo, null, null, null, passphrase, null);
 
         AppObject appObject = new AppObject(wallet, req, cb);
         exec("www/verify.html", appObject);
@@ -61,7 +64,7 @@ public class CoinSender extends WebViewExecutor {
             }
         }
 
-        if (appObject.error!=null )
+        if (appObject.error != null)
             return false;
 
         if (appObject.result == null) {
@@ -90,7 +93,7 @@ public class CoinSender extends WebViewExecutor {
 
         @JavascriptInterface
         public String getCoin() {
-            return req.coin;
+            return req.tokenInfo.getTokenCode();
         }
 
         @JavascriptInterface
@@ -136,9 +139,14 @@ public class CoinSender extends WebViewExecutor {
                 Log.d(TAG, "setStatus " + type + ": " + status);
 
             switch (type) {
-                case "state" : return;  //not final - don't notify..
-                case "error" : this.error = status; break;
-                case "result" : this.result = status; break;
+                case "state":
+                    return;  //not final - don't notify..
+                case "error":
+                    this.error = status;
+                    break;
+                case "result":
+                    this.result = status;
+                    break;
 
             }
             synchronized (this) {

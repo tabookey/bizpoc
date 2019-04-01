@@ -33,6 +33,7 @@ import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class SendFragment extends Fragment {
     public List<BalancesAdapter.Balance> balances;
     EditText etherSendAmountEditText;
     EditText dollarEquivalent;
-    ExchangeRate exchangeRate;
+    HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     EditText destinationEditText;
     List<BitgoUser> guardians;
     IBitgoWallet mBitgoWallet;
@@ -77,6 +78,7 @@ public class SendFragment extends Fragment {
         updateTokenBalance();
 
         Button selectCoinButton = view.findViewById(R.id.selectCoinButton);
+        selectCoinButton.setText(selectedToken.getTokenCode().toUpperCase());
         selectCoinButton.setOnClickListener(v -> {
             List<TokenInfo> collect = balances.stream().map(b -> b.tokenInfo).collect(Collectors.toList());
             CryptoCurrencySpinnerAdapter cryptoCurrencySpinnerAdapter = new CryptoCurrencySpinnerAdapter(mActivity, collect);
@@ -86,6 +88,7 @@ public class SendFragment extends Fragment {
                         selectedToken = collect.get(index);
                         selectCoinButton.setText(selectedToken.getTokenCode().toUpperCase());
                         updateTokenBalance();
+                        setDollarEquivalent();
                     })
                     .create().show();
         });
@@ -197,9 +200,9 @@ public class SendFragment extends Fragment {
         String destination = destinationEditText.getText().toString();
         String amountInput = etherSendAmountEditText.getText().toString();
         BigInteger amountBigInt = Utils.doubleStringToBigInteger(amountInput, selectedToken.decimalPlaces);
-        SendRequest sendRequest = new SendRequest(selectedToken.coin, selectedToken.type, amountBigInt.toString(), destination, null, null, null);
+        SendRequest sendRequest = new SendRequest(selectedToken, amountBigInt.toString(), destination, null, null, null);
         cf.setRequest(sendRequest);
-        cf.exchangeRate = exchangeRate;
+        cf.mExchangeRates = mExchangeRates;
         cf.guardians = guardians;
         cf.mBitgoWallet = mBitgoWallet;
         mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
@@ -250,6 +253,7 @@ public class SendFragment extends Fragment {
 
     private void setDollarEquivalent() {
         View view = getView();
+        ExchangeRate exchangeRate = mExchangeRates.get(selectedToken.type);
         if (view == null || exchangeRate == null) {
             return;
         }
@@ -264,6 +268,7 @@ public class SendFragment extends Fragment {
 
     private void setCoinEquivalent() {
         View view = getView();
+        ExchangeRate exchangeRate = mExchangeRates.get(selectedToken.type);
         if (view == null || exchangeRate == null) {
             return;
         }

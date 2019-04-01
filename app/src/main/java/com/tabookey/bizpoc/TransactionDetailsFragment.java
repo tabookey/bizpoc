@@ -28,16 +28,16 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class TransactionDetailsFragment extends Fragment {
 
     public PendingApproval pendingApproval;
     Transfer transfer;
-    ExchangeRate exchangeRate;
+    HashMap<String, ExchangeRate> mExchangeRates;
 
     List<BitgoUser> guardians;
     IBitgoWallet ethWallet;
@@ -163,8 +163,7 @@ public class TransactionDetailsFragment extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         new Thread(() -> {
             try {
-                IBitgoWallet ethWallet = Global.ent.getWallets("teth").get(0);
-                ethWallet.rejectPending(pendingApproval);
+                Global.ent.getMergedWallets().get(0).rejectPending(pendingApproval);
                 mActivity.runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
                     mActivity.onBackPressed();
@@ -193,7 +192,12 @@ public class TransactionDetailsFragment extends Fragment {
         guardiansRecyclerView.setHasFixedSize(true);
         guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
         guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(collect, ApprovalsRecyclerAdapter.State.NORMAL));
-        sendAmountTextView.setText(String.format(Locale.US, "%.3f ETH | %.2f USD", etherDouble, etherDouble * exchangeRate.average24h));
+        ExchangeRate exchangeRate = mExchangeRates.get(pendingApproval.token.type);
+        double average24h = 0;
+        if (exchangeRate != null) {
+            average24h = exchangeRate.average24h;
+        }
+        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s | %.2f USD", etherDouble, pendingApproval.token.getTokenCode().toUpperCase(), etherDouble * average24h));
         recipientAddressTextView.setText(pendingApproval.recipientAddr);
         transactionCommentTextView.setText(pendingApproval.comment);
         senderTitleTextView.setVisibility(View.GONE);
@@ -210,7 +214,7 @@ public class TransactionDetailsFragment extends Fragment {
         ApprovalsRecyclerAdapter.State state = ApprovalsRecyclerAdapter.State.HISTORY_APPROVED;
         guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(collect, state));
         double etherDouble = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
-        sendAmountTextView.setText(String.format(Locale.US, "%.3f ETH", Math.abs(etherDouble)));
+        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s", Math.abs(etherDouble), transfer.token.getTokenCode().toUpperCase()));
         transactionCommentTextView.setText(transfer.comment);
         boolean isOutgoingTx = transfer.valueString.contains("-");
         if (isOutgoingTx) {

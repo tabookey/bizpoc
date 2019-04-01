@@ -124,11 +124,16 @@ class MergedWallet implements IBitgoWallet {
 
 
     private List<Transfer> getAuditRejected(int limit) {
-        if (limit == 0){
+        if (limit == 0) {
             limit = 1000;
         }
-        AuditResp resp = ent.http.get("/api/v2/auditlog?limit=" + limit + "&type=rejectTransaction&coin=%s&walletId=%s", AuditResp.class,
-                ent.baseCoin.coin, this.getId());
+        StringBuilder coinParams = new StringBuilder("");
+        for (String coin :
+                getCoins()) {
+            coinParams.append("coin=").append(coin).append("&");
+        }
+        AuditResp resp = ent.http.get("/api/v2/auditlog?limit=%d&type=rejectTransaction&%swalletId=%s", AuditResp.class,
+                limit, coinParams, this.getId());
 
         return Arrays.stream(resp.logs).map(log -> new Transfer(
                 null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, ent.getToken(log.coin),
@@ -175,9 +180,9 @@ class MergedWallet implements IBitgoWallet {
 
     @Override
     public String sendCoins(SendRequest req, StatusCB cb) {
-        if (!getCoins().contains(req.coin))
-            throw new IllegalArgumentException("Unsopported coin \"" + req.coin + "\": not one of " + getCoins());
-        return getCoinWallet(req.coin).sendCoins(req, cb);
+        if (!getCoins().contains(req.tokenInfo.coin))
+            throw new IllegalArgumentException("Unsopported coin \"" + req.tokenInfo.coin + "\": not one of " + getCoins());
+        return getCoinWallet(req.tokenInfo.coin).sendCoins(req, cb);
     }
 
     @Override
@@ -228,6 +233,7 @@ class MergedWallet implements IBitgoWallet {
 
     @Override
     public void rejectPending(PendingApproval approval) {
-        ethWallet.rejectPending(approval);
+        Wallet wallet = getCoinWallet(approval.token.getTokenCode());
+        wallet.rejectPending(approval);
     }
 }

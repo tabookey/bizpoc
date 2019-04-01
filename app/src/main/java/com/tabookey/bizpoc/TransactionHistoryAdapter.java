@@ -19,15 +19,16 @@ import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 
 class TransactionHistoryAdapter extends BaseAdapter {
 
-    private final ExchangeRate mExchangeRate;
+    private HashMap<String, ExchangeRate> mExchangeRates;
     private final Context mContext;
-    List<BitgoUser> mGuardians;
+    private List<BitgoUser> mGuardians;
 
     private void fillHistoryViewHolder(Transfer transfer, ViewHolder viewHolder) {
         String dateFormat = DateFormat.format("MMMM dd, yyyy", transfer.date).toString();
@@ -80,7 +81,12 @@ class TransactionHistoryAdapter extends BaseAdapter {
         double value = Utils.integerStringToCoinDouble(pending.amount, pending.token.decimalPlaces);
 
         String valueFormat = String.format(Locale.US, "%.3f %s", value, pending.coin.toUpperCase());
-        valueFormat += String.format(Locale.US, " | %.2f USD", value * mExchangeRate.average24h);
+        ExchangeRate exchangeRate = mExchangeRates.get(pending.token.type);
+        double average24h = 0;
+        if (exchangeRate != null) {
+            average24h = exchangeRate.average24h;
+        }
+        valueFormat += String.format(Locale.US, " | %.2f USD", value * average24h);
         viewHolder.valueTextView.setText(valueFormat);
         viewHolder.remoteTextView.setText(pending.recipientAddr);
         viewHolder.transactionComment.setText(String.format("%s", pending.comment));
@@ -95,26 +101,19 @@ class TransactionHistoryAdapter extends BaseAdapter {
     private static final int TYPE_SEPARATOR = 2;
 
     private ArrayList<Object> mData = new ArrayList<>();
-//    private TreeSet<Integer> sectionHeader = new TreeSet<>();
 
     private LayoutInflater mInflater;
 
-    TransactionHistoryAdapter(Context context, ExchangeRate exchangeRate, List<BitgoUser> guardians) {
+    TransactionHistoryAdapter(Context context, HashMap<String, ExchangeRate> exchangeRates, List<BitgoUser> guardians) {
         mContext = context;
         mInflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mExchangeRate = exchangeRate;
+        mExchangeRates = exchangeRates;
         this.mGuardians = guardians;
     }
 
     void addItems(List item) {
         mData.addAll(item);
-        notifyDataSetChanged();
-    }
-
-
-    void addItem(final String item) {
-        mData.add(item);
         notifyDataSetChanged();
     }
 

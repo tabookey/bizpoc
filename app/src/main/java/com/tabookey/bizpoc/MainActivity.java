@@ -18,6 +18,7 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -181,12 +182,12 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public void onPointerCaptureChanged(boolean hasCapture) {
     }
 
-    public void openPendingDetails(Object item, ExchangeRate exchangeRate, List<BitgoUser> guardians, IBitgoWallet ethWallet) {
+    public void openPendingDetails(Object item, HashMap<String, ExchangeRate> exchangeRates, List<BitgoUser> guardians, IBitgoWallet ethWallet) {
         if (item instanceof String) {
             return;
         }
         TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-        tdf.exchangeRate = exchangeRate;
+        tdf.mExchangeRates = exchangeRates;
         tdf.guardians = guardians;
         tdf.ethWallet = ethWallet;
         if (item instanceof PendingApproval) {

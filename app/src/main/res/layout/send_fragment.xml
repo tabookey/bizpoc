@@ -111,7 +111,6 @@
                     android:lines="1"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
-                    android:text="ETH"
                     android:textAlignment="textStart"
                     android:textColor="@color/text_color"
                     android:textSize="14sp"
