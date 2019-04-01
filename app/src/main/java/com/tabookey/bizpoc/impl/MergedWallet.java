@@ -1,6 +1,6 @@
 package com.tabookey.bizpoc.impl;
 
-import com.tabookey.bizpoc.Approval;
+import com.tabookey.bizpoc.ApprovalState;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
@@ -127,7 +127,7 @@ class MergedWallet implements IBitgoWallet {
         if (limit == 0) {
             limit = 1000;
         }
-        StringBuilder coinParams = new StringBuilder("");
+        StringBuilder coinParams = new StringBuilder();
         for (String coin :
                 getCoins()) {
             coinParams.append("coin=").append(coin).append("&");
@@ -137,7 +137,7 @@ class MergedWallet implements IBitgoWallet {
 
         return Arrays.stream(resp.logs).map(log -> new Transfer(log.id,
                 null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, ent.getToken(log.coin),
-                log.user.equals(Global.ent.getMe().id) ? Approval.State.CANCELLED : Approval.State.REJECTED
+                log.user.equals(Global.ent.getMe().id) ? ApprovalState.CANCELLED : ApprovalState.DECLINED, log.user
         )).collect(Collectors.toList());
     }
 
@@ -156,7 +156,7 @@ class MergedWallet implements IBitgoWallet {
         Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (Wallet.TransferResp.Trans t : resp.transfers) {
-            Transfer tx = new Transfer(t.id, t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin), Approval.State.APPROVED);
+            Transfer tx = new Transfer(t.id, t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin), ApprovalState.APPROVED, null);
             // entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
             // looking for the other one, with its value different (actually, negative) of ours.

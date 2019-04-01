@@ -192,7 +192,7 @@ public class TransactionDetailsFragment extends Fragment {
         List<Approval> collect = pendingApproval.getApprovals(guardians);
         guardiansRecyclerView.setHasFixedSize(true);
         guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
-        guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(collect, ApprovalsRecyclerAdapter.State.NORMAL));
+        guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(mActivity, collect, ApprovalState.WAITING));
         ExchangeRate exchangeRate = mExchangeRates.get(pendingApproval.token.type);
         double average24h = 0;
         if (exchangeRate != null) {
@@ -211,9 +211,14 @@ public class TransactionDetailsFragment extends Fragment {
         guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
         validatorsTitle.setVisibility(View.GONE);
         // TODO: Not known if approved or rejected here
-        List<Approval> collect = guardians.stream().map(g -> new Approval(g.name, Approval.State.APPROVED)).collect(Collectors.toList());
-        ApprovalsRecyclerAdapter.State state = ApprovalsRecyclerAdapter.State.HISTORY_APPROVED;
-        guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(collect, state));
+        List<Approval> collect = guardians.stream().map(g -> {
+            ApprovalState state = ApprovalState.WAITING;
+            if (transfer.cancelledBy != null && transfer.cancelledBy.equals(g.id)){
+                state = ApprovalState.DECLINED;
+            }
+            return new Approval(g.name, state);
+        }).collect(Collectors.toList());
+        guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(mActivity, collect, transfer.state));
         double etherDouble = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
         sendAmountTextView.setText(String.format(Locale.US, "%.3f %s", Math.abs(etherDouble), transfer.token.getTokenCode().toUpperCase()));
         transactionCommentTextView.setText(transfer.comment);
@@ -225,7 +230,9 @@ public class TransactionDetailsFragment extends Fragment {
         } else {
 
             guardiansTitleTextView.setVisibility(View.GONE);
-            guardiansRecyclerView.setVisibility(View.GONE);
+            if(transfer.state == ApprovalState.APPROVED){
+                guardiansRecyclerView.setVisibility(View.GONE);
+            }
             validatorsTitle.setVisibility(View.GONE);
 
 

@@ -2,6 +2,7 @@ package com.tabookey.bizpoc.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tabookey.bizpoc.Approval;
+import com.tabookey.bizpoc.ApprovalState;
 
 import java.util.Date;
 import java.util.Objects;
@@ -19,9 +20,12 @@ public class Transfer {
     public TokenInfo token;
 
     @JsonIgnore
-    public Approval.State state;
+    public ApprovalState state;
 
-    public Transfer(String id, String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token, Approval.State state) {
+    @JsonIgnore
+    public String cancelledBy;
+
+    public Transfer(String id, String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token, ApprovalState state, String cancelledBy) {
         this.id = id;
         this.txid = txid;
         this.state = state;
@@ -32,11 +36,12 @@ public class Transfer {
         this.remoteAddress = remoteAddress;
         this.comment = comment;
         this.token = token;
+        this.cancelledBy = cancelledBy;
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        if ( !(obj instanceof Transfer) )
+        if (!(obj instanceof Transfer))
             return false;
         return Objects.equals(((Transfer) obj).id, this.id);
     }

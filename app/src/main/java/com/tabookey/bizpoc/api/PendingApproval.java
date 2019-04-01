@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc.api;
 
 import com.tabookey.bizpoc.Approval;
+import com.tabookey.bizpoc.ApprovalState;
 
 import java.util.Date;
 import java.util.List;
@@ -50,7 +51,7 @@ public class PendingApproval {
             if (b.email.equals("did@approve")) {
                 isApproved = true;
             }
-            return new Approval(b.name, isApproved ? Approval.State.APPROVED : Approval.State.WAITING);
+            return new Approval(b.name, isApproved ? ApprovalState.APPROVED : ApprovalState.WAITING);
 
         }).collect(Collectors.toList());
     }

@@ -46,7 +46,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
         int drawable;
         int labelColor;
         switch (transfer.state) {
-            case REJECTED:
+            case DECLINED:
                 labelColor = mContext.getColor(R.color.reddish_brown);
                 label = "Declined";
                 drawable = R.drawable.ic_declined;
@@ -93,7 +93,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
 
         viewHolder.guardiansRecyclerView.setHasFixedSize(true);
         viewHolder.guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mContext, 2));
-        viewHolder.guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(pending.getApprovals(mGuardians), ApprovalsRecyclerAdapter.State.NORMAL));
+        viewHolder.guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(mContext, pending.getApprovals(mGuardians), ApprovalState.WAITING));
     }
 
     private static final int TYPE_ITEM_PENDING = 0;
