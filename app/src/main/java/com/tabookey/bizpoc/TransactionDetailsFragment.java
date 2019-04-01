@@ -110,13 +110,13 @@ public class TransactionDetailsFragment extends Fragment {
             cancelTransaction.setOnClickListener(v -> {
                 AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
                 dialog.setTitle("Are you sure you want to cancel the transaction?");
-                dialog.setMessage("This transaction will be cancelled (and your guardians will be notified about this change)");
-                dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes, I'm sure",
+                dialog.setMessage("\nThis transaction will be cancelled and your guardians will be notified about this change\n\n");
+                dialog.setButton(AlertDialog.BUTTON_POSITIVE, "   Yes, I'm sure   ",
                         (d, w) -> {
                             cancelTransaction();
                             dialog.dismiss();
                         });
-                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Go back", (d, w) -> d.dismiss());
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "   Go back   ", (d, w) -> d.dismiss());
                 dialog.show();
                 Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
                 Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);

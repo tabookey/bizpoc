@@ -56,6 +56,7 @@ public class SendFragment extends Fragment {
     Button maximumAmountButton;
     double maximumTransferValue = 0;
     TokenInfo selectedToken = Global.ent.getTokens().get("teth");
+    boolean didTryToSubmit = false;
 
     @Nullable
     @Override
@@ -112,6 +113,7 @@ public class SendFragment extends Fragment {
         dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         etherSendAmountEditText.setPaintFlags(etherSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
         continueButton.setOnClickListener(v -> {
+            didTryToSubmit = true;
             if (!isEnteredValueValid(true)) {
                 return;
             }
@@ -139,6 +141,9 @@ public class SendFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
+                if (didTryToSubmit) {
+                    isEnteredValueValid(false);
+                }
                 if (editable.toString().equals(".")) {
                     etherSendAmountEditText.setText("0.");
                     etherSendAmountEditText.setSelection(etherSendAmountEditText.getText().length());
@@ -166,20 +171,33 @@ public class SendFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
+                if (didTryToSubmit) {
+                    isEnteredValueValid(false);
+                }
                 if (editable.toString().equals(".")) {
                     dollarEquivalent.setText("0.");
                     dollarEquivalent.setSelection(etherSendAmountEditText.getText().length());
                 }
             }
         });
-        View.OnFocusChangeListener focusChangeListener = (v, hasFocus) -> {
-            if (!hasFocus) {
-                isEnteredValueValid(false);
+        destinationEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
             }
-        };
-        destinationEditText.setOnFocusChangeListener(focusChangeListener);
-        dollarEquivalent.setOnFocusChangeListener(focusChangeListener);
-        etherSendAmountEditText.setOnFocusChangeListener(focusChangeListener);
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (didTryToSubmit) {
+                    isEnteredValueValid(false);
+                }
+            }
+        });
     }
 
     private void updateTokenBalance() {
@@ -229,21 +247,41 @@ public class SendFragment extends Fragment {
         boolean isDestinationChecksummed = AddressChecker.isCheckedAddress(destination);
         if (!isDestinationValid) {
             destinationRequiredNote.setText("Not a valid address");
-        } else if (!isDestinationChecksummed && showDialog) {
+        } else if (!isDestinationChecksummed && showDialog && isAmountValid) {
             AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
-            dialog.setTitle("The address is not checksummed");
-            dialog.setMessage("This address you have inserted does not seem to have a correct checksum. " +
-                    "This can indicate you got the address from a client  that does not support EIP-55 style checksum, " +
-                    "or that the address is invalid. Proceed on your own discretion.");
+            dialog.setTitle("Please verify the address");
+            dialog.setMessage("The address you have entered might be invalid, due to:\n" +
+                    "- Incorrect checksum\n" +
+                    "- Incorrect address copy\n\n" +
+                    "Please double check to make sure that this address is correct or proceed at " +
+                    "your own discretion\n\n");
             boolean finalIsAmountValid = isAmountValid;
-            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "I understand", (d, w) -> {
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "   It's OK   ", (d, w) -> {
                 if (finalIsAmountValid) {
                     moveToContinue();
                 }
                 d.dismiss();
             });
-            dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Let me check", (d, w) -> d.dismiss());
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "   Go back   ", (d, w) -> d.dismiss());
             dialog.show();
+
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+            int pL = positiveButton.getPaddingLeft();
+            int pT = positiveButton.getPaddingTop();
+            int pR = positiveButton.getPaddingRight();
+            int pB = positiveButton.getPaddingBottom();
+
+            positiveButton.setBackgroundResource(R.drawable.custom_button);
+            positiveButton.setPadding(pL, pT, pR, pB);
+
+            positiveButton.setAllCaps(false);
+            positiveButton.setTextColor(mActivity.getColor(android.R.color.white));
+
+
+            negativeButton.setAllCaps(false);
+            negativeButton.setTextColor(mActivity.getColor(R.color.text_color));
         }
         amountRequiredNote.setVisibility(isAmountValid ? View.GONE : View.VISIBLE);
         destinationRequiredNote.setVisibility(isDestinationValid ? View.GONE : View.VISIBLE);
