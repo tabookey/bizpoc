@@ -42,7 +42,7 @@ public class TransactionDetailsFragment extends Fragment {
     List<BitgoUser> guardians;
     IBitgoWallet ethWallet;
 
-    View progressBar;
+    View progressBarView;
     TextView senderAddressTextView;
     TextView senderTitleTextView;
     TextView recipientTitleTextView;
@@ -78,7 +78,7 @@ public class TransactionDetailsFragment extends Fragment {
         guardiansRecyclerView = view.findViewById(R.id.guardiansRecyclerView);
         transactionDateText = view.findViewById(R.id.transactionDateText);
         successPopup = view.findViewById(R.id.successPopup);
-        progressBar = view.findViewById(R.id.progressBar);
+        progressBarView = view.findViewById(R.id.progressBarView);
         cancelTransaction = view.findViewById(R.id.cancelTransaction);
         greatThanksButton = view.findViewById(R.id.greatThanksButton);
         return view;
@@ -160,18 +160,18 @@ public class TransactionDetailsFragment extends Fragment {
     }
 
     private void cancelTransaction() {
-        progressBar.setVisibility(View.VISIBLE);
+        progressBarView.setVisibility(View.VISIBLE);
         new Thread(() -> {
             try {
                 Global.ent.getMergedWallets().get(0).rejectPending(pendingApproval);
                 ethWallet.update(null);
                 mActivity.runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    progressBarView.setVisibility(View.GONE);
                     mActivity.onBackPressed();
                 });
             } catch (Exception e) {
                 mActivity.runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    progressBarView.setVisibility(View.GONE);
                     Utils.showErrorDialog(mActivity, "Error", e.getMessage());
                 });
             }

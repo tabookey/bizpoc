@@ -169,16 +169,19 @@
 
 
     <FrameLayout
-        android:id="@+id/progressBar"
+        android:id="@+id/progressBarView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
         android:visibility="gone">
 
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+        <com.github.ybq.android.spinkit.SpinKitView xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/progressBar"
+            style="@style/SpinKitView.Large.Circle"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            app:SpinKit_Color="@color/colorPrimaryDark"  />
     </FrameLayout>
 
     <LinearLayout

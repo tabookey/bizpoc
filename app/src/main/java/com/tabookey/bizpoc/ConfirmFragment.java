@@ -40,7 +40,7 @@ public class ConfirmFragment extends Fragment {
     TextView etherSendAmount;
     private SendRequest sendRequest;
     HashMap<String, ExchangeRate> mExchangeRates;
-    View progressBar;
+    View progressBarView;
     List<BitgoUser> guardians;
     IBitgoWallet mBitgoWallet;
 
@@ -67,7 +67,7 @@ public class ConfirmFragment extends Fragment {
         recipientAddress = view.findViewById(R.id.recipientAddressTextView);
         dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         etherSendAmount = view.findViewById(R.id.etherSendAmount);
-        progressBar = view.findViewById(R.id.progressBar);
+        progressBarView = view.findViewById(R.id.progressBarView);
         FragmentActivity activity = getActivity();
         if (activity == null) {
             return;
@@ -138,7 +138,7 @@ public class ConfirmFragment extends Fragment {
     }
 
     private void sendTransaction(String password, String otp) {
-        progressBar.setVisibility(View.VISIBLE);
+        progressBarView.setVisibility(View.VISIBLE);
         new Thread() {
             @Override
             public void run() {
@@ -148,7 +148,7 @@ public class ConfirmFragment extends Fragment {
                     sendRequest.comment = getNewMemoID();
                     String pendingTxId = mBitgoWallet.sendCoins(sendRequest, null);
                     mBitgoWallet.update(null);
-                    dollarEquivalent.post(() -> progressBar.setVisibility(View.GONE));
+                    dollarEquivalent.post(() -> progressBarView.setVisibility(View.GONE));
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();
                     List<PendingApproval> pendingApprovals = mBitgoWallet.getPendingApprovals();
@@ -167,7 +167,7 @@ public class ConfirmFragment extends Fragment {
                 } catch (Throwable e) {
                     Log.e("TAG", "ex: ", e);
                     dollarEquivalent.post(() -> {
-                        progressBar.setVisibility(View.GONE);
+                        progressBarView.setVisibility(View.GONE);
                         Utils.showErrorDialog(getActivity(), "Transaction failed!", e.getMessage());
                     });
                 }
