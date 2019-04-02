@@ -32,7 +32,9 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -43,7 +45,7 @@ import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
 public class SendFragment extends Fragment {
 
     public List<BalancesAdapter.Balance> balances;
-    EditText etherSendAmountEditText;
+    EditText tokenSendAmountEditText;
     EditText dollarEquivalent;
     HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     EditText destinationEditText;
@@ -109,9 +111,9 @@ public class SendFragment extends Fragment {
             }
         });
         scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(mActivity, ScanActivity.class), 1));
-        etherSendAmountEditText = view.findViewById(R.id.etherSendAmountEditText);
+        tokenSendAmountEditText = view.findViewById(R.id.tokenSendAmountEditText);
         dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
-        etherSendAmountEditText.setPaintFlags(etherSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
+        tokenSendAmountEditText.setPaintFlags(tokenSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
         continueButton.setOnClickListener(v -> {
             didTryToSubmit = true;
             if (!isEnteredValueValid(true)) {
@@ -120,22 +122,18 @@ public class SendFragment extends Fragment {
             moveToContinue();
         });
 
-        etherSendAmountEditText.addTextChangedListener(new TextWatcher() {
+        tokenSendAmountEditText.addTextChangedListener(new TextWatcher() {
+            private boolean skipNextTextChanged = false;
+
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
 
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
-                try {
-                    isEthChange = true;
-                    if (!isUsdChange) {
-                        setDollarEquivalent();
-                    }
-                    isUsdChange = false;
-                } catch (Exception e) {
-                    e.printStackTrace();
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                if (count <= 0) {
+                    skipNextTextChanged = true;
                 }
             }
 
@@ -144,29 +142,48 @@ public class SendFragment extends Fragment {
                 if (didTryToSubmit) {
                     isEnteredValueValid(false);
                 }
-                if (editable.toString().equals(".")) {
-                    etherSendAmountEditText.setText("0.");
-                    etherSendAmountEditText.setSelection(etherSendAmountEditText.getText().length());
+                String string = editable.toString();
+                if (string.equals(".")) {
+                    tokenSendAmountEditText.setText("0.");
+                    tokenSendAmountEditText.setSelection(tokenSendAmountEditText.getText().length());
+                    return;
                 }
+                if (string.contains(".") && !skipNextTextChanged && !isUsdChange) {
+                    try {
+
+                        String[] su = string.split("\\.");
+                        if (su.length == 2 && su[1].length() >= selectedToken.decimalPlaces) {
+                            skipNextTextChanged = true;
+                            tokenSendAmountEditText.setText(su[0] + "." + su[1].substring(0, selectedToken.decimalPlaces));
+                        }
+                        tokenSendAmountEditText.setSelection(tokenSendAmountEditText.getText().length());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    skipNextTextChanged = false;
+                }
+
+                try {
+                    isEthChange = true;
+                    if (!isUsdChange) {
+                        setDollarEquivalent();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                isUsdChange = false;
             }
         });
         dollarEquivalent.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
 
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int start, int count, int after) {
-                try {
-                    isUsdChange = true;
-                    if (!isEthChange) {
-                        setCoinEquivalent();
-                    }
-                    isEthChange = false;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+
             }
 
             @Override
@@ -176,8 +193,17 @@ public class SendFragment extends Fragment {
                 }
                 if (editable.toString().equals(".")) {
                     dollarEquivalent.setText("0.");
-                    dollarEquivalent.setSelection(etherSendAmountEditText.getText().length());
+                    dollarEquivalent.setSelection(dollarEquivalent.getText().length());
                 }
+                try {
+                    isUsdChange = true;
+                    if (!isEthChange) {
+                        setCoinEquivalent();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                isEthChange = false;
             }
         });
         destinationEditText.addTextChangedListener(new TextWatcher() {
@@ -206,7 +232,7 @@ public class SendFragment extends Fragment {
             if (b.coinName.toLowerCase().equals(selectedToken.getTokenCode())) {
                 maximumTransferValue = b.getValue();
                 maximumAmountButton.setOnClickListener(v ->
-                        etherSendAmountEditText.setText(String.format(Locale.US, "%.3f", maximumTransferValue))
+                        tokenSendAmountEditText.setText(String.format(Locale.US, getTokenFormat(), maximumTransferValue))
                 );
                 break;
             }
@@ -216,7 +242,7 @@ public class SendFragment extends Fragment {
     private void moveToContinue() {
         ConfirmFragment cf = new ConfirmFragment();
         String destination = destinationEditText.getText().toString();
-        String amountInput = etherSendAmountEditText.getText().toString();
+        String amountInput = tokenSendAmountEditText.getText().toString();
         BigInteger amountBigInt = Utils.doubleStringToBigInteger(amountInput, selectedToken.decimalPlaces);
         SendRequest sendRequest = new SendRequest(selectedToken, amountBigInt.toString(), destination, null, null, null);
         cf.setRequest(sendRequest);
@@ -229,7 +255,7 @@ public class SendFragment extends Fragment {
     private boolean isEnteredValueValid(boolean showDialog) {
         amountRequiredNote.setText("Please enter amount");
         destinationRequiredNote.setText("Please enter address");
-        String amountString = etherSendAmountEditText.getText().toString();
+        String amountString = tokenSendAmountEditText.getText().toString();
         boolean isAmountValid = amountString.length() != 0;
         try {
             double v = Double.parseDouble(amountString);
@@ -295,13 +321,13 @@ public class SendFragment extends Fragment {
         if (view == null || exchangeRate == null) {
             return;
         }
-        String etherAmount = etherSendAmountEditText.getText().toString();
-        if (etherAmount.length() == 0) {
+        String tokenAmount = tokenSendAmountEditText.getText().toString();
+        if (tokenAmount.length() == 0) {
             dollarEquivalent.setText("0.00");
             return;
         }
-        double etherDouble = Double.parseDouble(etherAmount);
-        dollarEquivalent.setText(String.format(Locale.US, "%.2f", etherDouble * exchangeRate.average24h));
+        double tokenDouble = Double.parseDouble(tokenAmount);
+        dollarEquivalent.setText(String.format(Locale.US, "%.2f", tokenDouble * exchangeRate.average24h));
     }
 
     private void setCoinEquivalent() {
@@ -312,11 +338,11 @@ public class SendFragment extends Fragment {
         }
         String dollarAmount = dollarEquivalent.getText().toString();
         if (dollarAmount.length() == 0) {
-            etherSendAmountEditText.setText("0.000");
+            tokenSendAmountEditText.setText(String.format(Locale.US, getTokenFormat(), 0));
             return;
         }
         double dollarDouble = Double.parseDouble(dollarAmount);
-        etherSendAmountEditText.setText(String.format(Locale.US, "%.3f", dollarDouble / exchangeRate.average24h));
+        tokenSendAmountEditText.setText(String.format(Locale.US, getTokenFormat(), dollarDouble / exchangeRate.average24h));
     }
 
     @Override
@@ -345,5 +371,19 @@ public class SendFragment extends Fragment {
                 mActivity.onBackPressed();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private String getTokenFormat() {
+        switch (selectedToken.decimalPlaces) {
+            case 0:
+                return "%.0f";
+            case 1:
+                return "%.1f";
+            case 2:
+                return "%.2f";
+            case 3:
+            default:
+                return "%.3f";
+        }
     }
 }
