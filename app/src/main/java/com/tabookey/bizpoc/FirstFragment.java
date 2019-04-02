@@ -78,7 +78,7 @@ public class FirstFragment extends Fragment {
         progressView = view.findViewById(R.id.progressView);
         progressBar = view.findViewById(R.id.progressBar);
         retryButton = view.findViewById(R.id.retryButton);
-        retryButton.setOnClickListener(v -> fillWindow());
+        retryButton.setOnClickListener(v -> fillWindow(true));
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
@@ -100,7 +100,7 @@ public class FirstFragment extends Fragment {
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
         });
 
-        fillWindow();
+        fillWindow(true);
     }
 
     @Override
@@ -124,8 +124,8 @@ public class FirstFragment extends Fragment {
                         Log.d("TAG", "========= ENTERPRISE CHANGE");
                     });
                     mBitgoWallet.update(() ->
-                                getActivity().runOnUiThread(() -> fillWindow())
-                        );
+                            getActivity().runOnUiThread(() -> fillWindow(false))
+                    );
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -142,15 +142,17 @@ public class FirstFragment extends Fragment {
         super.onPause();
     }
 
-    void fillWindow() {
-        mainContentsLayout.setVisibility(View.GONE);
-        overlayInfoCardView.setVisibility(View.GONE);
-        progressView.setVisibility(View.VISIBLE);
-        progressBar.setVisibility(View.VISIBLE);
-        retryButton.setVisibility(View.GONE);
-        if (didShowSplashScreen) {
-            progressView.setBackgroundColor(Color.WHITE);
-            progressBar.setColor(R.color.colorPrimaryDark);
+    void fillWindow(boolean showProgress) {
+        if (showProgress) {
+            mainContentsLayout.setVisibility(View.GONE);
+            overlayInfoCardView.setVisibility(View.GONE);
+            progressView.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
+            retryButton.setVisibility(View.GONE);
+            if (didShowSplashScreen) {
+                progressView.setBackgroundColor(Color.WHITE);
+                progressBar.setColor(R.color.colorPrimaryDark);
+            }
         }
         didShowSplashScreen = true;
         new Thread() {
@@ -213,7 +215,9 @@ public class FirstFragment extends Fragment {
                             mActivity.openPendingDetails(item, mExchangeRates, mGuardians, mBitgoWallet);
                         });
                         Utils.setListViewHeightBasedOnChildren(historyListView);
-                        new Handler().post(() -> mainContentsScrollView.scrollTo(0, 0));
+                        if (showProgress) {
+                            new Handler().post(() -> mainContentsScrollView.scrollTo(0, 0));
+                        }
                     });
                 } catch (Exception e) {
                     Log.e(TAG, "ex", e);
