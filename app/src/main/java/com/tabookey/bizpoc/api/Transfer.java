@@ -5,6 +5,7 @@ import com.tabookey.bizpoc.Approval;
 import com.tabookey.bizpoc.ApprovalState;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.Nullable;
@@ -25,7 +26,10 @@ public class Transfer {
     @JsonIgnore
     public String cancelledBy;
 
-    public Transfer(String id, String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token, ApprovalState state, String cancelledBy) {
+    @JsonIgnore
+    public List<String> approvals;
+
+    public Transfer(String id, String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token, ApprovalState state, String cancelledBy, List<String> approvals) {
         this.id = id;
         this.txid = txid;
         this.state = state;
@@ -37,6 +41,7 @@ public class Transfer {
         this.comment = comment;
         this.token = token;
         this.cancelledBy = cancelledBy;
+        this.approvals = approvals;
     }
 
     @Override

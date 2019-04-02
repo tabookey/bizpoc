@@ -1,5 +1,6 @@
 package com.tabookey.bizpoc.impl;
 
+import com.tabookey.bizpoc.Approval;
 import com.tabookey.bizpoc.ApprovalState;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
@@ -97,7 +98,7 @@ class MergedWallet implements IBitgoWallet {
         public Log[] logs;
 
         static class Log {
-            public String id, user, ip, walletId, type, coin;
+            public String id, user, ip, walletId, type, coin, target;
             public Date date;
             public Data data;
 
@@ -132,13 +133,24 @@ class MergedWallet implements IBitgoWallet {
                 getCoins()) {
             coinParams.append("coin=").append(coin).append("&");
         }
-        AuditResp resp = ent.http.get("/api/v2/auditlog?limit=%d&type=rejectTransaction&%swalletId=%s", AuditResp.class,
-                limit, coinParams, this.getId());
+        AuditResp resp = getAuditWithParams(limit, coinParams, "rejectTransaction");
+        AuditResp appr = getAuditWithParams(limit, coinParams, "approveTransaction");
+        return Arrays.stream(resp.logs).map(log -> {
+            ArrayList<String> approvals = new ArrayList<>();
+            for (AuditResp.Log apprLog : appr.logs) {
+                if (apprLog.target.equals(log.target)) {
+                    approvals.add(apprLog.user);
+                }
+            }
+            return new Transfer(log.id,
+                    null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, ent.getToken(log.coin),
+                    log.user.equals(Global.ent.getMe().id) ? ApprovalState.CANCELLED : ApprovalState.DECLINED, log.user, approvals);
+        }).collect(Collectors.toList());
+    }
 
-        return Arrays.stream(resp.logs).map(log -> new Transfer(log.id,
-                null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, ent.getToken(log.coin),
-                log.user.equals(Global.ent.getMe().id) ? ApprovalState.CANCELLED : ApprovalState.DECLINED, log.user
-        )).collect(Collectors.toList());
+    private AuditResp getAuditWithParams(int limit, StringBuilder coinParams, String type) {
+        return ent.http.get("/api/v2/auditlog?limit=%d&type=" + type + "&%swalletId=%s", AuditResp.class,
+                limit, coinParams, this.getId());
     }
 
 
@@ -156,7 +168,7 @@ class MergedWallet implements IBitgoWallet {
         Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (Wallet.TransferResp.Trans t : resp.transfers) {
-            Transfer tx = new Transfer(t.id, t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin), ApprovalState.APPROVED, null);
+            Transfer tx = new Transfer(t.id, t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin), ApprovalState.APPROVED, null, new ArrayList<>());
             // entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
             // looking for the other one, with its value different (actually, negative) of ours.

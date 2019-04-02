@@ -216,6 +216,9 @@ public class TransactionDetailsFragment extends Fragment {
             if (transfer.cancelledBy != null && transfer.cancelledBy.equals(g.id)){
                 state = ApprovalState.DECLINED;
             }
+            if (transfer.approvals.contains(g.id)){
+                state = ApprovalState.APPROVED;
+            }
             return new Approval(g.name, state);
         }).collect(Collectors.toList());
         guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(mActivity, collect, transfer.state));

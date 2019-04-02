@@ -62,7 +62,7 @@ class Wallet implements IBitgoWallet {
             }
             guardians.add(g);
         }
-        guardians.add(new BitgoUser("", "did@approve", "Test test one"));
+//        guardians.add(new BitgoUser("", "did@approve", "Test test one"));
         coinSender = new CoinSender(Global.applicationContext, ent.http);
     }
 
