@@ -36,11 +36,25 @@ class MergedWallet implements IBitgoWallet {
         this.ethWallet = getCoinWallet(data.coin);
 
         coins = new ArrayList<>();
+        refreshBalances();
+    }
+
+    private void refreshBalances() {
+
+        //TODO: this request is now duplicated. Fix!
+        MergedWalletsData mergedData = ent.http.get("/api/v2/wallets/merged?coin="+this.data.coin+"&enterprise=" + Global.ent.getInfo().id, MergedWalletsData.class);
+        balances.clear();
+        coins.clear();
+
+        MergedWalletsData.WalletData data = mergedData.wallets[0];
         coins.add(data.coin);
         balances.put(data.coin, data.balanceString);
 
-        for (String tokenName : walletData.tokens.keySet()) {
-            MergedWalletsData.TokenData token = walletData.tokens.get(tokenName);
+        for (String tokenName : data.tokens.keySet()) {
+            MergedWalletsData.TokenData token = data.tokens.get(tokenName);
+            if (token == null){
+                continue;
+            }
             if (token.balanceString.equals("0") && token.transferCount == 0)
                 continue;
 
@@ -86,6 +100,7 @@ class MergedWallet implements IBitgoWallet {
 
     @Override
     public String getBalance(String coin) {
+        refreshBalances();
         return balances.get(coin);
     }
 

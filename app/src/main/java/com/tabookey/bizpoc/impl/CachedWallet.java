@@ -6,6 +6,7 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.Transfer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,7 +52,8 @@ public class CachedWallet implements IBitgoWallet {
     @Override
     public void update(Runnable onChange) {
         HashMap<String, String> newBalance = new HashMap<>();
-        for (String coin : getCoins())
+        List<String> coins = new ArrayList<>(getCoins());
+        for (String coin : coins)
             newBalance.put(coin, netwallet.getBalance(coin));
         List<Transfer> newTransfers = netwallet.getTransfers(0);
         List<PendingApproval> newPendingapprovals = netwallet.getPendingApprovals();
