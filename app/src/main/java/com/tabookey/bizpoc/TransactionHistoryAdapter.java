@@ -37,7 +37,13 @@ class TransactionHistoryAdapter extends BaseAdapter {
         String valueFormat = String.format(Locale.US, "%.3f %s", value, transfer.coin.toUpperCase());
         if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
-            valueFormat += String.format(Locale.US, " | %s USD", usd);
+            double dollarVal = Double.parseDouble(usd);
+            valueFormat += String.format(Locale.US, " | %.2f USD", dollarVal);
+        } else {
+            ExchangeRate exchangeRate = mExchangeRates.get(transfer.token.type);
+            if (exchangeRate != null) {
+                valueFormat += String.format(Locale.US, " | %.2f USD", value * exchangeRate.average24h);
+            }
         }
         viewHolder.valueTextView.setText(valueFormat);
 

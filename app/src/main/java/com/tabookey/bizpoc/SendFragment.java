@@ -22,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
@@ -32,9 +31,7 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -107,7 +104,6 @@ public class SendFragment extends Fragment {
                 ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
                 String pasteData = item.getText().toString();
                 destinationEditText.setText(pasteData);
-                Toast.makeText(mActivity, "Destination address pasted", Toast.LENGTH_LONG).show();
             }
         });
         scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(mActivity, ScanActivity.class), 1));

@@ -223,7 +223,20 @@ public class TransactionDetailsFragment extends Fragment {
         }).collect(Collectors.toList());
         guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(mActivity, collect, transfer.state));
         double etherDouble = Utils.integerStringToCoinDouble(transfer.valueString, transfer.token.decimalPlaces);
-        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s", Math.abs(etherDouble), transfer.token.getTokenCode().toUpperCase()));
+
+        double value = Math.abs(etherDouble);
+        String valueFormat = String.format(Locale.US, "%.3f %s", value, transfer.token.getTokenCode().toUpperCase());
+        if (transfer.usd != null) {
+            String usd = transfer.usd.replaceAll("-", "");
+            double dollarVal = Double.parseDouble(usd);
+            valueFormat += String.format(Locale.US, " | %.2f USD", dollarVal);
+        } else {
+            ExchangeRate exchangeRate = mExchangeRates.get(transfer.token.type);
+            if (exchangeRate != null) {
+                valueFormat += String.format(Locale.US, " | %.2f USD", value * exchangeRate.average24h);
+            }
+        }
+        sendAmountTextView.setText(valueFormat);
         transactionCommentTextView.setText(transfer.comment);
         boolean isOutgoingTx = transfer.valueString.contains("-");
         if (isOutgoingTx) {
