@@ -15,4 +15,5 @@
     <color name="black54">#8a000000</color>
     <color name="black33">#54000000</color>
     <color name="dark_green_blue">#13505b</color>
+    <color name="red_500_primary">#ff0000</color>
 </resources>

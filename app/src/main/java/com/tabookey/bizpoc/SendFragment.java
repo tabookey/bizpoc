@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -306,8 +307,19 @@ public class SendFragment extends Fragment {
             negativeButton.setTextColor(mActivity.getColor(R.color.text_color));
         }
         amountRequiredNote.setVisibility(isAmountValid ? View.GONE : View.VISIBLE);
+        highlightEditText(tokenSendAmountEditText, !isAmountValid);
+        highlightEditText(destinationEditText, !isDestinationValid);
         destinationRequiredNote.setVisibility(isDestinationValid ? View.GONE : View.VISIBLE);
         return isAmountValid && isDestinationValid && isDestinationChecksummed;
+    }
+
+    private void highlightEditText(EditText editText, boolean on){
+        if (on){
+            editText.getBackground().setColorFilter(getResources().getColor(R.color.red_500_primary, null), PorterDuff.Mode.SRC_ATOP);
+        }
+        else {
+            editText.getBackground().clearColorFilter();
+        }
     }
 
 
