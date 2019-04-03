@@ -28,6 +28,8 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -172,7 +174,12 @@ public class TransactionDetailsFragment extends Fragment {
             } catch (Exception e) {
                 mActivity.runOnUiThread(() -> {
                     progressBarView.setVisibility(View.GONE);
-                    Utils.showErrorDialog(mActivity, "Error", e.getMessage());
+                    Throwable cause = e.getCause();
+                    if (cause instanceof UnknownHostException || cause instanceof SocketTimeoutException) {
+                        Utils.showErrorDialog(getActivity(), "No connection", "Please check your internet connection and try again later");
+                    } else {
+                        Utils.showErrorDialog(mActivity, "Error", e.getMessage());
+                    }
                 });
             }
         }).start();
@@ -213,10 +220,10 @@ public class TransactionDetailsFragment extends Fragment {
         // TODO: Not known if approved or rejected here
         List<Approval> collect = guardians.stream().map(g -> {
             ApprovalState state = ApprovalState.WAITING;
-            if (transfer.cancelledBy != null && transfer.cancelledBy.equals(g.id)){
+            if (transfer.cancelledBy != null && transfer.cancelledBy.equals(g.id)) {
                 state = ApprovalState.DECLINED;
             }
-            if (transfer.approvals.contains(g.id)){
+            if (transfer.approvals.contains(g.id)) {
                 state = ApprovalState.APPROVED;
             }
             return new Approval(g.name, state);
@@ -246,7 +253,7 @@ public class TransactionDetailsFragment extends Fragment {
         } else {
 
             guardiansTitleTextView.setVisibility(View.GONE);
-            if(transfer.state == ApprovalState.APPROVED){
+            if (transfer.state == ApprovalState.APPROVED) {
                 guardiansRecyclerView.setVisibility(View.GONE);
             }
             validatorsTitle.setVisibility(View.GONE);

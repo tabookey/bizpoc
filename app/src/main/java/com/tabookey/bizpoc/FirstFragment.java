@@ -43,6 +43,7 @@ public class FirstFragment extends Fragment {
     private View progressView;
     private SpinKitView progressBar;
     private Button retryButton;
+    private View retryView;
     HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     private ListView balancesListView;
     BalancesAdapter adapter;
@@ -78,6 +79,7 @@ public class FirstFragment extends Fragment {
         progressView = view.findViewById(R.id.progressView);
         progressBar = view.findViewById(R.id.progressBar);
         retryButton = view.findViewById(R.id.retryButton);
+        retryView = view.findViewById(R.id.retryView);
         retryButton.setOnClickListener(v -> fillWindow(true));
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         sendButton.setOnClickListener(v -> {
@@ -148,7 +150,7 @@ public class FirstFragment extends Fragment {
             overlayInfoCardView.setVisibility(View.GONE);
             progressView.setVisibility(View.VISIBLE);
             progressBar.setVisibility(View.VISIBLE);
-            retryButton.setVisibility(View.GONE);
+            retryView.setVisibility(View.GONE);
             if (didShowSplashScreen) {
                 progressView.setBackgroundColor(Color.WHITE);
                 progressBar.setColor(R.color.colorPrimaryDark);
@@ -186,7 +188,7 @@ public class FirstFragment extends Fragment {
                     } catch (Exception e) {
                         mActivity.runOnUiThread(() -> {
                             progressBar.setVisibility(View.GONE);
-                            retryButton.setVisibility(View.VISIBLE);
+                            retryView.setVisibility(View.VISIBLE);
                         });
                         return;
                     }
@@ -223,7 +225,7 @@ public class FirstFragment extends Fragment {
                     Log.e(TAG, "ex", e);
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
-                        retryButton.setVisibility(View.VISIBLE);
+                        retryView.setVisibility(View.VISIBLE);
                     });
                     return;
                 }

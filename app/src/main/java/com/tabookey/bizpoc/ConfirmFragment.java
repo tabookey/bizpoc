@@ -168,11 +168,19 @@ public class ConfirmFragment extends Fragment {
                     Log.e("TAG", "ex: ", e);
                     dollarEquivalent.post(() -> {
                         progressBarView.setVisibility(View.GONE);
-                        Utils.showErrorDialog(getActivity(), "Transaction failed!", e.getMessage());
+                        handleSenderException(e);
                     });
                 }
             }
         }.start();
+    }
+
+    private void handleSenderException(Throwable e) {
+        if (e.getMessage().contains("the network is offline")) {
+            Utils.showErrorDialog(getActivity(), "No connection", "Please check your internet connection and try again later");
+        } else {
+            Utils.showErrorDialog(getActivity(), "Transaction failed!", e.getMessage());
+        }
     }
 
     private void goToDetails(TransactionDetailsFragment tdf) {

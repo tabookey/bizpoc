@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.tabookey.bizpoc.R;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -94,12 +96,25 @@ public class Utils {
         if (context == null) {
             return;
         }
-        AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-        alertDialog.setTitle(title);
-        alertDialog.setMessage(errorMessage);
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                (dialog, which) -> dialog.dismiss());
-        alertDialog.show();
+        AlertDialog dialog = new AlertDialog.Builder(context).create();
+        dialog.setTitle(title);
+        dialog.setMessage(errorMessage);
+        dialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+               (d, w) -> d.dismiss());
+        dialog.show();
+
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
+        int pL = positiveButton.getPaddingLeft();
+        int pT = positiveButton.getPaddingTop();
+        int pR = positiveButton.getPaddingRight();
+        int pB = positiveButton.getPaddingBottom();
+
+        positiveButton.setBackgroundResource(R.drawable.custom_button);
+        positiveButton.setPadding(pL, pT, pR, pB);
+
+        positiveButton.setAllCaps(false);
+        positiveButton.setTextColor(context.getColor(android.R.color.white));
     }
 
     public static void animateImageView(ImageView progressImageView) {

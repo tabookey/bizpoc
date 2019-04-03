@@ -5,9 +5,6 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.BuildConfig;
 
-import java.io.IOException;
-
-import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
