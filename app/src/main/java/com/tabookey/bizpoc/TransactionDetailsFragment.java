@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -18,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -59,7 +61,10 @@ public class TransactionDetailsFragment extends Fragment {
     Button transactionsHashButton;
     Button cancelTransaction;
     Button greatThanksButton;
+    ImageView popupImage;
+    TextView popupTitle;
     private AppCompatActivity mActivity;
+    private ActionBar mActionBar;
     boolean showSuccessPopup = false;
     private View successPopup;
 
@@ -83,6 +88,8 @@ public class TransactionDetailsFragment extends Fragment {
         progressBarView = view.findViewById(R.id.progressBarView);
         cancelTransaction = view.findViewById(R.id.cancelTransaction);
         greatThanksButton = view.findViewById(R.id.greatThanksButton);
+        popupImage = view.findViewById(R.id.popupImage);
+        popupTitle = view.findViewById(R.id.popupTitle);
         return view;
     }
 
@@ -104,7 +111,7 @@ public class TransactionDetailsFragment extends Fragment {
                 });
             }
             fillTransfer();
-            mActivity.getSupportActionBar().setTitle("History");
+            mActionBar.setTitle("History");
         } else if (pendingApproval != null) {
             transactionsHashButton.setVisibility(View.GONE);
             String dateFormat = DateFormat.format("MMMM dd, yyyy, hh:mm a", pendingApproval.createDate).toString();
@@ -140,7 +147,7 @@ public class TransactionDetailsFragment extends Fragment {
                 negativeButton.setTextColor(mActivity.getColor(R.color.text_color));
             });
             fillPending();
-            mActivity.getSupportActionBar().setTitle("Pending");
+            mActionBar.setTitle("Pending");
         } else {
             throw new RuntimeException("No transaction object");
         }
@@ -151,10 +158,10 @@ public class TransactionDetailsFragment extends Fragment {
         super.onResume();
         new Handler().post(() -> {
             if (showSuccessPopup) {
-                mActivity.getSupportActionBar().hide();
+                mActionBar.hide();
                 successPopup.setVisibility(View.VISIBLE);
                 greatThanksButton.setOnClickListener(v -> {
-                    mActivity.getSupportActionBar().show();
+                    mActionBar.show();
                     successPopup.setVisibility(View.GONE);
                 });
             }
@@ -169,7 +176,7 @@ public class TransactionDetailsFragment extends Fragment {
                 ethWallet.update(null);
                 mActivity.runOnUiThread(() -> {
                     progressBarView.setVisibility(View.GONE);
-                    mActivity.onBackPressed();
+                    showDeletedPopup();
                 });
             } catch (Exception e) {
                 mActivity.runOnUiThread(() -> {
@@ -190,6 +197,7 @@ public class TransactionDetailsFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof AppCompatActivity) {
             mActivity = (AppCompatActivity) context;
+            mActionBar = mActivity.getSupportActionBar();
         }
     }
 
@@ -265,5 +273,16 @@ public class TransactionDetailsFragment extends Fragment {
             senderTitleTextView.setVisibility(View.VISIBLE);
             senderAddressTextView.setText(transfer.remoteAddress);
         }
+    }
+
+    private void showDeletedPopup() {
+        mActionBar.hide();
+        successPopup.setVisibility(View.VISIBLE);
+        popupTitle.setText("Your transaction has been\ncancelled successfully");
+        popupImage.setImageResource(R.drawable.ic_trash);
+        greatThanksButton.setOnClickListener(v -> {
+            mActionBar.show();
+            mActivity.onBackPressed();
+        });
     }
 }

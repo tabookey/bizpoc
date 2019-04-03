@@ -199,11 +199,13 @@
             android:layout_weight="1" />
 
         <ImageView
+            android:id="@+id/popupImage"
             android:layout_width="wrap_content"
             android:layout_height="104dp"
             android:src="@drawable/ic_checkmark" />
 
         <TextView
+            android:id="@+id/popupTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
