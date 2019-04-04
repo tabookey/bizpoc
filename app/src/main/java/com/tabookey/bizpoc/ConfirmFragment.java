@@ -28,6 +28,7 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -80,8 +81,8 @@ public class ConfirmFragment extends Fragment {
         fakeSubmitButton.setOnClickListener(v ->
         {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.pendingApproval = new PendingApproval("", new Date(), "", "", "", "", new ArrayList<BitgoUser>() {
-            }, new BitgoUser("", "", ""), Global.ent.getTokens().get("teth"));
+            tdf.pendingApproval = new PendingApproval("", new Date(), "", "", "", "", Collections.emptyList(),
+                    new BitgoUser("", "", ""), Global.ent.getTokens().get("teth"));
             goToDetails(tdf);
         });
         submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));

@@ -3,6 +3,7 @@ package com.tabookey.bizpoc.api;
 import com.tabookey.bizpoc.Approval;
 import com.tabookey.bizpoc.ApprovalState;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +26,11 @@ public class PendingApproval {
     public boolean equals(@Nullable Object obj) {
         if ( !(obj instanceof PendingApproval) )
             return false;
-        return Objects.equals(((PendingApproval) obj).id, this.id);
+        PendingApproval other = (PendingApproval) obj;
+        if ( other.approvedByUsers!=null  && ! other.approvedByUsers.equals(approvedByUsers) )
+            return false;
+        return Objects.equals(other.id, this.id);
+
     }
 
     public PendingApproval(String id, Date createDate, String recipientAddr, String comment, String coin, String amount, List<BitgoUser> approvedByUsers, BitgoUser creator, TokenInfo token) {

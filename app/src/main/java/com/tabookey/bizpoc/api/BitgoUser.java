@@ -2,6 +2,9 @@ package com.tabookey.bizpoc.api;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+
+import androidx.annotation.Nullable;
 
 public class BitgoUser {
 
@@ -42,5 +45,14 @@ public class BitgoUser {
         this.name = name;
         this.isEnterpriseAdmin = isEnterpriseAdmin;
         this.permissions = Collections.unmodifiableList(permissions==null ? Collections.emptyList() : permissions);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if ( !(obj instanceof BitgoUser))
+            return false;
+
+        BitgoUser other = (BitgoUser) obj;
+        return Objects.equals(id, other.id);
     }
 }
