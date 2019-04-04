@@ -84,7 +84,7 @@ public class SendFragment extends Fragment {
             List<TokenInfo> collect = balances.stream().map(b -> b.tokenInfo).collect(Collectors.toList());
             CryptoCurrencySpinnerAdapter cryptoCurrencySpinnerAdapter = new CryptoCurrencySpinnerAdapter(mActivity, collect);
             new AlertDialog.Builder(mActivity)
-                    .setTitle("Select token")
+                    .setTitle("Select asset")
                     .setAdapter(cryptoCurrencySpinnerAdapter, (dialog, index) -> {
                         selectedToken = collect.get(index);
                         selectCoinButton.setText(selectedToken.getTokenCode().toUpperCase());
@@ -263,7 +263,19 @@ public class SendFragment extends Fragment {
         } catch (Exception e) {
             isAmountValid = false;
         }
+
+
+        amountRequiredNote.setVisibility(isAmountValid ? View.GONE : View.VISIBLE);
+        highlightEditText(tokenSendAmountEditText, !isAmountValid);
+
         String destination = destinationEditText.getText().toString();
+        boolean isDestinationEntered = destination.length() != 0;
+        if (!isDestinationEntered){
+            highlightEditText(destinationEditText, true);
+            destinationRequiredNote.setVisibility(View.VISIBLE);
+            destinationRequiredNote.setText("Please enter address");
+            return false;
+        }
         boolean isDestinationValid = AddressChecker.isValidAddress(destination);
         // Ban sending to self
         isDestinationValid &= !destination.toLowerCase().equals(mBitgoWallet.getAddress());
@@ -306,8 +318,6 @@ public class SendFragment extends Fragment {
             negativeButton.setAllCaps(false);
             negativeButton.setTextColor(mActivity.getColor(R.color.text_color));
         }
-        amountRequiredNote.setVisibility(isAmountValid ? View.GONE : View.VISIBLE);
-        highlightEditText(tokenSendAmountEditText, !isAmountValid);
         highlightEditText(destinationEditText, !isDestinationValid);
         destinationRequiredNote.setVisibility(isDestinationValid ? View.GONE : View.VISIBLE);
         return isAmountValid && isDestinationValid && isDestinationChecksummed;

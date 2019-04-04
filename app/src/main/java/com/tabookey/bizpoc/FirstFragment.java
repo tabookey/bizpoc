@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -27,7 +26,6 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.api.Transfer;
-import com.tabookey.bizpoc.impl.CachedEnterprise;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.ArrayList;
@@ -42,7 +40,6 @@ public class FirstFragment extends Fragment {
     public static boolean didShowSplashScreen = false;
     private View progressView;
     private SpinKitView progressBar;
-    private Button retryButton;
     private View retryView;
     HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     private ListView balancesListView;
@@ -78,7 +75,7 @@ public class FirstFragment extends Fragment {
         emptyPendingTextView = view.findViewById(R.id.emptyPendingTextView);
         progressView = view.findViewById(R.id.progressView);
         progressBar = view.findViewById(R.id.progressBar);
-        retryButton = view.findViewById(R.id.retryButton);
+        Button retryButton = view.findViewById(R.id.retryButton);
         retryView = view.findViewById(R.id.retryView);
         retryButton.setOnClickListener(v -> fillWindow(true));
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
@@ -126,7 +123,7 @@ public class FirstFragment extends Fragment {
                         Log.d("TAG", "========= ENTERPRISE CHANGE");
                     });
                     mBitgoWallet.update(() ->
-                            getActivity().runOnUiThread(() -> fillWindow(false))
+                            mActivity.runOnUiThread(() -> fillWindow(false))
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -184,6 +181,7 @@ public class FirstFragment extends Fragment {
                     List<Transfer> transfers;
                     try {
                         pendingApprovals = mBitgoWallet.getPendingApprovals();
+                        pendingApprovals.sort((a,b)-> b.createDate.compareTo(a.createDate));
                         transfers = mBitgoWallet.getTransfers(3);
                     } catch (Exception e) {
                         mActivity.runOnUiThread(() -> {

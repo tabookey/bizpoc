@@ -67,6 +67,7 @@ public class TransactionDetailsFragment extends Fragment {
     private ActionBar mActionBar;
     boolean showSuccessPopup = false;
     private View successPopup;
+    private View transactionCommentLabel;
 
     @Nullable
     @Override
@@ -79,6 +80,7 @@ public class TransactionDetailsFragment extends Fragment {
         senderTitleTextView = view.findViewById(R.id.senderTitleTextView);
         recipientTitleTextView = view.findViewById(R.id.recipientTitleTextView);
         guardiansTitleTextView = view.findViewById(R.id.guardiansTitleTextView);
+        transactionCommentLabel = view.findViewById(R.id.transactionCommentLabel);
         validatorsTitle = view.findViewById(R.id.validatorsTitle);
         transactionCommentTextView = view.findViewById(R.id.transactionCommentTextView);
         transactionsHashButton = view.findViewById(R.id.transactionsHashButton);
@@ -104,11 +106,18 @@ public class TransactionDetailsFragment extends Fragment {
             if (transfer.txid != null) {
                 transactionsHashButton.setVisibility(View.VISIBLE);
                 transactionsHashButton.setOnClickListener(v -> {
-                    String url = "https://kovan.etherscan.io/tx/" + transfer.txid;
+                    String networkEtherscanName = "";
+                    if (Global.isTest()) {
+                        networkEtherscanName = "kovan.";
+                    }
+                    String url = String.format("https://%setherscan.io/tx/%s", networkEtherscanName, transfer.txid);
+
                     Intent i = new Intent(Intent.ACTION_VIEW);
                     i.setData(Uri.parse(url));
                     startActivity(i);
                 });
+            } else {
+                transactionsHashButton.setVisibility(View.GONE);
             }
             fillTransfer();
             mActionBar.setTitle("History");
@@ -170,16 +179,19 @@ public class TransactionDetailsFragment extends Fragment {
 
     private void cancelTransaction() {
         progressBarView.setVisibility(View.VISIBLE);
+        mActionBar.hide();
         new Thread(() -> {
             try {
                 Global.ent.getMergedWallets().get(0).rejectPending(pendingApproval);
                 ethWallet.update(null);
                 mActivity.runOnUiThread(() -> {
+                    mActionBar.hide();
                     progressBarView.setVisibility(View.GONE);
                     showDeletedPopup();
                 });
             } catch (Exception e) {
                 mActivity.runOnUiThread(() -> {
+                    mActionBar.hide();
                     progressBarView.setVisibility(View.GONE);
                     Throwable cause = e.getCause();
                     if (cause instanceof UnknownHostException || cause instanceof SocketTimeoutException) {
@@ -252,7 +264,12 @@ public class TransactionDetailsFragment extends Fragment {
             }
         }
         sendAmountTextView.setText(valueFormat);
-        transactionCommentTextView.setText(transfer.comment);
+        if (transfer.comment != null && transfer.comment.length() > 0) {
+            transactionCommentTextView.setText(transfer.comment);
+        } else {
+            transactionCommentLabel.setVisibility(View.GONE);
+            transactionCommentTextView.setVisibility(View.GONE);
+        }
         boolean isOutgoingTx = transfer.valueString.contains("-");
         if (isOutgoingTx) {
             senderTitleTextView.setVisibility(View.GONE);

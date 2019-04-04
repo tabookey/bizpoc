@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,6 +44,7 @@ public class ConfirmFragment extends Fragment {
     View progressBarView;
     List<BitgoUser> guardians;
     IBitgoWallet mBitgoWallet;
+    private ActionBar mActionBar;
 
     @Nullable
     @Override
@@ -55,7 +57,10 @@ public class ConfirmFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Activity) {
             mActivity = (AppCompatActivity) context;
-            mActivity.getSupportActionBar().setTitle("Review");
+            mActionBar = mActivity.getSupportActionBar();
+            if (mActionBar != null) {
+                mActionBar.setTitle("Review");
+            }
         }
     }
 
@@ -139,6 +144,7 @@ public class ConfirmFragment extends Fragment {
 
     private void sendTransaction(String password, String otp) {
         progressBarView.setVisibility(View.VISIBLE);
+        mActionBar.hide();
         new Thread() {
             @Override
             public void run() {
@@ -148,7 +154,10 @@ public class ConfirmFragment extends Fragment {
                     sendRequest.comment = getNewMemoID();
                     String pendingTxId = mBitgoWallet.sendCoins(sendRequest, null);
                     mBitgoWallet.update(null);
-                    dollarEquivalent.post(() -> progressBarView.setVisibility(View.GONE));
+                    dollarEquivalent.post(() -> {
+                        mActionBar.show();
+                        progressBarView.setVisibility(View.GONE);
+                    });
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();
                     List<PendingApproval> pendingApprovals = mBitgoWallet.getPendingApprovals();
@@ -168,6 +177,7 @@ public class ConfirmFragment extends Fragment {
                     Log.e("TAG", "ex: ", e);
                     dollarEquivalent.post(() -> {
                         progressBarView.setVisibility(View.GONE);
+                        mActionBar.show();
                         handleSenderException(e);
                     });
                 }
