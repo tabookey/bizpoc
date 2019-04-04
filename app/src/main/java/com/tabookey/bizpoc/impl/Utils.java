@@ -26,8 +26,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import static com.bumptech.glide.util.Preconditions.checkArgument;
 
@@ -35,7 +37,7 @@ import static com.bumptech.glide.util.Preconditions.checkArgument;
 public class Utils {
 
     public static String getDayOfMonthSuffix(Date date) {
-        SimpleDateFormat formatDayOfMonth = new SimpleDateFormat("d");
+        SimpleDateFormat formatDayOfMonth = new SimpleDateFormat("d", Locale.US);
         int n = Integer.parseInt(formatDayOfMonth.format(date));
         checkArgument(n >= 1 && n <= 31, "illegal day of month: " + n);
         if (n >= 11 && n <= 13) {
@@ -117,17 +119,6 @@ public class Utils {
         positiveButton.setTextColor(context.getColor(android.R.color.white));
     }
 
-    public static void animateImageView(ImageView progressImageView) {
-        RotateAnimation anim = new RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
-                0.5f);
-        anim.setInterpolator(new LinearInterpolator());
-        anim.setRepeatCount(Animation.INFINITE);
-        anim.setDuration(2700);
-        // Start animating the image
-        progressImageView.startAnimation(anim);
-        // Later, stop the animation
-        // splash.setAnimation(null);
-    }
 
     /**** Method for Setting the Height of the ListView dynamically.
      **** Hack to fix the issue of not showing all the items of the ListView
@@ -151,5 +142,10 @@ public class Utils {
         ViewGroup.LayoutParams params = listView.getLayoutParams();
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
         listView.setLayoutParams(params);
+    }
+
+    public static String toMoneyFormat(double amount){
+        NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.US);
+        return formatter.format(amount);
     }
 }

@@ -64,16 +64,10 @@ public class BalancesAdapter extends ArrayAdapter<Balance> {
         TextView coinDollarValue = view.findViewById(R.id.coinDollarValue);
         Balance balance = data.get(position);
         double coinWorthUsd = balance.exchangeRate;
-        String format;
-        if (coinWorthUsd > 0.01) {
-            format = "%.2f USD";
-        } else {
-            format = "%.3f USD";
-        }
-        coinExchangeRate.setText(String.format(Locale.US, format, coinWorthUsd));
+        coinExchangeRate.setText(String.format(Locale.US, "%s", Utils.toMoneyFormat(coinWorthUsd)));
         coinBalance.setText(String.format(Locale.US, "%.3f %s", balance.getValue(), balance.coinName.toUpperCase()));
         coinName.setText(balance.tokenInfo.name);
-        coinDollarValue.setText(String.format(Locale.US, "%.2f USD", balance.getDollarValue()));
+        coinDollarValue.setText(String.format(Locale.US, "%s USD", Utils.toMoneyFormat(balance.getDollarValue())));
         return view;
     }
 }

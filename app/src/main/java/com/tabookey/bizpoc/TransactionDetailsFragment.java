@@ -213,7 +213,7 @@ public class TransactionDetailsFragment extends Fragment {
         if (exchangeRate != null) {
             average24h = exchangeRate.average24h;
         }
-        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s | %.2f USD", etherDouble, pendingApproval.token.getTokenCode().toUpperCase(), etherDouble * average24h));
+        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s | %s USD", etherDouble, pendingApproval.token.getTokenCode().toUpperCase(), Utils.toMoneyFormat(etherDouble * average24h)));
         recipientAddressTextView.setText(pendingApproval.recipientAddr);
         transactionCommentTextView.setText(pendingApproval.comment);
         senderTitleTextView.setVisibility(View.GONE);
@@ -244,11 +244,11 @@ public class TransactionDetailsFragment extends Fragment {
         if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
             double dollarVal = Double.parseDouble(usd);
-            valueFormat += String.format(Locale.US, " | %.2f USD", dollarVal);
+            valueFormat += String.format(Locale.US, " | %s USD", Utils.toMoneyFormat(dollarVal));
         } else {
             ExchangeRate exchangeRate = mExchangeRates.get(transfer.token.type);
             if (exchangeRate != null) {
-                valueFormat += String.format(Locale.US, " | %.2f USD", value * exchangeRate.average24h);
+                valueFormat += String.format(Locale.US, " | %s USD", Utils.toMoneyFormat(value * exchangeRate.average24h));
             }
         }
         sendAmountTextView.setText(valueFormat);

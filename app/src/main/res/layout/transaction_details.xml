@@ -201,7 +201,8 @@
         <ImageView
             android:id="@+id/popupImage"
             android:layout_width="wrap_content"
-            android:layout_height="104dp"
+            android:layout_height="wrap_content"
+            tools:src="@drawable/ic_trash"
             android:src="@drawable/ic_checkmark" />
 
         <TextView
@@ -209,7 +210,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
+            android:textAlignment="center"
             android:text="Your request has been sent"
+            tools:text="Your transaction has been\ncancelled successfully"
             android:textColor="@android:color/black"
             android:textSize="18sp" />
 

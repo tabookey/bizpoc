@@ -87,7 +87,7 @@ public class ConfirmFragment extends Fragment {
         if (exchangeRate != null) {
             average24h = exchangeRate.average24h;
         }
-        dollarEquivalent.setText(String.format(Locale.US, "%.2f USD", etherDouble * average24h));
+        dollarEquivalent.setText(String.format(Locale.US, "%s USD", Utils.toMoneyFormat(etherDouble * average24h)));
         etherSendAmount.setText(String.format(Locale.US, "%.3f %s", etherDouble, sendRequest.tokenInfo.getTokenCode().toUpperCase()));
         recipientAddress.setText(sendRequest.recipientAddress);
     }

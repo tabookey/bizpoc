@@ -38,11 +38,11 @@ class TransactionHistoryAdapter extends BaseAdapter {
         if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
             double dollarVal = Double.parseDouble(usd);
-            valueFormat += String.format(Locale.US, " | %.2f USD", dollarVal);
+            valueFormat += String.format(Locale.US, " | %s USD", Utils.toMoneyFormat(dollarVal));
         } else {
             ExchangeRate exchangeRate = mExchangeRates.get(transfer.token.type);
             if (exchangeRate != null) {
-                valueFormat += String.format(Locale.US, " | %.2f USD", value * exchangeRate.average24h);
+                valueFormat += String.format(Locale.US, " | %s USD", Utils.toMoneyFormat(value * exchangeRate.average24h));
             }
         }
         viewHolder.valueTextView.setText(valueFormat);
@@ -92,7 +92,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
         if (exchangeRate != null) {
             average24h = exchangeRate.average24h;
         }
-        valueFormat += String.format(Locale.US, " | %.2f USD", value * average24h);
+        valueFormat += String.format(Locale.US, " | %s USD", Utils.toMoneyFormat(value * average24h));
         viewHolder.valueTextView.setText(valueFormat);
         viewHolder.remoteTextView.setText(pending.recipientAddr);
         viewHolder.transactionComment.setText(String.format("%s", pending.comment));

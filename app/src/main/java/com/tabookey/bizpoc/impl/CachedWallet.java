@@ -102,7 +102,8 @@ public class CachedWallet implements IBitgoWallet {
 
     @Override
     public List<Transfer> getTransfers(int limit) {
-        return transfers.subList(0, limit == 0 ? transfers.size() : limit);
+        int size = transfers.size();
+        return transfers.subList(0, limit == 0 || limit > size ? size : limit);
     }
 
     @Override
