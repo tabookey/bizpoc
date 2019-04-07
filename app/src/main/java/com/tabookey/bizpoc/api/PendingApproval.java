@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class PendingApproval {
@@ -24,10 +25,10 @@ public class PendingApproval {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        if ( !(obj instanceof PendingApproval) )
+        if (!(obj instanceof PendingApproval))
             return false;
         PendingApproval other = (PendingApproval) obj;
-        if ( other.approvedByUsers!=null  && ! other.approvedByUsers.equals(approvedByUsers) )
+        if (other.approvedByUsers != null && !other.approvedByUsers.equals(approvedByUsers))
             return false;
         return Objects.equals(other.id, this.id);
 
@@ -59,5 +60,16 @@ public class PendingApproval {
             return new Approval(b.name, isApproved ? ApprovalState.APPROVED : ApprovalState.WAITING);
 
         }).collect(Collectors.toList());
+    }
+
+
+    @NonNull
+    @Override
+    public String toString() {
+        StringBuilder approvedByUsers = new StringBuilder();
+        for (BitgoUser approver : this.approvedByUsers) {
+            approvedByUsers.append(approver).append(" ");
+        }
+        return String.format("id=%s amount=%s approvedByUsers=%s", id, amount, approvedByUsers);
     }
 }

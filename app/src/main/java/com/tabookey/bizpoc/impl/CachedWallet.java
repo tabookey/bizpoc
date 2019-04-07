@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
+import android.util.Log;
+
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
@@ -11,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CachedWallet implements IBitgoWallet {
+    private static final String TAG = "CachedWallet";
 
     private final IBitgoWallet netwallet;
     private List<String> coins;
@@ -49,6 +52,7 @@ public class CachedWallet implements IBitgoWallet {
      *
      * @param onChange - callback to call (from the background thread!) in case of change.
      */
+
     @Override
     public void update(Runnable onChange) {
         HashMap<String, String> newBalance = new HashMap<>();
@@ -57,10 +61,12 @@ public class CachedWallet implements IBitgoWallet {
             newBalance.put(coin, netwallet.getBalance(coin));
         List<Transfer> newTransfers = netwallet.getTransfers(0);
         List<PendingApproval> newPendingapprovals = netwallet.getPendingApprovals();
-        if (newBalance.equals(balances) &&  //no changes in balance
-                newTransfers.equals(transfers) &&
-                newPendingapprovals.equals(pendingapprovals) ) {
-            //no change. return.
+        boolean balancesChanged = !newBalance.equals(balances);
+        boolean transfersChanged = !newTransfers.equals(transfers);
+        boolean approvalsChanged = !newPendingapprovals.equals(pendingapprovals);
+        boolean didChange = balancesChanged || transfersChanged || approvalsChanged;
+        Log.v(TAG, "changed=" + didChange + " : balances=" + balancesChanged + " transfers=" + transfersChanged + " approvals=" + approvalsChanged);
+        if (!didChange) {
             return;
         }
         balances = newBalance;

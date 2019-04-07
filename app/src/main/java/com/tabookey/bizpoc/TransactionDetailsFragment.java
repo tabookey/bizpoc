@@ -125,9 +125,11 @@ public class TransactionDetailsFragment extends Fragment {
                 });
             }
         });
-        if (refresher != null){
-            refresher.start();
+        if (refresher != null) {
+            refresher.interrupt();
         }
+        newRefresher();
+        refresher.start();
     }
 
     private void cancelTransaction() {
@@ -167,24 +169,28 @@ public class TransactionDetailsFragment extends Fragment {
     }
 
     private void fillPending() {
-        Optional<PendingApproval> optionalApproval = mBitgoWallet.getPendingApprovals().stream().filter((a) -> a.id.equals(pendingApproval.id)).findAny();
+        if (pendingApproval == null) { // late callback hit too late
+            return;
+        }
+        String approvalId = pendingApproval.id;
+        Optional<PendingApproval> optionalApproval = mBitgoWallet.getPendingApprovals().stream().filter((a) -> a.id.equals(approvalId)).findAny();
         if (!optionalApproval.isPresent()) {
             // two possible reasons: transaction approved or declined.
             List<Transfer> transfers = mBitgoWallet.getTransfers(0);
-            Optional<Transfer> optionalTransfer = transfers.stream().filter(a -> a.pendingApproval.equals(pendingApproval.id)).findAny();
+            Optional<Transfer> optionalTransfer = transfers.stream().filter(a -> a.pendingApproval.equals(approvalId)).findAny();
             if (optionalTransfer.isPresent()) {
                 transfer = optionalTransfer.get();
                 pendingApproval = null;
                 refresher.interrupt();
-                refresher = null;
                 fillTransfer();
             } else {
-                Log.e(TAG, "Pending transaction with approval ID " + pendingApproval.id + " seems to disappear!");
+                Log.e(TAG, "Pending transaction with approval ID " + approvalId + " seems to disappear!");
             }
             return;
         }
 
         pendingApproval = optionalApproval.get();
+        Log.e(TAG, "New pending: " + pendingApproval.toString());
 
         transactionsHashButton.setVisibility(View.GONE);
         String dateFormat = DateFormat.format("MMMM dd, yyyy, hh:mm a", pendingApproval.createDate).toString();
@@ -223,10 +229,15 @@ public class TransactionDetailsFragment extends Fragment {
 
         double etherDouble = Utils.integerStringToCoinDouble(pendingApproval.amount, pendingApproval.token.decimalPlaces);
 
-        List<Approval> collect = pendingApproval.getApprovals(guardians);
+        List<Approval> approvalList = pendingApproval.getApprovals(guardians);
         guardiansRecyclerView.setHasFixedSize(true);
         guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
-        guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(mActivity, collect, ApprovalState.WAITING));
+        StringBuilder appr = new StringBuilder();
+        for (Approval a : approvalList) {
+            appr.append(a.name).append(":").append(a.state).append(" ");
+        }
+        Log.e(TAG, "Approvers: " + appr);
+        guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(mActivity, approvalList, ApprovalState.WAITING));
         ExchangeRate exchangeRate = mExchangeRates.get(pendingApproval.token.type);
         double average24h = 0;
         if (exchangeRate != null) {
@@ -238,20 +249,26 @@ public class TransactionDetailsFragment extends Fragment {
         senderTitleTextView.setVisibility(View.GONE);
         senderAddressTextView.setVisibility(View.GONE);
         senderAddressTextView.setText(mBitgoWallet.getAddress());
-        if (refresher == null) {
-            refresher = new Thread(() -> {
-                while (!Thread.interrupted()) {
-                    try {
-                        Thread.sleep(10000);
-                        mBitgoWallet.update(() ->
-                                mActivity.runOnUiThread(this::fillPending)
-                        );
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+    }
+
+    private void newRefresher() {
+        refresher = new Thread(() -> {
+            Log.e(TAG, "refresher thread started, ID:" + refresher.getId());
+            while (!Thread.interrupted()) {
+                try {
+                    Thread.sleep(10000);
+                    mBitgoWallet.update(() ->
+                            mActivity.runOnUiThread(() -> new Handler().post(this::fillPending))
+                    );
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
-        }
+            }
+            Log.e(TAG, "refresher thread interrupted, ID:" + refresher.getId());
+        });
     }
 
     @Override

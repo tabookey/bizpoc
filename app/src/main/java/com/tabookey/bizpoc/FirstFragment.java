@@ -28,6 +28,7 @@ import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,7 +115,12 @@ public class FirstFragment extends Fragment {
 
     @Override
     public void onResume() {
+        super.onResume();
+        if (refresher != null) {
+            refresher.interrupt();
+        }
         refresher = new Thread(() -> {
+            Log.e(TAG, "refresher thread started, ID:" + refresher.getId());
             while (!Thread.interrupted()) {
                 try {
                     Thread.sleep(10000);
@@ -125,20 +131,23 @@ public class FirstFragment extends Fragment {
                     mBitgoWallet.update(() ->
                             mActivity.runOnUiThread(() -> fillWindow(false))
                     );
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+            Log.e(TAG, "refresher thread interrupted, ID:" + refresher.getId());
         });
         refresher.start();
 
-        super.onResume();
     }
 
     @Override
     public void onPause() {
-        refresher.interrupt();
         super.onPause();
+        refresher.interrupt();
     }
 
     void fillWindow(boolean showProgress) {
@@ -181,7 +190,7 @@ public class FirstFragment extends Fragment {
                     List<Transfer> transfers;
                     try {
                         pendingApprovals = mBitgoWallet.getPendingApprovals();
-                        pendingApprovals.sort((a,b)-> b.createDate.compareTo(a.createDate));
+                        pendingApprovals.sort((a, b) -> b.createDate.compareTo(a.createDate));
                         transfers = mBitgoWallet.getTransfers(3);
                     } catch (Exception e) {
                         mActivity.runOnUiThread(() -> {
