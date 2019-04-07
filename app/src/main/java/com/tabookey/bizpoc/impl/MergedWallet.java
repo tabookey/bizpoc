@@ -1,6 +1,5 @@
 package com.tabookey.bizpoc.impl;
 
-import com.tabookey.bizpoc.Approval;
 import com.tabookey.bizpoc.ApprovalState;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
@@ -42,7 +41,7 @@ class MergedWallet implements IBitgoWallet {
     private void refreshBalances() {
 
         //TODO: this request is now duplicated. Fix!
-        MergedWalletsData mergedData = ent.http.get("/api/v2/wallets/merged?coin="+this.data.coin+"&enterprise=" + Global.ent.getInfo().id, MergedWalletsData.class);
+        MergedWalletsData mergedData = ent.http.get("/api/v2/wallets/merged?coin=" + this.data.coin + "&enterprise=" + Global.ent.getInfo().id, MergedWalletsData.class);
         balances.clear();
         coins.clear();
 
@@ -52,7 +51,7 @@ class MergedWallet implements IBitgoWallet {
 
         for (String tokenName : data.tokens.keySet()) {
             MergedWalletsData.TokenData token = data.tokens.get(tokenName);
-            if (token == null){
+            if (token == null) {
                 continue;
             }
             if (token.balanceString.equals("0") && token.transferCount == 0)
@@ -158,7 +157,7 @@ class MergedWallet implements IBitgoWallet {
                 }
             }
             return new Transfer(log.id,
-                    null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, ent.getToken(log.coin),
+                    null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, log.target, ent.getToken(log.coin),
                     log.user.equals(Global.ent.getMe().id) ? ApprovalState.CANCELLED : ApprovalState.DECLINED, log.user, approvals);
         }).collect(Collectors.toList());
     }
@@ -183,7 +182,7 @@ class MergedWallet implements IBitgoWallet {
         Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (Wallet.TransferResp.Trans t : resp.transfers) {
-            Transfer tx = new Transfer(t.id, t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, ent.getToken(t.coin), ApprovalState.APPROVED, null, new ArrayList<>());
+            Transfer tx = new Transfer(t.id, t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, t.pendingApproval, ent.getToken(t.coin), ApprovalState.APPROVED, null, new ArrayList<>());
             // entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
             // looking for the other one, with its value different (actually, negative) of ours.

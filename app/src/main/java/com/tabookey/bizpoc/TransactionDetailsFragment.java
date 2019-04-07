@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,16 +36,18 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TransactionDetailsFragment extends Fragment {
+    private static final String TAG = "DetailsFragment";
 
     public PendingApproval pendingApproval;
     Transfer transfer;
     HashMap<String, ExchangeRate> mExchangeRates;
 
     List<BitgoUser> guardians;
-    IBitgoWallet ethWallet;
+    IBitgoWallet mBitgoWallet;
 
     View progressBarView;
     TextView senderAddressTextView;
@@ -68,6 +71,8 @@ public class TransactionDetailsFragment extends Fragment {
     boolean showSuccessPopup = false;
     private View successPopup;
     private View transactionCommentLabel;
+
+    Thread refresher;
 
     @Nullable
     @Override
@@ -99,64 +104,9 @@ public class TransactionDetailsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (transfer != null) {
-            cancelTransaction.setVisibility(View.GONE);
-
-            String dateFormat = DateFormat.format("MMMM dd, yyyy, hh:mm a", transfer.date).toString();
-            transactionDateText.setText(dateFormat);
-            if (transfer.txid != null) {
-                transactionsHashButton.setVisibility(View.VISIBLE);
-                transactionsHashButton.setOnClickListener(v -> {
-                    String networkEtherscanName = "";
-                    if (Global.isTest()) {
-                        networkEtherscanName = "kovan.";
-                    }
-                    String url = String.format("https://%setherscan.io/tx/%s", networkEtherscanName, transfer.txid);
-
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(url));
-                    startActivity(i);
-                });
-            } else {
-                transactionsHashButton.setVisibility(View.GONE);
-            }
             fillTransfer();
-            mActionBar.setTitle("History");
         } else if (pendingApproval != null) {
-            transactionsHashButton.setVisibility(View.GONE);
-            String dateFormat = DateFormat.format("MMMM dd, yyyy, hh:mm a", pendingApproval.createDate).toString();
-            transactionDateText.setText(dateFormat);
-            cancelTransaction.setOnClickListener(v -> {
-                AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
-                dialog.setTitle("Are you sure you want to cancel the transaction?");
-                dialog.setMessage("\nThis transaction will be cancelled and your guardians will be notified about this change\n\n");
-                dialog.setButton(AlertDialog.BUTTON_POSITIVE, "   Yes, I'm sure   ",
-                        (d, w) -> {
-                            cancelTransaction();
-                            dialog.dismiss();
-                        });
-                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "   Go back   ", (d, w) -> d.dismiss());
-                dialog.show();
-                Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-
-
-                int pL = positiveButton.getPaddingLeft();
-                int pT = positiveButton.getPaddingTop();
-                int pR = positiveButton.getPaddingRight();
-                int pB = positiveButton.getPaddingBottom();
-
-                positiveButton.setBackgroundResource(R.drawable.custom_button);
-                positiveButton.setPadding(pL, pT, pR, pB);
-
-                positiveButton.setAllCaps(false);
-                positiveButton.setTextColor(mActivity.getColor(android.R.color.white));
-
-
-                negativeButton.setAllCaps(false);
-                negativeButton.setTextColor(mActivity.getColor(R.color.text_color));
-            });
             fillPending();
-            mActionBar.setTitle("Pending");
         } else {
             throw new RuntimeException("No transaction object");
         }
@@ -175,6 +125,9 @@ public class TransactionDetailsFragment extends Fragment {
                 });
             }
         });
+        if (refresher != null){
+            refresher.start();
+        }
     }
 
     private void cancelTransaction() {
@@ -183,15 +136,15 @@ public class TransactionDetailsFragment extends Fragment {
         new Thread(() -> {
             try {
                 Global.ent.getMergedWallets().get(0).rejectPending(pendingApproval);
-                ethWallet.update(null);
+                mBitgoWallet.update(null);
                 mActivity.runOnUiThread(() -> {
-                    mActionBar.hide();
+                    mActionBar.show();
                     progressBarView.setVisibility(View.GONE);
                     showDeletedPopup();
                 });
             } catch (Exception e) {
                 mActivity.runOnUiThread(() -> {
-                    mActionBar.hide();
+                    mActionBar.show();
                     progressBarView.setVisibility(View.GONE);
                     Throwable cause = e.getCause();
                     if (cause instanceof UnknownHostException || cause instanceof SocketTimeoutException) {
@@ -214,6 +167,60 @@ public class TransactionDetailsFragment extends Fragment {
     }
 
     private void fillPending() {
+        Optional<PendingApproval> optionalApproval = mBitgoWallet.getPendingApprovals().stream().filter((a) -> a.id.equals(pendingApproval.id)).findAny();
+        if (!optionalApproval.isPresent()) {
+            // two possible reasons: transaction approved or declined.
+            List<Transfer> transfers = mBitgoWallet.getTransfers(0);
+            Optional<Transfer> optionalTransfer = transfers.stream().filter(a -> a.pendingApproval.equals(pendingApproval.id)).findAny();
+            if (optionalTransfer.isPresent()) {
+                transfer = optionalTransfer.get();
+                pendingApproval = null;
+                refresher.interrupt();
+                refresher = null;
+                fillTransfer();
+            } else {
+                Log.e(TAG, "Pending transaction with approval ID " + pendingApproval.id + " seems to disappear!");
+            }
+            return;
+        }
+
+        pendingApproval = optionalApproval.get();
+
+        transactionsHashButton.setVisibility(View.GONE);
+        String dateFormat = DateFormat.format("MMMM dd, yyyy, hh:mm a", pendingApproval.createDate).toString();
+        transactionDateText.setText(dateFormat);
+        cancelTransaction.setOnClickListener(v -> {
+            AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
+            dialog.setTitle("Are you sure you want to cancel the transaction?");
+            dialog.setMessage("\nThis transaction will be cancelled and your guardians will be notified about this change\n\n");
+            dialog.setButton(AlertDialog.BUTTON_POSITIVE, "   Yes, I'm sure   ",
+                    (d, w) -> {
+                        cancelTransaction();
+                        dialog.dismiss();
+                    });
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "   Go back   ", (d, w) -> d.dismiss());
+            dialog.show();
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+
+            int pL = positiveButton.getPaddingLeft();
+            int pT = positiveButton.getPaddingTop();
+            int pR = positiveButton.getPaddingRight();
+            int pB = positiveButton.getPaddingBottom();
+
+            positiveButton.setBackgroundResource(R.drawable.custom_button);
+            positiveButton.setPadding(pL, pT, pR, pB);
+
+            positiveButton.setAllCaps(false);
+            positiveButton.setTextColor(mActivity.getColor(android.R.color.white));
+
+
+            negativeButton.setAllCaps(false);
+            negativeButton.setTextColor(mActivity.getColor(R.color.text_color));
+        });
+        mActionBar.setTitle("Pending");
+
         double etherDouble = Utils.integerStringToCoinDouble(pendingApproval.amount, pendingApproval.token.decimalPlaces);
 
         List<Approval> collect = pendingApproval.getApprovals(guardians);
@@ -230,10 +237,55 @@ public class TransactionDetailsFragment extends Fragment {
         transactionCommentTextView.setText(pendingApproval.comment);
         senderTitleTextView.setVisibility(View.GONE);
         senderAddressTextView.setVisibility(View.GONE);
-        senderAddressTextView.setText(ethWallet.getAddress());
+        senderAddressTextView.setText(mBitgoWallet.getAddress());
+        if (refresher == null) {
+            refresher = new Thread(() -> {
+                while (!Thread.interrupted()) {
+                    try {
+                        Thread.sleep(10000);
+                        mBitgoWallet.update(() ->
+                                mActivity.runOnUiThread(this::fillPending)
+                        );
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (refresher != null) {
+            refresher.interrupt();
+        }
     }
 
     private void fillTransfer() {
+        cancelTransaction.setVisibility(View.GONE);
+
+        String dateFormat = DateFormat.format("MMMM dd, yyyy, hh:mm a", transfer.date).toString();
+        transactionDateText.setText(dateFormat);
+        if (transfer.txid != null) {
+            transactionsHashButton.setVisibility(View.VISIBLE);
+            transactionsHashButton.setOnClickListener(v -> {
+                String networkEtherscanName = "";
+                if (Global.isTest()) {
+                    networkEtherscanName = "kovan.";
+                }
+                String url = String.format("https://%setherscan.io/tx/%s", networkEtherscanName, transfer.txid);
+
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            });
+        } else {
+            transactionsHashButton.setVisibility(View.GONE);
+        }
+        mActionBar.setTitle("History");
+
+
         guardiansRecyclerView.setHasFixedSize(true);
         guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
         validatorsTitle.setVisibility(View.GONE);

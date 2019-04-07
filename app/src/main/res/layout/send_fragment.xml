@@ -40,7 +40,7 @@
             android:id="@+id/destinationRequiredNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@android:color/holo_red_dark"
+            android:textColor="@color/error_red"
             android:textSize="12sp"
             android:visibility="gone" />
 
@@ -172,7 +172,7 @@
                 android:id="@+id/amountRequiredNote"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/holo_red_dark"
+                android:textColor="@color/error_red"
                 android:textSize="12sp"
                 android:visibility="visible"
                 tools:text="Please enter amount" />

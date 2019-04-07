@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
  * represent past (completed) transfer operation
  */
 public class Transfer {
-    public String id, txid, valueString, coin, usd, remoteAddress, comment;
+    public String id, txid, valueString, coin, usd, remoteAddress, comment, pendingApproval;
     public Date date;
 
     @JsonIgnore
@@ -29,7 +29,7 @@ public class Transfer {
     @JsonIgnore
     public List<String> approvals;
 
-    public Transfer(String id, String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, TokenInfo token, ApprovalState state, String cancelledBy, List<String> approvals) {
+    public Transfer(String id, String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, String pendingApproval, TokenInfo token, ApprovalState state, String cancelledBy, List<String> approvals) {
         this.id = id;
         this.txid = txid;
         this.state = state;
@@ -42,6 +42,7 @@ public class Transfer {
         this.token = token;
         this.cancelledBy = cancelledBy;
         this.approvals = approvals;
+        this.pendingApproval = pendingApproval;
     }
 
     @Override

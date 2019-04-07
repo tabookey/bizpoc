@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         TransactionDetailsFragment tdf = new TransactionDetailsFragment();
         tdf.mExchangeRates = exchangeRates;
         tdf.guardians = guardians;
-        tdf.ethWallet = ethWallet;
+        tdf.mBitgoWallet = ethWallet;
         if (item instanceof PendingApproval) {
             tdf.pendingApproval = (PendingApproval) item;
         } else if (item instanceof Transfer) {

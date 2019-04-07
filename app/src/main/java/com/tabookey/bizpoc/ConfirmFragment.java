@@ -198,7 +198,7 @@ public class ConfirmFragment extends Fragment {
         tdf.showSuccessPopup = true;
         tdf.mExchangeRates = mExchangeRates;
         tdf.guardians = guardians;
-        tdf.ethWallet = mBitgoWallet;
+        tdf.mBitgoWallet = mBitgoWallet;
         mActivity.runOnUiThread(() -> {
             FragmentManager fragmentManager = getFragmentManager();
             if (fragmentManager == null) {

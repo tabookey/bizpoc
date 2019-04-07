@@ -325,7 +325,7 @@ public class SendFragment extends Fragment {
 
     private void highlightEditText(EditText editText, boolean on){
         if (on){
-            editText.getBackground().setColorFilter(getResources().getColor(R.color.red_500_primary, null), PorterDuff.Mode.SRC_ATOP);
+            editText.getBackground().setColorFilter(getResources().getColor(R.color.error_red, null), PorterDuff.Mode.SRC_ATOP);
         }
         else {
             editText.getBackground().clearColorFilter();
