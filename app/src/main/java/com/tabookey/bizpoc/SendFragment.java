@@ -32,6 +32,7 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -229,7 +230,12 @@ public class SendFragment extends Fragment {
             if (b.coinName.toLowerCase().equals(selectedToken.getTokenCode())) {
                 maximumTransferValue = b.getValue();
                 maximumAmountButton.setOnClickListener(v ->
-                        tokenSendAmountEditText.setText(String.format(Locale.US, getTokenFormat(), maximumTransferValue))
+                        {
+                            BigDecimal maxAmountDec = new BigDecimal(maximumTransferValue);
+                            BigDecimal roundOff = maxAmountDec.setScale(getTokenDecimalOurs(), BigDecimal.ROUND_DOWN);
+                            String amountText = roundOff.toPlainString();
+                            tokenSendAmountEditText.setText(amountText);
+                        }
                 );
                 break;
             }
@@ -391,6 +397,12 @@ public class SendFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    private int getTokenDecimalOurs() {
+        if (selectedToken.decimalPlaces >= 3){
+            return 3;
+        }
+        return selectedToken.decimalPlaces;
+    }
     private String getTokenFormat() {
         switch (selectedToken.decimalPlaces) {
             case 0:

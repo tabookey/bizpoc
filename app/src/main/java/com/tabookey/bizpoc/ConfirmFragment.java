@@ -27,7 +27,6 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.impl.Utils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ConfirmFragment extends Fragment {
+    private static final String TAG = "ConfirmFragment";
     private static final String PREFS_TXID_COUNTER = "prefs_txid_counter";
     private AppCompatActivity mActivity;
     TextView recipientAddress;
@@ -187,10 +187,42 @@ public class ConfirmFragment extends Fragment {
     }
 
     private void handleSenderException(Throwable e) {
-        if (e.getMessage().contains("the network is offline")) {
+        String message = e.getMessage();
+        if (message.contains("the network is offline")) {
             Utils.showErrorDialog(getActivity(), "No connection", "Please check your internet connection and try again later");
+        } else if (message.contains("Error: incorrect otp")) {
+            Utils.showErrorDialog(getActivity(), "Wrong Yubikey", "The Yubikey dongle you have used is not valid.");
+        } else if (message.contains("Error: insufficient balance")) {
+            Utils.showErrorDialog(getActivity(), "Insufficient balance", "Your current balance seems to be lower than the amount that you have requested");
+        } else if (message.contains("Error: invalid address")) {
+            Utils.showErrorDialog(getActivity(), "Invalid address", "The destination address that you have specified is incorrect");
+        } else if (message.contains("amount should match pattern") || message.contains("amount should be integer")) {
+            Utils.showErrorDialog(getActivity(), "Wrong amount format", "The amount that you have specified does not correspond to the selected asset type");
         } else {
-            Utils.showErrorDialog(getActivity(), "Transaction failed!", e.getMessage());
+            Utils.showErrorDialog(getActivity(), "Transaction failed!", message);
+            new Thread(() -> sendFailureToTabookeySlack(e)).start();
+        }
+    }
+
+    private void sendFailureToTabookeySlack(Throwable e) {
+        try {
+
+
+            class Message {
+                @SuppressWarnings("unused")
+                public String text;
+
+                @SuppressWarnings("WeakerAccess")
+                public Message(String text) {
+                    this.text = text;
+                }
+            }
+            String response = Global.http.sendRequestNotBitgo("https://xycdl3ahgj.execute-api.eu-west-2.amazonaws.com/DEBUG", new Message("failed: " + e.getMessage()), "POST");
+            if (!response.equals("ok")) {
+                Log.e(TAG, "Failed to report a problem to the dev channel!");
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 

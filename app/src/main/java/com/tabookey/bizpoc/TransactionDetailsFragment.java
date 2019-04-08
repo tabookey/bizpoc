@@ -117,6 +117,7 @@ public class TransactionDetailsFragment extends Fragment {
         super.onResume();
         new Handler().post(() -> {
             if (showSuccessPopup) {
+                showSuccessPopup = false;
                 mActionBar.hide();
                 successPopup.setVisibility(View.VISIBLE);
                 greatThanksButton.setOnClickListener(v -> {
@@ -177,7 +178,7 @@ public class TransactionDetailsFragment extends Fragment {
         if (!optionalApproval.isPresent()) {
             // two possible reasons: transaction approved or declined.
             List<Transfer> transfers = mBitgoWallet.getTransfers(0);
-            Optional<Transfer> optionalTransfer = transfers.stream().filter(a -> a.pendingApproval.equals(approvalId)).findAny();
+            Optional<Transfer> optionalTransfer = transfers.stream().filter(a -> a.pendingApproval != null && a.pendingApproval.equals(approvalId)).findAny();
             if (optionalTransfer.isPresent()) {
                 transfer = optionalTransfer.get();
                 pendingApproval = null;

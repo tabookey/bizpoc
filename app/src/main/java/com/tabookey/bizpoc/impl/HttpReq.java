@@ -103,4 +103,38 @@ public class HttpReq {
         }
     }
 
+    public String sendRequestNotBitgo(String api, Object data, String method ) {
+        Request.Builder bld = new Request.Builder();
+
+        bld.url(api);
+        if ( data!=null ) {
+            RequestBody body = RequestBody.create(MediaType.parse("application/json"), toJson(data));
+            bld.method(method==null ? "PUT":method, body);
+        }
+
+        try {
+            Request request = bld.build();
+            if ( debug ) {
+                Log.d(TAG, ">" + request.method() + " " + request.url());
+                for ( String s : request.headers().names() ) {
+                    Log.d(TAG, "> "+s+": "+request.header(s));
+                }
+            }
+            Response res = client.newCall(request).execute();
+            String str = res.body().string();
+            if ( debug )
+                Log.d(TAG, "< "+str);
+            if ( str.contains("\"error\"") ) {
+                JsonNode errdecs = fromJson(str, JsonNode.class);
+                throw new BitgoError(errdecs.get("name").asText(), errdecs.get("error").asText());
+            }
+            return str;
+        } catch (Exception e) {
+            Log.e(TAG, "sendRequest: ex", e);
+            if ( e instanceof RuntimeException)
+                throw (RuntimeException)e;
+            throw new RuntimeException(e);
+        }
+    }
+
 }
