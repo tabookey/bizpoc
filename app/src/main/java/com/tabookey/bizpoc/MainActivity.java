@@ -94,9 +94,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     OtpDialogFragment otpDialogfragment;
 
-    public void promptOtp(ConfirmFragment.PasswordCallback callback) {
+    public void promptOtp(ConfirmFragment.PasswordCallback callback, Runnable cancelCallback) {
         otpDialogfragment = new OtpDialogFragment();
         otpDialogfragment.callback = callback;
+        otpDialogfragment.cancelCallback = cancelCallback;
         FragmentManager fragmentManager = getSupportFragmentManager();
         if (fragmentManager == null) {
             return;

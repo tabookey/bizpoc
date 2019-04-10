@@ -19,10 +19,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.infideap.blockedittext.BlockEditText;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.impl.Utils;
+import com.tabookey.bizpoc.utils.Crypto;
 
 import java.util.Arrays;
 
@@ -37,7 +40,10 @@ public class ImportApiKeyFragment extends Fragment {
     String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
     private AppCompatActivity mActivity;
     private TextView testNameTextView;
+    private View activationKeyView;
     private Button scanApiKeyButton;
+    private Button submitButton;
+    private BlockEditText blockEditText;
 
     public static class TokenPassword {
         @SuppressWarnings("WeakerAccess")
@@ -65,10 +71,16 @@ public class ImportApiKeyFragment extends Fragment {
         }
 
         scanApiKeyButton = view.findViewById(R.id.scanApiKeyButton);
+        submitButton = view.findViewById(R.id.submitButton);
         Button useTestCredentialsButton = view.findViewById(R.id.useTestCredentialsButton);
+        if (BuildConfig.DEBUG) {
+            useTestCredentialsButton.setVisibility(View.VISIBLE);
+        }
         TextView fingerprintTextView = view.findViewById(R.id.fingerprintEnabledTextView);
         testNameTextView = view.findViewById(R.id.testNameTextView);
+        activationKeyView = view.findViewById(R.id.activationKeyView);
         progressBar = view.findViewById(R.id.progressBar);
+        blockEditText = view.findViewById(R.id.blockEditText);
         FingerprintManager fingerprintManager = (FingerprintManager) activity.getSystemService(Context.FINGERPRINT_SERVICE);
         if (fingerprintManager == null || !fingerprintManager.isHardwareDetected()) {
             fingerprintTextView.setText("Device doesn't support fingerprint authentication");
@@ -80,11 +92,57 @@ public class ImportApiKeyFragment extends Fragment {
         scanApiKeyButton.setOnClickListener(v -> {
             startActivityForResult(new Intent(activity, ScanActivity.class), 1);
         });
+        submitButton.setOnClickListener(v -> {
+            new Thread(() -> {
+                class Resp {
+                    public String encryptedCredentials;
+                }
+                String resp = Global.http.sendRequestNotBitgo("", null, "GET");
+                Resp fromJson = Utils.fromJson(resp, Resp.class);
+                try {
+                    String activationKey = blockEditText.getText();
+                    byte[] scrypt = Crypto.scrypt(activationKey, "pepper");
+                    String decryptedInfo = Crypto.decrypt(fromJson.encryptedCredentials, new String(scrypt));
+
+                    mActivity.runOnUiThread(() -> {
+                        Toast.makeText(mActivity, decryptedInfo, Toast.LENGTH_SHORT).show();
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        });
         useTestCredentialsButton.setOnClickListener(v -> {
             Intent data = new Intent();
             data.putExtra(ScanActivity.SCANNED_STRING_EXTRA, defApi);
             onActivityResult(0, Activity.RESULT_OK, data);
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity == null) {
+            return;
+        }
+        activity.promptOtp((otp) -> new Thread(() ->
+                {
+                    class Resp {
+                        public String result;
+                    }
+                    String resultCheckBitgo = Global.http.sendRequestNotBitgo("", null, "GET");
+                    Resp resp = Utils.fromJson(resultCheckBitgo, Resp.class);
+                    if (resp.result.equals("ok")) {
+                        mActivity.runOnUiThread(() -> {
+                            activationKeyView.setVisibility(View.VISIBLE);
+                        });
+                    }
+                }).start(),
+                () -> {
+                    mActivity.finish();
+                });
     }
 
     @Override
@@ -104,13 +162,13 @@ public class ImportApiKeyFragment extends Fragment {
             new Thread(() -> {
                 try {
                     TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
-                    Global.setIsTest( !tokenPassword.prod );
+                    Global.setIsTest(!tokenPassword.prod);
                     Global.setAccessToken(tokenPassword.token);
                     String name = Global.ent.getMe().name;
                     IBitgoWallet wallet = Global.ent.getMergedWallets().get(0);
 
-                    if ( !wallet.checkPassphrase(tokenPassword.password) )
-                        throw new RuntimeException("Invalid QRcode\nwallet: "+wallet.getLabel()+"\nUser: "+name);
+                    if (!wallet.checkPassphrase(tokenPassword.password))
+                        throw new RuntimeException("Invalid QRcode\nwallet: " + wallet.getLabel() + "\nUser: " + name);
                     mActivity.runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
                         scanApiKeyButton.setVisibility(View.GONE);

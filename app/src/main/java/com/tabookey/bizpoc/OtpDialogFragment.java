@@ -42,6 +42,7 @@ public class OtpDialogFragment extends DialogFragment {
     private View mFingerprintContent;
 
     ConfirmFragment.PasswordCallback callback;
+    Runnable cancelCallback;
 
     private ImageView mIcon;
     private TextView mErrorTextView;
@@ -55,6 +56,7 @@ public class OtpDialogFragment extends DialogFragment {
         setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Material_Light_Dialog);
         //debug mode: if user doesn't have yubikey, use totp instead..
         if (BuildConfig.DEBUG && Global.isTest() &&
+                Global.ent != null &&
                 !Global.ent.getMe().hasOtp(BitgoUser.OtpType.yubikey) &&
                 Global.ent.getMe().hasOtp(BitgoUser.OtpType.totp)) {
             new Thread(() -> {
@@ -74,7 +76,13 @@ public class OtpDialogFragment extends DialogFragment {
         getDialog().setTitle("2-Factor authentication");
         View v = inflater.inflate(R.layout.otp_dialog_container, container, false);
         mCancelButton = v.findViewById(R.id.cancel_button);
-        mCancelButton.setOnClickListener(view -> dismiss());
+        mCancelButton.setOnClickListener(view -> {
+                    if (cancelCallback != null) {
+                        cancelCallback.run();
+                    }
+                    dismiss();
+                }
+        );
         mIcon = v.findViewById(R.id.fingerprint_icon);
         mErrorTextView = v.findViewById(R.id.fingerprint_status);
         mFingerprintContent = v.findViewById(R.id.fingerprint_container);

@@ -249,7 +249,7 @@ public class ConfirmFragment extends Fragment {
         if (activity == null) {
             return;
         }
-        activity.promptOtp((otp) -> sendTransaction(password, otp));
+        activity.promptOtp((otp) -> sendTransaction(password, otp), null);
     }
 
 

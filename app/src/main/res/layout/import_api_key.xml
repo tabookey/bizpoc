@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -22,7 +23,30 @@
             android:text="Scan QR Code"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
-            android:textSize="30sp" />
+            android:textSize="30sp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/activationKeyView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:orientation="vertical">
+
+            <com.infideap.blockedittext.BlockEditText
+                android:id="@+id/blockEditText"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                app:bet_defaultLength="4"
+                app:bet_inputType="Integer"
+                app:bet_numberOfBlock="4" />
+
+            <Button
+                android:id="@+id/submitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Submit" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/fingerprintEnabledTextView"
@@ -46,7 +70,8 @@
             android:layout_gravity="bottom"
             android:background="@android:color/transparent"
             android:gravity="bottom"
-            android:text="USE TEST API KEY" />
+            android:text="USE TEST API KEY"
+            android:visibility="gone" />
 
     </LinearLayout>
 

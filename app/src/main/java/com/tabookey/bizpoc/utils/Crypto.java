@@ -1,4 +1,4 @@
-package com.tabookey.bizpoc.crypto;
+package com.tabookey.bizpoc.utils;
 
 import org.bouncycastle.crypto.generators.SCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
