@@ -24,6 +24,15 @@ public class Crypto {
         public String mode,adata,cipher,salt,ct;
     }
     static private Base64.Decoder base64decoder = Base64.getDecoder();
+    static private Base64.Encoder base64encoder = Base64.getEncoder();
+
+    public static byte[] fromBase64(String s) {
+        return base64decoder.decode(s);
+    }
+
+    public static String toBase64(byte[]b) {
+        return new String(base64encoder.encode(b));
+    }
 
     //from: https://blog.degering.name/posts/java-sjcl
     public static String decrypt(String encodedJSON, String password) throws Exception {
