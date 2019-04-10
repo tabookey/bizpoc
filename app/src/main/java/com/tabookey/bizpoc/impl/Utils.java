@@ -1,6 +1,8 @@
 package com.tabookey.bizpoc.impl;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
@@ -13,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -102,7 +105,7 @@ public class Utils {
         dialog.setTitle(title);
         dialog.setMessage(errorMessage);
         dialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-               (d, w) -> d.dismiss());
+                (d, w) -> d.dismiss());
         dialog.show();
 
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
@@ -144,8 +147,20 @@ public class Utils {
         listView.setLayoutParams(params);
     }
 
-    public static String toMoneyFormat(double amount){
+    public static String toMoneyFormat(double amount) {
         NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.US);
         return formatter.format(amount);
+    }
+
+    public static void makeButtonCopyable(Button button, Context context) {
+        button.setOnClickListener(b ->
+        {
+            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null) {
+                ClipData clip = ClipData.newPlainText("", button.getText());
+                clipboard.setPrimaryClip(clip);
+            }
+            Toast.makeText(context, "Address copied to the clipboard", Toast.LENGTH_LONG).show();
+        });
     }
 }

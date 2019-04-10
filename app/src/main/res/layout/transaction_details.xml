@@ -49,10 +49,14 @@
                 android:layout_marginTop="16dp"
                 android:text="From" />
 
-            <TextView
-                android:id="@+id/senderAddressTextView"
+            <Button
+                android:id="@+id/senderAddressButton"
+                android:textAllCaps="false"
+                android:textStyle="normal"
+                android:fontFamily="Roboto"
+                android:background="@android:color/transparent"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="20dp"
                 android:textColor="@android:color/black"
                 tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
@@ -63,10 +67,14 @@
                 android:layout_marginTop="16dp"
                 android:text="Recipient Address" />
 
-            <TextView
-                android:id="@+id/recipientAddressTextView"
+            <Button
+                android:id="@+id/recipientAddressButton"
+                android:textAllCaps="false"
+                android:textStyle="normal"
+                android:fontFamily="Roboto"
+                android:background="@android:color/transparent"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="20dp"
                 android:textColor="@android:color/black"
                 tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 

@@ -50,13 +50,13 @@ public class TransactionDetailsFragment extends Fragment {
     IBitgoWallet mBitgoWallet;
 
     View progressBarView;
-    TextView senderAddressTextView;
+    Button senderAddressButton;
     TextView senderTitleTextView;
     TextView recipientTitleTextView;
     TextView guardiansTitleTextView;
     RecyclerView guardiansRecyclerView;
 
-    TextView recipientAddressTextView;
+    Button recipientAddressButton;
     TextView sendAmountTextView;
     TextView transactionCommentTextView;
     TextView transactionDateText;
@@ -79,8 +79,8 @@ public class TransactionDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.transaction_details, container, false);
 
-        senderAddressTextView = view.findViewById(R.id.senderAddressTextView);
-        recipientAddressTextView = view.findViewById(R.id.recipientAddressTextView);
+        senderAddressButton = view.findViewById(R.id.senderAddressButton);
+        recipientAddressButton = view.findViewById(R.id.recipientAddressButton);
         sendAmountTextView = view.findViewById(R.id.sendAmount);
         senderTitleTextView = view.findViewById(R.id.senderTitleTextView);
         recipientTitleTextView = view.findViewById(R.id.recipientTitleTextView);
@@ -97,6 +97,9 @@ public class TransactionDetailsFragment extends Fragment {
         greatThanksButton = view.findViewById(R.id.greatThanksButton);
         popupImage = view.findViewById(R.id.popupImage);
         popupTitle = view.findViewById(R.id.popupTitle);
+
+        Utils.makeButtonCopyable(recipientAddressButton, mActivity);
+        Utils.makeButtonCopyable(senderAddressButton, mActivity);
         return view;
     }
 
@@ -245,11 +248,11 @@ public class TransactionDetailsFragment extends Fragment {
             average24h = exchangeRate.average24h;
         }
         sendAmountTextView.setText(String.format(Locale.US, "%.3f %s | %s USD", etherDouble, pendingApproval.token.getTokenCode().toUpperCase(), Utils.toMoneyFormat(etherDouble * average24h)));
-        recipientAddressTextView.setText(pendingApproval.recipientAddr);
+        recipientAddressButton.setText(pendingApproval.recipientAddr);
         transactionCommentTextView.setText(pendingApproval.comment);
         senderTitleTextView.setVisibility(View.GONE);
-        senderAddressTextView.setVisibility(View.GONE);
-        senderAddressTextView.setText(mBitgoWallet.getAddress());
+        senderAddressButton.setVisibility(View.GONE);
+        senderAddressButton.setText(mBitgoWallet.getAddress());
     }
 
     private void newRefresher() {
@@ -343,8 +346,8 @@ public class TransactionDetailsFragment extends Fragment {
         boolean isOutgoingTx = transfer.valueString.contains("-");
         if (isOutgoingTx) {
             senderTitleTextView.setVisibility(View.GONE);
-            senderAddressTextView.setVisibility(View.GONE);
-            recipientAddressTextView.setText(transfer.remoteAddress);
+            senderAddressButton.setVisibility(View.GONE);
+            recipientAddressButton.setText(transfer.remoteAddress);
         } else {
 
             guardiansTitleTextView.setVisibility(View.GONE);
@@ -355,10 +358,11 @@ public class TransactionDetailsFragment extends Fragment {
 
 
             recipientTitleTextView.setVisibility(View.GONE);
-            recipientAddressTextView.setVisibility(View.GONE);
+            recipientAddressButton.setVisibility(View.GONE);
 
             senderTitleTextView.setVisibility(View.VISIBLE);
-            senderAddressTextView.setText(transfer.remoteAddress);
+            senderAddressButton.setVisibility(View.VISIBLE);
+            senderAddressButton.setText(transfer.remoteAddress);
         }
     }
 
