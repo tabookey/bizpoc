@@ -47,7 +47,7 @@ class MergedWallet implements IBitgoWallet {
 
         MergedWalletsData.WalletData data = mergedData.wallets[0];
         coins.add(data.coin);
-        balances.put(data.coin, data.balanceString);
+        balances.put(data.coin, data.balanceString+Wallet.balanceExtraDigits());
 
         for (String tokenName : data.tokens.keySet()) {
             MergedWalletsData.TokenData token = data.tokens.get(tokenName);
@@ -58,7 +58,7 @@ class MergedWallet implements IBitgoWallet {
                 continue;
 
             coins.add(tokenName);
-            balances.put(tokenName, token.balanceString);
+            balances.put(tokenName, token.balanceString+Wallet.balanceExtraDigits());
         }
     }
 
@@ -157,7 +157,7 @@ class MergedWallet implements IBitgoWallet {
                 }
             }
             return new Transfer(log.id,
-                    null, log.data.amount, log.coin, null, log.date, log.getRecipient(), null, log.target, ent.getToken(log.coin),
+                    null, log.data.amount + Wallet.balanceExtraDigits(), log.coin, null, log.date, log.getRecipient(), null, log.target, ent.getToken(log.coin),
                     log.user.equals(Global.ent.getMe().id) ? ApprovalState.CANCELLED : ApprovalState.DECLINED, log.user, approvals);
         }).collect(Collectors.toList());
     }
@@ -182,12 +182,12 @@ class MergedWallet implements IBitgoWallet {
         Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (Wallet.TransferResp.Trans t : resp.transfers) {
-            Transfer tx = new Transfer(t.id, t.txid, t.valueString, t.coin, t.usd, t.date, null, t.comment, t.pendingApproval, ent.getToken(t.coin), ApprovalState.APPROVED, null, new ArrayList<>());
+            Transfer tx = new Transfer(t.id, t.txid, t.valueString + Wallet.balanceExtraDigits(), t.coin, t.usd, t.date, null, t.comment, t.pendingApproval, ent.getToken(t.coin), ApprovalState.APPROVED, null, new ArrayList<>());
             // entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
             // looking for the other one, with its value different (actually, negative) of ours.
             for (Wallet.TransferResp.Entry e : t.entries) {
-                if (!e.valueString.equals(tx.valueString)) {
+                if (!e.valueString.equals(t.valueString)) {
                     tx.remoteAddress = e.address;
                     break;
                 }
@@ -244,7 +244,7 @@ class MergedWallet implements IBitgoWallet {
             p.coin = r.coin;
             p.creator = getUserById(r.creator);
             p.recipientAddr = r.info.transactionRequest.recipients[0].address;
-            p.amount = r.info.transactionRequest.recipients[0].amount;
+            p.amount = r.info.transactionRequest.recipients[0].amount + Wallet.balanceExtraDigits();
             p.comment = r.info.transactionRequest.comment;
             p.token = Global.ent.getTokens().get(p.coin);
             if (r.resolvers != null) {

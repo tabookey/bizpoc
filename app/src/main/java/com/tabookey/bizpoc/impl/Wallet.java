@@ -3,6 +3,7 @@ package com.tabookey.bizpoc.impl;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tabookey.bizpoc.BuildConfig;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
@@ -21,7 +22,10 @@ import kotlin.NotImplementedError;
  * single-coin wallet.
  * This is the low-level coin API.
  */
-class Wallet implements IBitgoWallet {
+public class Wallet implements IBitgoWallet {
+
+    public static int balanceExtraDigits=0;
+
     private final BitgoEnterprise ent;
     private final String balanceString;
     private final CoinSender coinSender;
@@ -44,7 +48,7 @@ class Wallet implements IBitgoWallet {
         this.id = walletData.id;
         this.label = walletData.label;
         this.approvalsRequired = walletData.approvalsRequired;
-        this.balanceString = walletData.balanceString;
+        this.balanceString = walletData.balanceString + balanceExtraDigits();
         this.address = walletData.coinSpecific.baseAddress;
         this.guardians = new ArrayList<>();
         for (WalletUser user : walletData.users) {
@@ -64,6 +68,12 @@ class Wallet implements IBitgoWallet {
         }
 //        guardians.add(new BitgoUser("", "did@approve", "Test test one"));
         coinSender = new CoinSender(Global.applicationContext, ent.http);
+    }
+
+    public static String balanceExtraDigits() {
+        if ( !BuildConfig.DEBUG )
+            return "";
+        return "00000000000000000000".substring(0,balanceExtraDigits);
     }
 
     @Override
@@ -90,7 +100,7 @@ class Wallet implements IBitgoWallet {
     public String getBalance(String coin) {
         if (!coin.equals(this.coin))
             throw new RuntimeException("invalid coin " + coin + ". Wallet only has " + this.coin);
-        return balanceString;
+        return balanceString + balanceExtraDigits();
     }
 
     @Override

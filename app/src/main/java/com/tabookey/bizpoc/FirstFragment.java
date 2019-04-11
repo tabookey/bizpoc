@@ -1,5 +1,6 @@
 package com.tabookey.bizpoc;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -27,9 +28,10 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
+import com.tabookey.bizpoc.impl.Wallet;
 
-import java.io.InterruptedIOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -80,6 +82,21 @@ public class FirstFragment extends Fragment {
         retryView = view.findViewById(R.id.retryView);
         retryButton.setOnClickListener(v -> fillWindow(true));
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
+        if ( BuildConfig.DEBUG ) {
+            balanceInDollarsText.setOnLongClickListener(a->{
+                String[] values = {"0", "1", "3", "5", "7", "9"};
+                int currentItem = Arrays.asList(values).indexOf(String.valueOf(Wallet.balanceExtraDigits));
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("Balance Suffix extra digits")
+                        .setSingleChoiceItems(values, currentItem,(dialog, which)->{
+                            Wallet.balanceExtraDigits = Integer.parseInt(values[which]);
+                            triggerRefresh();
+                            dialog.dismiss();
+                        })
+                        .show();
+                return true;
+            });
+        }
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
             sf.mExchangeRates = mExchangeRates;
@@ -113,6 +130,12 @@ public class FirstFragment extends Fragment {
 
     Thread refresher;
 
+    //trigger refresher thread to update now..
+    public void triggerRefresh() {
+        synchronized (refresher) {
+            refresher.notify();
+        }
+    }
     @Override
     public void onResume() {
         super.onResume();
@@ -123,7 +146,9 @@ public class FirstFragment extends Fragment {
             Log.e(TAG, "refresher thread started, ID:" + refresher.getId());
             while (!Thread.interrupted()) {
                 try {
-                    Thread.sleep(10000);
+                    synchronized (refresher) {
+                        refresher.wait(10000);
+                    }
                     Global.ent.update(() -> {
                         //TODO: can't be really used, since it TERC/TBST areupdated on EACH call (with random data, probably...)
                         Log.d("TAG", "========= ENTERPRISE CHANGE");
