@@ -3,6 +3,8 @@ package com.infideap.blockedittext;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -35,6 +37,7 @@ import com.app.infideap.stylishwidget.util.Utils;
 import com.app.infideap.stylishwidget.view.AEditText;
 import com.app.infideap.stylishwidget.view.ATextView;
 
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -387,6 +390,8 @@ public class BlockEditText extends FrameLayout {
         for (; i < editTexts.size(); i++) {
             AEditText editText = editTexts.get(i);
             editText.setText(null);
+            editText.setTextStyle(Typeface.BOLD);
+            editText.setTextColor(Color.argb(255, 12, 116, 137));
         }
         if (sequence != null) {
             String text = String.valueOf(sequence);

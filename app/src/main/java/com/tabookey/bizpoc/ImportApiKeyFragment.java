@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,16 +66,12 @@ public class ImportApiKeyFragment extends Fragment {
             return;
         }
 
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, 11);
-        }
-
         scanApiKeyButton = view.findViewById(R.id.scanApiKeyButton);
         submitButton = view.findViewById(R.id.submitButton);
         Button useTestCredentialsButton = view.findViewById(R.id.useTestCredentialsButton);
         if (BuildConfig.DEBUG) {
             useTestCredentialsButton.setVisibility(View.VISIBLE);
+            scanApiKeyButton.setVisibility(View.VISIBLE);
         }
         TextView fingerprintTextView = view.findViewById(R.id.fingerprintEnabledTextView);
         testNameTextView = view.findViewById(R.id.testNameTextView);
@@ -90,6 +87,11 @@ public class ImportApiKeyFragment extends Fragment {
             fingerprintTextView.setText("User hasn't enrolled any fingerprints to authenticate with");
         }
         scanApiKeyButton.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, 11);
+                return;
+            }
             startActivityForResult(new Intent(activity, ScanActivity.class), 1);
         });
         submitButton.setOnClickListener(v -> {
@@ -150,7 +152,14 @@ public class ImportApiKeyFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Activity) {
             mActivity = (AppCompatActivity) context;
+            mActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     }
 
     @Override
@@ -185,7 +194,7 @@ public class ImportApiKeyFragment extends Fragment {
 
                     Thread.sleep(800);
                     mActivity.runOnUiThread(() -> {
-                        FirstFragment f = new FirstFragment();
+                        WoohooFragment f = new WoohooFragment();
                         mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, f).commit();
                     });
                 } catch (Exception e) {

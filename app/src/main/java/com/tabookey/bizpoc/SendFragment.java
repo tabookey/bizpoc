@@ -1,17 +1,21 @@
 package com.tabookey.bizpoc;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -108,7 +112,14 @@ public class SendFragment extends Fragment {
                 destinationEditText.setText(pasteData);
             }
         });
-        scanDestinationButton.setOnClickListener(v -> startActivityForResult(new Intent(mActivity, ScanActivity.class), 1));
+        scanDestinationButton.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.CAMERA}, 11);
+                return;
+            }
+            startActivityForResult(new Intent(mActivity, ScanActivity.class), 1);
+        });
         tokenSendAmountEditText = view.findViewById(R.id.tokenSendAmountEditText);
         dollarEquivalent = view.findViewById(R.id.dollarEquivalent);
         tokenSendAmountEditText.setPaintFlags(tokenSendAmountEditText.getPaintFlags() & (~Paint.UNDERLINE_TEXT_FLAG));
@@ -276,7 +287,7 @@ public class SendFragment extends Fragment {
 
         String destination = destinationEditText.getText().toString();
         boolean isDestinationEntered = destination.length() != 0;
-        if (!isDestinationEntered){
+        if (!isDestinationEntered) {
             highlightEditText(destinationEditText, true);
             destinationRequiredNote.setVisibility(View.VISIBLE);
             destinationRequiredNote.setText("Please enter address");
@@ -329,11 +340,10 @@ public class SendFragment extends Fragment {
         return isAmountValid && isDestinationValid && isDestinationChecksummed;
     }
 
-    private void highlightEditText(EditText editText, boolean on){
-        if (on){
+    private void highlightEditText(EditText editText, boolean on) {
+        if (on) {
             editText.getBackground().setColorFilter(getResources().getColor(R.color.error_red, null), PorterDuff.Mode.SRC_ATOP);
-        }
-        else {
+        } else {
             editText.getBackground().clearColorFilter();
         }
     }
@@ -398,11 +408,12 @@ public class SendFragment extends Fragment {
     }
 
     private int getTokenDecimalOurs() {
-        if (selectedToken.decimalPlaces >= 3){
+        if (selectedToken.decimalPlaces >= 3) {
             return 3;
         }
         return selectedToken.decimalPlaces;
     }
+
     private String getTokenFormat() {
         switch (selectedToken.decimalPlaces) {
             case 0:
