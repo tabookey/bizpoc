@@ -4,49 +4,68 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@android:color/white"
         android:gravity="center"
         android:orientation="vertical">
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/activationKeyView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
+                    android:fontFamily="sans-serif-light"
+                    android:gravity="center_horizontal"
+                    android:text="Please submit the authentication\ncode supplied by your guardian"
+                    android:textColor="@color/text_color"
+                    android:textSize="18sp"
+                    android:textStyle="normal" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp" />
+
+                <com.infideap.blockedittext.BlockEditText
+                    android:id="@+id/blockEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_weight="1"
+                    android:theme="@style/EditTextTheme"
+                    app:bet_defaultLength="4"
+                    app:bet_inputType="Integer"
+                    app:bet_numberOfBlock="4"
+                    app:bet_textSize="12sp" />
+
+            </LinearLayout>
+        </ScrollView>
 
         <Button
-            android:id="@+id/scanApiKeyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/colorPrimary"
-            android:text="Scan QR Code"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:textSize="30sp"
-            android:visibility="gone" />
-
-        <LinearLayout
-            android:id="@+id/activationKeyView"
+            android:id="@+id/submitButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:orientation="vertical">
-
-            <com.infideap.blockedittext.BlockEditText
-                android:id="@+id/blockEditText"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                app:bet_defaultLength="4"
-                app:bet_inputType="Integer"
-                app:bet_numberOfBlock="4" />
-
-            <Button
-                android:id="@+id/submitButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Submit" />
-        </LinearLayout>
+            android:layout_height="70dp"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center"
+            android:background="@color/colorPrimary"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:text="Verify"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/fingerprintEnabledTextView"
@@ -64,16 +83,28 @@
             android:layout_weight="1" />
 
         <Button
-            android:id="@+id/useTestCredentialsButton"
+            android:id="@+id/scanApiKeyButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            android:layout_above="@+id/useTestCredentialsButton"
             android:background="@android:color/transparent"
             android:gravity="bottom"
+            android:text="Scan QR Code"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/useTestCredentialsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="60dp"
+            android:layout_gravity="bottom"
+            android:background="@android:color/transparent"
             android:text="USE TEST API KEY"
             android:visibility="gone" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
     <FrameLayout
         android:id="@+id/progressBar"
