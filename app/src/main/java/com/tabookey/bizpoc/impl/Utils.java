@@ -39,6 +39,8 @@ import static com.bumptech.glide.util.Preconditions.checkArgument;
 
 public class Utils {
 
+    public static final Object NBSP = "\u00a0";
+
     public static String getDayOfMonthSuffix(Date date) {
         SimpleDateFormat formatDayOfMonth = new SimpleDateFormat("d", Locale.US);
         int n = Integer.parseInt(formatDayOfMonth.format(date));

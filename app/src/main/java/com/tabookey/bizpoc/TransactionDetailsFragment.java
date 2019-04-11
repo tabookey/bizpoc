@@ -39,6 +39,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.tabookey.bizpoc.impl.Utils.NBSP;
+
 public class TransactionDetailsFragment extends Fragment {
     private static final String TAG = "DetailsFragment";
 
@@ -247,7 +249,7 @@ public class TransactionDetailsFragment extends Fragment {
         if (exchangeRate != null) {
             average24h = exchangeRate.average24h;
         }
-        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s | %s USD", etherDouble, pendingApproval.token.getTokenCode().toUpperCase(), Utils.toMoneyFormat(etherDouble * average24h)));
+        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s | %s"+NBSP+"USD", etherDouble, pendingApproval.token.getTokenCode().toUpperCase(), Utils.toMoneyFormat(etherDouble * average24h)));
         recipientAddressButton.setText(pendingApproval.recipientAddr);
         transactionCommentTextView.setText(pendingApproval.comment);
         senderTitleTextView.setVisibility(View.GONE);
@@ -329,11 +331,11 @@ public class TransactionDetailsFragment extends Fragment {
         if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
             double dollarVal = Double.parseDouble(usd);
-            valueFormat += String.format(Locale.US, " | %s USD", Utils.toMoneyFormat(dollarVal));
+            valueFormat += String.format(Locale.US, " | %s"+NBSP+"USD", Utils.toMoneyFormat(dollarVal));
         } else {
             ExchangeRate exchangeRate = mExchangeRates.get(transfer.token.type);
             if (exchangeRate != null) {
-                valueFormat += String.format(Locale.US, " | %s USD", Utils.toMoneyFormat(value * exchangeRate.average24h));
+                valueFormat += String.format(Locale.US, " | %s"+NBSP+"USD", Utils.toMoneyFormat(value * exchangeRate.average24h));
             }
         }
         sendAmountTextView.setText(valueFormat);

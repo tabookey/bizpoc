@@ -37,7 +37,7 @@ public class ImportApiKeyFragment extends Fragment {
 
     private View progressBar;
     private SecretStorage secretStorage = new SecretStorage();
-    String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
+    private static String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
     private AppCompatActivity mActivity;
     private TextView testNameTextView;
     private View activationKeyView;
@@ -75,6 +75,11 @@ public class ImportApiKeyFragment extends Fragment {
         Button useTestCredentialsButton = view.findViewById(R.id.useTestCredentialsButton);
         if (BuildConfig.DEBUG) {
             useTestCredentialsButton.setVisibility(View.VISIBLE);
+            useTestCredentialsButton.setOnClickListener(v -> {
+                Intent data = new Intent();
+                data.putExtra(ScanActivity.SCANNED_STRING_EXTRA, defApi);
+                onActivityResult(0, Activity.RESULT_OK, data);
+            });
         }
         TextView fingerprintTextView = view.findViewById(R.id.fingerprintEnabledTextView);
         testNameTextView = view.findViewById(R.id.testNameTextView);
@@ -111,11 +116,6 @@ public class ImportApiKeyFragment extends Fragment {
                     e.printStackTrace();
                 }
             }).start();
-        });
-        useTestCredentialsButton.setOnClickListener(v -> {
-            Intent data = new Intent();
-            data.putExtra(ScanActivity.SCANNED_STRING_EXTRA, defApi);
-            onActivityResult(0, Activity.RESULT_OK, data);
         });
     }
 

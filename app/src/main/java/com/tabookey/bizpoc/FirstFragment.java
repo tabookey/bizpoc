@@ -36,7 +36,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import static com.tabookey.bizpoc.impl.Utils.NBSP;
+
 public class FirstFragment extends Fragment {
+
+    //&nbsp; - non-breaking whitespace.
 
     public static String TAG = "1frag";
 
@@ -272,7 +276,7 @@ public class FirstFragment extends Fragment {
                     }
                     TextView address = view.findViewById(R.id.addressText);
                     TextView owner = view.findViewById(R.id.ownerText);
-                    balanceInDollarsText.setText(String.format(Locale.US, "%s USD", Utils.toMoneyFormat(finalAssetsWorth)));
+                    balanceInDollarsText.setText(String.format(Locale.US, "%s"+NBSP+"USD", Utils.toMoneyFormat(finalAssetsWorth)));
                     address.setText(mBitgoWallet.getAddress());
                     owner.setText(String.format("%s's safe%s", Global.ent.getMe().name, Global.isTest() ? " (testnet)" : ""));
                     adapter = new BalancesAdapter(mActivity, 0, balances);
