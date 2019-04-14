@@ -17,7 +17,7 @@ import static com.tabookey.bizpoc.impl.Utils.toJson;
 public class HttpReq {
     public static final String TAG = "http";
 
-    boolean debug= BuildConfig.DEBUG;
+    static boolean debug= BuildConfig.DEBUG;
 
     static String testUrl = "https://test.bitgo.com";
 //    static String testUrl = "https://relay1.duckdns.org";
@@ -103,7 +103,29 @@ public class HttpReq {
         }
     }
 
-    public String sendRequestNotBitgo(String api, Object data, String method ) {
+    private static int fakeCount = 0;
+    public static String sendRequestNotBitgo(String api, Object data, String method ) {
+        if (api.equals("checkYubikeyExists")){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (++fakeCount < 2) {
+                return "{\"result\":\"sdfg\"}";
+            }
+            return "{\"result\":\"ok\"}";
+
+
+        }
+        if (api.equals("getEncodedCredentials")){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "{\"encodedCredentials\":{\"iv\":\"rafNW54Dgz0jyKpVi0N3LQ==\",\"v\":1,\"iter\":1000,\"ks\":128,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"xO8jBPNQbwI=\",\"ct\":\"8ZwCH2d0q86oWekVwH1YoZGENbA9gw==\"}}";
+        }
         Request.Builder bld = new Request.Builder();
 
         bld.url(api);
@@ -120,6 +142,8 @@ public class HttpReq {
                     Log.d(TAG, "> "+s+": "+request.header(s));
                 }
             }
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .build();
             Response res = client.newCall(request).execute();
             String str = res.body().string();
             if ( debug )

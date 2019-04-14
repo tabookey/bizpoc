@@ -189,17 +189,17 @@ public class ConfirmFragment extends Fragment {
     private void handleSenderException(Throwable e) {
         String message = e.getMessage();
         if (message.contains("the network is offline")) {
-            Utils.showErrorDialog(getActivity(), "No connection", "Please check your internet connection and try again later");
+            Utils.showErrorDialog(getActivity(), "No connection", "Please check your internet connection and try again later", null);
         } else if (message.contains("Error: incorrect otp")) {
-            Utils.showErrorDialog(getActivity(), "Wrong Yubikey", "The Yubikey dongle you have used is not valid.");
+            Utils.showErrorDialog(getActivity(), "Wrong Yubikey", "The Yubikey dongle you have used is not valid.", null);
         } else if (message.contains("Error: insufficient balance")) {
-            Utils.showErrorDialog(getActivity(), "Insufficient balance", "Your current balance seems to be lower than the amount that you have requested");
+            Utils.showErrorDialog(getActivity(), "Insufficient balance", "Your current balance seems to be lower than the amount that you have requested", null);
         } else if (message.contains("Error: invalid address")) {
-            Utils.showErrorDialog(getActivity(), "Invalid address", "The destination address that you have specified is incorrect");
+            Utils.showErrorDialog(getActivity(), "Invalid address", "The destination address that you have specified is incorrect", null);
         } else if (message.contains("amount should match pattern") || message.contains("amount should be integer")) {
-            Utils.showErrorDialog(getActivity(), "Wrong amount format", "The amount that you have specified does not correspond to the selected asset type");
+            Utils.showErrorDialog(getActivity(), "Wrong amount format", "The amount that you have specified does not correspond to the selected asset type", null);
         } else {
-            Utils.showErrorDialog(getActivity(), "Transaction failed!", message);
+            Utils.showErrorDialog(getActivity(), "Transaction failed!", message, null);
             new Thread(() -> sendFailureToTabookeySlack(e)).start();
         }
     }

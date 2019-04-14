@@ -99,7 +99,7 @@ public class Utils {
         return bigIntBalance.multiply(new BigDecimal(Math.pow(10, decimals))).toBigInteger();
     }
 
-    public static void showErrorDialog(Context context, String title, String errorMessage) {
+    public static void showErrorDialog(Context context, String title, String errorMessage, Runnable callback) {
         if (context == null) {
             return;
         }
@@ -107,7 +107,12 @@ public class Utils {
         dialog.setTitle(title);
         dialog.setMessage(errorMessage);
         dialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-                (d, w) -> d.dismiss());
+                (d, w) -> {
+                    d.dismiss();
+                    if (callback != null) {
+                        callback.run();
+                    }
+                });
         dialog.show();
 
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);

@@ -49,7 +49,7 @@
         android:layout_above="@+id/letsGoButton"
         android:layout_marginBottom="32dp"
         android:fontFamily="sans-serif-light"
-        android:text="We sent you little something to start up"
+        android:text="We sent you a little something to start up"
         android:textAlignment="center"
         android:textColor="@color/text_color"
         android:textSize="18sp"

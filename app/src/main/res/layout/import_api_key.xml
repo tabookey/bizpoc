@@ -21,7 +21,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/white"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <TextView
                     android:layout_width="match_parent"
@@ -42,6 +43,8 @@
                     android:id="@+id/blockEditText"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginRight="24dp"
                     android:layout_weight="1"
                     android:theme="@style/EditTextTheme"
                     app:bet_defaultLength="4"
@@ -49,6 +52,17 @@
                     app:bet_numberOfBlock="4"
                     app:bet_textSize="12sp" />
 
+                <TextView
+                    android:id="@+id/invalidCodeWarning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-light"
+                    android:text="Invalid code, please try again"
+                    android:textAlignment="center"
+                    android:textColor="@color/reddish_brown"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    android:visibility="gone" />
             </LinearLayout>
         </ScrollView>
 
@@ -65,7 +79,8 @@
             android:text="Verify"
             android:textAlignment="center"
             android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/fingerprintEnabledTextView"
@@ -84,24 +99,26 @@
 
         <Button
             android:id="@+id/scanApiKeyButton"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/useTestCredentialsButton"
+            android:layout_alignParentEnd="true"
             android:layout_gravity="bottom"
-            android:layout_above="@+id/useTestCredentialsButton"
-            android:background="@android:color/transparent"
-            android:gravity="bottom"
+            android:background="@null"
             android:text="Scan QR Code"
+            android:textSize="12sp"
             android:visibility="gone" />
 
         <Button
             android:id="@+id/useTestCredentialsButton"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="60dp"
             android:layout_gravity="bottom"
-            android:background="@android:color/transparent"
+            android:layout_marginBottom="60dp"
+            android:background="@null"
             android:text="USE TEST API KEY"
+            android:textSize="12sp"
             android:visibility="gone" />
 
     </RelativeLayout>
@@ -113,9 +130,11 @@
         android:background="@android:color/white"
         android:visibility="gone">
 
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+        <com.github.ybq.android.spinkit.SpinKitView xmlns:app="http://schemas.android.com/apk/res-auto"
+            style="@style/SpinKitView.Large.Circle"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            app:SpinKit_Color="@color/colorPrimaryDark" />
     </FrameLayout>
 </FrameLayout>

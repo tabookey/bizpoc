@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             @Override
             public void failed() {
                 Utils.showErrorDialog(MainActivity.this, "Error", "Failed to decrypt the credentials. " +
-                        "Reinstall the application if the problem does not resolve.");
+                        "Reinstall the application if the problem does not resolve.", null);
             }
         };
         FragmentManager fragmentManager = getSupportFragmentManager();

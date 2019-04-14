@@ -156,9 +156,9 @@ public class TransactionDetailsFragment extends Fragment {
                     progressBarView.setVisibility(View.GONE);
                     Throwable cause = e.getCause();
                     if (cause instanceof UnknownHostException || cause instanceof SocketTimeoutException) {
-                        Utils.showErrorDialog(getActivity(), "No connection", "Please check your internet connection and try again later");
+                        Utils.showErrorDialog(getActivity(), "No connection", "Please check your internet connection and try again later", null);
                     } else {
-                        Utils.showErrorDialog(mActivity, "Error", e.getMessage());
+                        Utils.showErrorDialog(mActivity, "Error", e.getMessage(), null);
                     }
                 });
             }

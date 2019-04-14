@@ -1,5 +1,7 @@
 package com.tabookey.bizpoc.utils;
 
+import android.util.Log;
+
 import org.bouncycastle.crypto.generators.SCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -35,7 +37,7 @@ public class Crypto {
     }
 
     //from: https://blog.degering.name/posts/java-sjcl
-    public static String decrypt(String encodedJSON, String password) throws Exception {
+    public static String decrypt(String encodedJSON, char[] password) throws Exception {
 
         SjClData j = fromJson(encodedJSON, SjClData.class);
 
@@ -65,7 +67,7 @@ public class Crypto {
         // First, we need the secret AES key,
         // which is generated from password and salt
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        KeySpec spec = new PBEKeySpec(password.toCharArray(),
+        KeySpec spec = new PBEKeySpec(password,
                 salt, iterations, keySize);
         SecretKey tmp = factory.generateSecret(spec);
         SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
@@ -85,7 +87,9 @@ public class Crypto {
         int p= 4;       // parallelization parameter
         int dkLen=32;   // length of derived key, default = 32
 
-
-        return SCrypt.generate(password.getBytes(), salt.getBytes(), N, r, p, dkLen);
+        Log.v("scrypt", String.format("start generation with parameters: N=%d r=%d p=%d dkLen=%d", N, r, p, dkLen));
+        byte[] generate = SCrypt.generate(password.getBytes(), salt.getBytes(), N, r, p, dkLen);
+        Log.v("scrypt", "end generation");
+        return generate;
     }
 }

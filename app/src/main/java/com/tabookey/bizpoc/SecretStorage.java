@@ -146,7 +146,7 @@ class SecretStorage {
         try {
             return new FingerprintManager.CryptoObject(getCipher(Cipher.DECRYPT_MODE, getPrivateKey()));
         } catch (KeyPermanentlyInvalidatedException e) {
-            Utils.showErrorDialog(context, "Error", "You have changed the device authentication settings. You need to log in again.");
+            Utils.showErrorDialog(context, "Error", "You have changed the device authentication settings. You need to log in again.", null);
             e.printStackTrace();
             return null;
         }

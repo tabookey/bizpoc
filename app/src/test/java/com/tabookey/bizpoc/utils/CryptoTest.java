@@ -28,7 +28,7 @@ public class CryptoTest {
 
     @Test
     public void test_decrypt() throws Exception {
-        assertEquals(Crypto.decrypt(enc, password), orig);
+        assertEquals(Crypto.decrypt(enc, password.toCharArray()), orig);
     }
 
     @Test

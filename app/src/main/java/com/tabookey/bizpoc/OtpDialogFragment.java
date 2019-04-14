@@ -38,9 +38,6 @@ import com.tabookey.bizpoc.api.Global;
  */
 public class OtpDialogFragment extends DialogFragment {
 
-    private Button mCancelButton;
-    private View mFingerprintContent;
-
     ConfirmFragment.PasswordCallback callback;
     Runnable cancelCallback;
 
@@ -50,7 +47,6 @@ public class OtpDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // Do not create a new Fragment when the Activity is re-created such as orientation changes.
         setRetainInstance(true);
         setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Material_Light_Dialog);
@@ -74,21 +70,31 @@ public class OtpDialogFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         getDialog().setTitle("2-Factor authentication");
-        View v = inflater.inflate(R.layout.otp_dialog_container, container, false);
-        mCancelButton = v.findViewById(R.id.cancel_button);
-        mCancelButton.setOnClickListener(view -> {
+        getDialog().setCanceledOnTouchOutside(false);
+        View view = inflater.inflate(R.layout.otp_dialog_container, container, false);
+        Button cancelButton = view.findViewById(R.id.cancel_button);
+        cancelButton.setOnClickListener(v -> {
                     if (cancelCallback != null) {
                         cancelCallback.run();
                     }
                     dismiss();
                 }
         );
-        mIcon = v.findViewById(R.id.fingerprint_icon);
-        mErrorTextView = v.findViewById(R.id.fingerprint_status);
-        mFingerprintContent = v.findViewById(R.id.fingerprint_container);
-        mCancelButton.setText(R.string.cancel);
-        mFingerprintContent.setVisibility(View.VISIBLE);
-        return v;
+        mIcon = view.findViewById(R.id.fingerprint_icon);
+        mErrorTextView = view.findViewById(R.id.fingerprint_status);
+        Button fakeOtpButton = view.findViewById(R.id.fakeOtpButton);
+        if (BuildConfig.DEBUG) {
+            fakeOtpButton.setVisibility(View.VISIBLE);
+            fakeOtpButton.setOnClickListener(v -> {
+                getActivity().runOnUiThread(() -> {
+                    onOtpTagRecognised("cccjgjgkhcbbirdrfdnlnghhfgrtnnlgedjlftrbdeut");
+                });
+            });
+        }
+        View fingerprintContent = view.findViewById(R.id.fingerprint_container);
+        cancelButton.setText(R.string.cancel);
+        fingerprintContent.setVisibility(View.VISIBLE);
+        return view;
     }
 
     @Override
