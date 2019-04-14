@@ -12,7 +12,7 @@ android {
         targetSdkVersion 28
         minSdkVersion 26
         versionCode getTimestamp()
-        versionName "1.0.12"
+        versionName "1.0.13"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
