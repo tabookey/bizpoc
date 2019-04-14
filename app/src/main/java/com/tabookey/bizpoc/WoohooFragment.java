@@ -23,6 +23,7 @@ public class WoohooFragment extends Fragment {
         Button letsGoButton = view.findViewById(R.id.letsGoButton);
         letsGoButton.setOnClickListener(b -> {
             FirstFragment f = new FirstFragment();
+            f.whiteBackground = true;
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, f).commit();
         });
         return view;

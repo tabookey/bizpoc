@@ -40,6 +40,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.tabookey.bizpoc.impl.Utils.NBSP;
+import static com.tabookey.bizpoc.impl.Utils.collapse;
+import static com.tabookey.bizpoc.impl.Utils.expand;
 
 public class TransactionDetailsFragment extends Fragment {
     private static final String TAG = "DetailsFragment";
@@ -73,6 +75,7 @@ public class TransactionDetailsFragment extends Fragment {
     boolean showSuccessPopup = false;
     private View successPopup;
     private View transactionCommentLabel;
+    private TextView searchingNetworkWarning;
 
     Thread refresher;
 
@@ -99,6 +102,7 @@ public class TransactionDetailsFragment extends Fragment {
         greatThanksButton = view.findViewById(R.id.greatThanksButton);
         popupImage = view.findViewById(R.id.popupImage);
         popupTitle = view.findViewById(R.id.popupTitle);
+        searchingNetworkWarning = view.findViewById(R.id.searchingNetworkWarning);
 
         Utils.makeButtonCopyable(recipientAddressButton, mActivity);
         Utils.makeButtonCopyable(senderAddressButton, mActivity);
@@ -175,6 +179,7 @@ public class TransactionDetailsFragment extends Fragment {
     }
 
     private void fillPending() {
+        collapse(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), 0);
         if (pendingApproval == null) { // late callback hit too late
             return;
         }
@@ -249,7 +254,7 @@ public class TransactionDetailsFragment extends Fragment {
         if (exchangeRate != null) {
             average24h = exchangeRate.average24h;
         }
-        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s | %s"+NBSP+"USD", etherDouble, pendingApproval.token.getTokenCode().toUpperCase(), Utils.toMoneyFormat(etherDouble * average24h)));
+        sendAmountTextView.setText(String.format(Locale.US, "%.3f %s | %s" + NBSP + "USD", etherDouble, pendingApproval.token.getTokenCode().toUpperCase(), Utils.toMoneyFormat(etherDouble * average24h)));
         recipientAddressButton.setText(pendingApproval.recipientAddr);
         transactionCommentTextView.setText(pendingApproval.comment);
         senderTitleTextView.setVisibility(View.GONE);
@@ -271,6 +276,13 @@ public class TransactionDetailsFragment extends Fragment {
                     break;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    if (pendingApproval != null) {
+                        mActivity.runOnUiThread(() ->
+                        {
+                            expand(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), (int) Utils.convertDpToPixel(20, mActivity));
+                        });
+                    }
+
                 }
             }
             Log.e(TAG, "refresher thread interrupted, ID:" + refresher.getId());
@@ -331,11 +343,11 @@ public class TransactionDetailsFragment extends Fragment {
         if (transfer.usd != null) {
             String usd = transfer.usd.replaceAll("-", "");
             double dollarVal = Double.parseDouble(usd);
-            valueFormat += String.format(Locale.US, " | %s"+NBSP+"USD", Utils.toMoneyFormat(dollarVal));
+            valueFormat += String.format(Locale.US, " | %s" + NBSP + "USD", Utils.toMoneyFormat(dollarVal));
         } else {
             ExchangeRate exchangeRate = mExchangeRates.get(transfer.token.type);
             if (exchangeRate != null) {
-                valueFormat += String.format(Locale.US, " | %s"+NBSP+"USD", Utils.toMoneyFormat(value * exchangeRate.average24h));
+                valueFormat += String.format(Locale.US, " | %s" + NBSP + "USD", Utils.toMoneyFormat(value * exchangeRate.average24h));
             }
         }
         sendAmountTextView.setText(valueFormat);

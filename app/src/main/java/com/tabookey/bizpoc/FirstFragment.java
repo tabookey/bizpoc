@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.tabookey.bizpoc.impl.Utils.NBSP;
+import static com.tabookey.bizpoc.impl.Utils.collapse;
+import static com.tabookey.bizpoc.impl.Utils.expand;
 
 public class FirstFragment extends Fragment {
 
@@ -62,6 +64,9 @@ public class FirstFragment extends Fragment {
     private ScrollView mainContentsScrollView;
     private ListView historyListView;
     private ListView pendingListView;
+    private TextView searchingNetworkWarning;
+
+    boolean whiteBackground = false;
 
     @Nullable
     @Override
@@ -84,6 +89,7 @@ public class FirstFragment extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
         Button retryButton = view.findViewById(R.id.retryButton);
         retryView = view.findViewById(R.id.retryView);
+        searchingNetworkWarning = view.findViewById(R.id.searchingNetworkWarning);
         retryButton.setOnClickListener(v -> fillWindow(true));
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         if ( BuildConfig.DEBUG ) {
@@ -120,7 +126,10 @@ public class FirstFragment extends Fragment {
             tf.mGuardians = mGuardians;
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
         });
-
+        if (whiteBackground){
+            view.setBackgroundColor(mActivity.getColor(android.R.color.white));
+            progressBar.setColor(mActivity.getColor(R.color.colorPrimaryDark));
+        }
         fillWindow(true);
     }
 
@@ -165,6 +174,11 @@ public class FirstFragment extends Fragment {
                     break;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    mActivity.runOnUiThread(()->
+                    {
+                        expand(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), (int) Utils.convertDpToPixel(20, mActivity));
+                    });
+
                 }
             }
             Log.e(TAG, "refresher thread interrupted, ID:" + refresher.getId());
@@ -180,6 +194,7 @@ public class FirstFragment extends Fragment {
     }
 
     void fillWindow(boolean showProgress) {
+        collapse(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), 0);
         if (showProgress) {
             mainContentsLayout.setVisibility(View.GONE);
             overlayInfoCardView.setVisibility(View.GONE);

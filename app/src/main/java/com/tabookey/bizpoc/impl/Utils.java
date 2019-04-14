@@ -1,18 +1,18 @@
 package com.tabookey.bizpoc.impl;
 
-import android.app.Activity;
+import android.animation.ValueAnimator;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Transformation;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -169,5 +169,54 @@ public class Utils {
             }
             Toast.makeText(context, "Address copied to the clipboard", Toast.LENGTH_LONG).show();
         });
+    }
+
+    public static void expand(final View v, int duration, int originalHeight, int targetHeight) {
+        v.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        v.getLayoutParams().height = 0;
+        v.setVisibility(View.VISIBLE);
+        ValueAnimator valueAnimator = ValueAnimator.ofInt(originalHeight, targetHeight);
+        valueAnimator.addUpdateListener(animation -> {
+            v.getLayoutParams().height = (int) animation.getAnimatedValue();
+            v.requestLayout();
+        });
+        valueAnimator.setInterpolator(new DecelerateInterpolator());
+        valueAnimator.setDuration(duration);
+        valueAnimator.start();
+    }
+
+    public static void collapse(final View v, int duration, int originalHeight, int targetHeight) {
+        ValueAnimator valueAnimator = ValueAnimator.ofInt(originalHeight, targetHeight);
+        valueAnimator.setInterpolator(new DecelerateInterpolator());
+        valueAnimator.addUpdateListener(animation -> {
+            v.getLayoutParams().height = (int) animation.getAnimatedValue();
+            v.requestLayout();
+        });
+        valueAnimator.setInterpolator(new DecelerateInterpolator());
+        valueAnimator.setDuration(duration);
+        valueAnimator.start();
+    }
+
+    /**
+     * This method converts dp unit to equivalent pixels, depending on device density.
+     *
+     * @param dp      A value in dp (density independent pixels) unit. Which we need to convert into pixels
+     * @param context Context to get resources and device specific display metrics
+     * @return A float value to represent px equivalent to dp depending on device density
+     */
+    public static float convertDpToPixel(float dp, Context context) {
+        return dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+    }
+
+    /**
+     * This method converts device specific pixels to density independent pixels.
+     *
+     * @param px      A value in px (pixels) unit. Which we need to convert into db
+     * @param context Context to get resources and device specific display metrics
+     * @return A float value to represent dp equivalent to px value
+     */
+    @SuppressWarnings("unused")
+    public static float convertPixelsToDp(float px, Context context) {
+        return px / ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 }

@@ -10,6 +10,16 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/searchingNetworkWarning"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#e2e2e2"
+            android:text="Searching network..."
+            android:textAlignment="center"
+            android:textColor="@color/reddish_brown"
+            tools:ignore="Suspicious0dp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,13 +61,13 @@
 
             <Button
                 android:id="@+id/senderAddressButton"
-                android:textAllCaps="false"
-                android:textStyle="normal"
-                android:fontFamily="Roboto"
-                android:background="@android:color/transparent"
                 android:layout_width="wrap_content"
                 android:layout_height="20dp"
+                android:background="@android:color/transparent"
+                android:fontFamily="Roboto"
+                android:textAllCaps="false"
                 android:textColor="@android:color/black"
+                android:textStyle="normal"
                 tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
             <TextView
@@ -69,13 +79,13 @@
 
             <Button
                 android:id="@+id/recipientAddressButton"
-                android:textAllCaps="false"
-                android:textStyle="normal"
-                android:fontFamily="Roboto"
-                android:background="@android:color/transparent"
                 android:layout_width="wrap_content"
                 android:layout_height="20dp"
+                android:background="@android:color/transparent"
+                android:fontFamily="Roboto"
+                android:textAllCaps="false"
                 android:textColor="@android:color/black"
+                android:textStyle="normal"
                 tools:text="0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1ZZZ" />
 
 

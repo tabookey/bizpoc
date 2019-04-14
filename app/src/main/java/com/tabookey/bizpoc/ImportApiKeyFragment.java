@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -28,7 +27,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.infideap.blockedittext.BlockEditText;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
-import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.impl.Utils;
 import com.tabookey.bizpoc.utils.Crypto;
 
