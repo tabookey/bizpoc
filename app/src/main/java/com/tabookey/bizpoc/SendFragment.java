@@ -60,7 +60,7 @@ public class SendFragment extends Fragment {
     TextView destinationRequiredNote;
     Button maximumAmountButton;
     double maximumTransferValue = 0;
-    TokenInfo selectedToken = Global.ent.getTokens().get("teth");
+    TokenInfo selectedToken = Global.ent.getBaseCoin();
     boolean didTryToSubmit = false;
 
     @Nullable

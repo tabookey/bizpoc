@@ -36,6 +36,15 @@ public interface IBitgoEnterprise {
     //return a list of wallets - each wallet object for ether and all tokens available on that wallet address
     List<IBitgoWallet> getMergedWallets();
 
+    /**
+     * get the base coin (eth or teth)
+     */
+    TokenInfo getBaseCoin();
+
+    /**
+     * get specific token, (or even BaseCoin itself)
+     * @param token - token name, or {@code getBaseCoin()}
+     */
     TokenInfo getToken(String token);
 
     Map<String,TokenInfo> getTokens();

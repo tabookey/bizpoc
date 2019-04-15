@@ -5,12 +5,12 @@ const greenlock_express = require('greenlock-express')
 const url = require('url')
 const fs = eval("require('fs')")
 
-var hostname = process.argv[2]
-var port = process.argv[3] || 8080
+var port = parseInt(process.argv[2]) || 8080
+var hostname = process.argv[3]
 
 var certsDir = "certs"
 
-var target = process.argv[4] || 'https://test.bitgo.com'
+var target = process.argv[4] || 'https://www.bitgo.com'
 server = express()
 server.use( '/api', proxy( {target, changeOrigin:true, logLevel:"debug" }))
 

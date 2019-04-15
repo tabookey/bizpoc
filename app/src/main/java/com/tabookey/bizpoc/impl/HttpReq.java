@@ -5,6 +5,7 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.BuildConfig;
 
+import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -19,9 +20,10 @@ public class HttpReq {
 
     static boolean debug= BuildConfig.DEBUG;
 
+    //note that we have one proxy, but it can determine actual server based on "x-origin" header.
+
     static String testUrl = "https://test.bitgo.com";
-//    static String testUrl = "https://relay1.duckdns.org";
-    static String prodUrl = "https://www.bitgo.com";
+    static String prodUrl = "https://bizpoc.ddns.tabookey.com";
 
     private final String accessKey;
     String host;
@@ -38,9 +40,9 @@ public class HttpReq {
     // (changes too often), so there's no reason to pin the test certificate either..
     // probably its an LB certificate of their service provider.
     //from: https://square.github.io/okhttp/3.x/okhttp/okhttp3/CertificatePinner.html
-//    CertificatePinner certPinner = new CertificatePinner.Builder()
-//            .add("*.bitgo.com", "sha256/rlM24Z6HZfQm71GKuqEO25xb7XP3AXTAU5kvJdkR9TI=")
-//            .build();
+    CertificatePinner certPinner = new CertificatePinner.Builder()
+            .add("www.google.com", "sha256/aaa=")
+            .build();
 
     private OkHttpClient client = new OkHttpClient.Builder()
             .build();
@@ -71,6 +73,7 @@ public class HttpReq {
         Request.Builder bld = new Request.Builder();
 
         bld.url(host+api);
+
         if ( data!=null ) {
             RequestBody body = RequestBody.create(MediaType.parse("application/json"), toJson(data));
             bld.method(method==null ? "PUT":method, body);

@@ -143,7 +143,10 @@ public class WebViewExecutor {
             }
             Response resp = client.newCall(reqbuilder.build()).execute();
 
-            Log.d(TAG, "<< " + resp.code() + " " + resp.message());
+            String message = resp.message();
+            if ( message==null || message.trim().length()==0 )
+                message="no-status";        //BUG in www.bitgo.com (which actually return proper value on test.bitgo.com
+            Log.d(TAG, "<< " + resp.code() + " " + message);
             HashMap<String, String> headers = new HashMap<>();
             resp.headers().toMultimap().forEach((key, val) -> {
                 if (val.size() != 1)
@@ -153,7 +156,7 @@ public class WebViewExecutor {
                 headers.put(key, val.get(0));
             });
             Log.d(TAG, "<< body: " + resp.peekBody(100000).string());
-            return new WebResourceResponse("application/json", "UTF-8", resp.code(), resp.message(), headers, resp.body().byteStream());
+            return new WebResourceResponse("application/json", "UTF-8", resp.code(), message, headers, resp.body().byteStream());
         }
 
         /**/

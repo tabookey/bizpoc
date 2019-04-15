@@ -113,6 +113,11 @@ public class CachedEnterprise implements IBitgoEnterprise {
         return Arrays.asList(getCachedWallet());
     }
 
+    @Override
+    public TokenInfo getBaseCoin() {
+        return networkEnterprise.getBaseCoin();
+    }
+
     @NotNull
     public String coinName() {
         return baseCoin.coin;

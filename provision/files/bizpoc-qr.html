@@ -11,7 +11,7 @@
 .center {
   margin: 0;
   position: absolute;
-  top: 20%;
+  top: 30%;
   left:50%;
   transform: translateX(-50%);
 }
@@ -19,40 +19,57 @@
 
 <!--from: https://github.com/kazuhikoarase/qrcode-generator-->
 <script src="qrcode.js"></script>
+ <script src="sjcl.js"></script>
+ <script src="scrypt-async.js"></script>
+ <script src="encScrypt.js"></script>
 
 <div class="noPrint">
 
 <h3>Bizpoc QR code generator v1</h3>
 
 <table border="0">
-<form name=form>
-<tr><td>Passphrase:</td>
+  <form name=form onsubmit="event.preventDefault(); return 0">
+  <tr><td>Passphrase:</td>
+  <td><input type=password size=50 name="password" value=passphrase>
+  </td></tr>
 
-<td><input type=password size=50 name="password" oninput="update()" >
-</td></tr>
-<tr><td>Token:</td>
-<td><input type=password size=50 name="token" oninput="update()">
-</td></tr>
-<tr><td>Production:</td>
-<td><input type=checkbox name="prod" oninput="update()">
-</td></tr>
-<tr><td>Size:</td>
-<td><input type="range" min="1" max="20" value="8" id="size" oninput="sizeval.innerText=value; update()">
-    <div id=sizeval></div>
+  <tr><td>Token:</td>
+  <td><input type=password size=50 name="token" value="v2xtoken" >
+  </td></tr>
 
-</td></tr>
-<br>
-<p>
+  <tr><td>Production:</td>
+  <td><input type=checkbox name="prod" >
+  </td></tr>
+
+  <tr><td>Activation Key:</td>
+  <td><input  name="encrypt_password" >
+  </td></tr>
+
+  <tr><td>Size:</td>
+  <td><input type="range" min="1" max="20" value="8" id="size" oninput="sizeval.innerText=value;">
+  <div id=sizeval></div>
+  </td></tr>
+
+    <tr><td>Encrypt:</td>
+      <td><input type=checkbox name="encrypt" >
+      </td></tr>
+
+  <tr><td></td>
+  <td><input type=submit onclick="update()">
+  </td></tr>
+
+  <br>
+
+  </form>
+</table>
 
 <font color="red"><div id="error"></div></font>
-
-</form>
-</table>
 
 </div>
 <div class="center">
 <div class="print" id="placeHolder"></div>
 </div>
+ <div class="noPrint" id=jsonDump></div>
 <script>
 
 function error(msg) {
@@ -65,9 +82,6 @@ try {
 
 error("")
 
-var typeNumber = 0;
-var errorCorrectionLevel = 'L';
-var qr = qrcode(typeNumber, errorCorrectionLevel);
 tok={prod:form.prod.checked, token:form.token.value, password:form.password.value}
 
 if ( tok.token.indexOf("v2")!=0 ) {
@@ -75,14 +89,38 @@ if ( tok.token.indexOf("v2")!=0 ) {
 	return
 }
 
-str = JSON.stringify(tok, null,2)
-qr.addData(str)
-qr.make();
-document.getElementById('placeHolder').innerHTML = qr.createImgTag(form.size.value);
-} catch (e) {
-	error(e.message)
-}
+if ( !form.encrypt.checked ) makeqr(JSON.stringify(tok) )
+else encryptWithScrypt(form.encrypt_password, JSON.stringify(tok), (err,enc)=> {
+  if ( err ) {
+      error(err)
+      return
+  }
+    console.log("enc=",enc)
+    makeqr(enc)
+  //SAMPLE: also decode the just-encrypted string:
+  decryptWithScrypt( form.encrypt_password, enc, (err,res) => {
+        console.log( "decrypt: err=", err, "plaintext=", res )
+    })
 
+})
+
+
+  } catch (e) {
+    console.log("ex",e)
+    error(e.message)
+  }
+} //of "update()"
+
+function makeqr(text) {
+    var typeNumber = 0;
+    var errorCorrectionLevel = 'L';
+    var qr = qrcode(typeNumber, errorCorrectionLevel);
+
+    qr.addData(text)
+    qr.make();
+    strPretty = JSON.stringify(JSON.parse(text),null,2)
+    document.getElementById('placeHolder').innerHTML = qr.createImgTag(form.size.value) +
+        "<pre>"+strPretty.replace( /(.{40,80})/g, "$1\n" )
 }
 
 </script>
