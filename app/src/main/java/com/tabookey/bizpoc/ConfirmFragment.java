@@ -188,20 +188,35 @@ public class ConfirmFragment extends Fragment {
 
     private void handleSenderException(Throwable e) {
         String message = e.getMessage();
+        String dialogTitle, dialogMessage;
+        dialogTitle = "Your transaction failed!";
         if (message.contains("the network is offline")) {
-            Utils.showErrorDialog(getActivity(), "No connection", "Please check your internet connection and try again later", null);
+            dialogTitle = "No connection";
+            dialogMessage = "Please check your internet connection and try again later";
         } else if (message.contains("Error: incorrect otp")) {
-            Utils.showErrorDialog(getActivity(), "Wrong Yubikey", "The Yubikey dongle you have used is not valid.", null);
+//            dialogTitle = "Wrong Yubikey";
+            dialogMessage = "Wrong YubiKey - Please try again";
         } else if (message.contains("Error: insufficient balance")) {
-            Utils.showErrorDialog(getActivity(), "Insufficient balance", "Your current balance seems to be lower than the amount that you have requested", null);
+//            dialogTitle = "Insufficient balance";
+            dialogMessage = "Insufficient funds - amount is too high";
         } else if (message.contains("Error: invalid address")) {
-            Utils.showErrorDialog(getActivity(), "Invalid address", "The destination address that you have specified is incorrect", null);
+//            dialogTitle = "Invalid address";
+            dialogMessage = "Invalid recipient address";
         } else if (message.contains("amount should match pattern") || message.contains("amount should be integer")) {
-            Utils.showErrorDialog(getActivity(), "Wrong amount format", "The amount that you have specified does not correspond to the selected asset type", null);
+//            dialogTitle = "Wrong amount format";
+//            dialogMessage = "The amount that you have specified does not correspond to the selected asset type";
+            dialogMessage = "Contact us at support@tabookey.com";
+        } else if (message.contains("insufficient funds in fee address")) {
+            dialogMessage = "Contact us at support@tabookey.com";
         } else {
-            Utils.showErrorDialog(getActivity(), "Transaction failed!", message, null);
             new Thread(() -> sendFailureToTabookeySlack(e)).start();
+            if (BuildConfig.DEBUG) {
+                dialogMessage = message;
+            } else {
+                dialogMessage = "Contact us at support@tabookey.com";
+            }
         }
+        Utils.showErrorDialog(getActivity(), dialogTitle, dialogMessage, null);
     }
 
     private void sendFailureToTabookeySlack(Throwable e) {

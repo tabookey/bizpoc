@@ -194,7 +194,8 @@
                 android:elevation="10dp"
                 android:text="Max"
                 android:textAllCaps="false"
-                android:textColor="@color/text_color" />
+                android:textColor="@color/text_color"
+                android:visibility="gone" />
 
         </LinearLayout>
 

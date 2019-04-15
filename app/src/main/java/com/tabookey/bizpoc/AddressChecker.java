@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class AddressChecker {
 
-    private static String checkedAddress(final String address) {
+    public static String checkedAddress(final String address) {
         final String cleanAddress = Numeric.cleanHexPrefix(address).toLowerCase();
         //
         StringBuilder o = new StringBuilder();

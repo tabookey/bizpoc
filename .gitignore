@@ -16,3 +16,4 @@
 /.idea/gradle.xml
 /.idea/dictionaries
 node_modules
+/venv/

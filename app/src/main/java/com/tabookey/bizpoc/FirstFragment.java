@@ -92,13 +92,13 @@ public class FirstFragment extends Fragment {
         searchingNetworkWarning = view.findViewById(R.id.searchingNetworkWarning);
         retryButton.setOnClickListener(v -> fillWindow(true));
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
-        if ( BuildConfig.DEBUG ) {
-            balanceInDollarsText.setOnLongClickListener(a->{
+        if (BuildConfig.DEBUG) {
+            balanceInDollarsText.setOnLongClickListener(a -> {
                 String[] values = {"0", "1", "3", "5", "7", "9"};
                 int currentItem = Arrays.asList(values).indexOf(String.valueOf(Wallet.balanceExtraDigits));
                 new AlertDialog.Builder(getActivity())
                         .setTitle("Balance Suffix extra digits")
-                        .setSingleChoiceItems(values, currentItem,(dialog, which)->{
+                        .setSingleChoiceItems(values, currentItem, (dialog, which) -> {
                             Wallet.balanceExtraDigits = Integer.parseInt(values[which]);
                             triggerRefresh();
                             dialog.dismiss();
@@ -126,7 +126,7 @@ public class FirstFragment extends Fragment {
             tf.mGuardians = mGuardians;
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
         });
-        if (whiteBackground){
+        if (whiteBackground) {
             view.setBackgroundColor(mActivity.getColor(android.R.color.white));
             progressBar.setColor(mActivity.getColor(R.color.colorPrimaryDark));
         }
@@ -149,6 +149,7 @@ public class FirstFragment extends Fragment {
             refresher.notify();
         }
     }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -174,7 +175,7 @@ public class FirstFragment extends Fragment {
                     break;
                 } catch (Exception e) {
                     e.printStackTrace();
-                    mActivity.runOnUiThread(()->
+                    mActivity.runOnUiThread(() ->
                     {
                         expand(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), (int) Utils.convertDpToPixel(20, mActivity));
                     });
@@ -289,9 +290,10 @@ public class FirstFragment extends Fragment {
                     if (view == null) {
                         return;
                     }
-                    TextView address = view.findViewById(R.id.addressText);
+                    Button address = view.findViewById(R.id.addressTextButton);
+                    Utils.makeButtonCopyable(address, mActivity);
                     TextView owner = view.findViewById(R.id.ownerText);
-                    balanceInDollarsText.setText(String.format(Locale.US, "%s"+NBSP+"USD", Utils.toMoneyFormat(finalAssetsWorth)));
+                    balanceInDollarsText.setText(String.format(Locale.US, "%s" + NBSP + "USD", Utils.toMoneyFormat(finalAssetsWorth)));
                     address.setText(mBitgoWallet.getAddress());
                     owner.setText(String.format("%s's safe%s", Global.ent.getMe().name, Global.isTest() ? " (testnet)" : ""));
                     adapter = new BalancesAdapter(mActivity, 0, balances);
@@ -299,7 +301,8 @@ public class FirstFragment extends Fragment {
                     Utils.setListViewHeightBasedOnChildren(balancesListView);
                     ImageButton shareButton = view.findViewById(R.id.shareButton);
                     shareButton.setOnClickListener(v -> {
-                        String shareBody = mBitgoWallet.getAddress();
+                        String shareBody = AddressChecker.checkedAddress(mBitgoWallet.getAddress());
+//                        String shareBody = String.format("This is %s’s Ethereum wallet address: %s", Global.ent.getMe().name, AddressChecker.checkedAddress(mBitgoWallet.getAddress()));
                         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                         sharingIntent.setType("text/plain");
                         sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Wallet Ethereum address");
