@@ -1,0 +1,13 @@
+# copy this file to /lib/systemd/system/
+
+[Unit]
+Description=Bizpoc Proxy Service
+After=network-online.target
+
+[Service]
+Restart=on-failure
+WorkingDirectory=/home/ubuntu/proxy
+ExecStart=/home/ubuntu/proxy/start.sh
+
+[Install]
+WantedBy=multi-user.target
