@@ -6,12 +6,8 @@ ALIAS=upload
 UNSIGNED_APK=./app/build/outputs/apk/release/app-release-unsigned.apk 
 APK_JSON=./app/build/outputs/apk/release/output.json
 
-VERSION_NAME=`cat $APK_JSON|perl -ne 'print $1 if /versionName[ ":]+(\S+?)"/'`
-
-outapk=bizpoc-${VERSION_NAME}.apk
-
 function fatal() {
-	echo "$FATAL: $*"
+	echo "FATAL: $*"
 	exit 1
 }
 
@@ -21,6 +17,9 @@ GIT_TAG=`git describe --tags  --dirty`
 echo $GIT_TAG|grep -- - && fatal "git is not clean, or not on a tag"
 
 ./gradlew assRel
+
+VERSION_NAME=`cat $APK_JSON|perl -ne 'print $1 if /versionName[ ":]+(\S+?)"/'`
+outapk=bizpoc-${VERSION_NAME}.apk
 
 test "$GIT_TAG" == "v$VERSION_NAME" || fatal "git tag $GIT_TAG different from versionName: $VERSION_NAME"
 
