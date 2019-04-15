@@ -1,15 +1,21 @@
-from app import app,verify,data,jsonify
+from flask import Flask
+import re
+from app import app,verify,jsonify
 
-host="http://localhost:5000/"
-app.YUBI_API=host+"mock_verify/"
 app.allowReplay=True
+app.YUBI_API="http://localhost:5000/mock_verify/"
+
+yubimock=Flask("yubimock")
 
 #DEBUG-ONLY: dump current repo content (even in debug, only dump cred len, not content)
 @app.route( "/dump")
 def debug_dump():
-   return jsonify( [ dict(key=d, cs=data[d].checksum, creds=data[d].creds) for d in data ] )
+   return jsonify( [ dict(key=d, cs=app.data[d].checksum, creds=app.data[d].creds) for d in app.data ] )
 
-@yubimock.route( "/mock_verify/<otp>")
+@app.route( "/mock_verify/<otp>")
 def dummy_verify(otp):
-    stat = re.search( r"-(\w+)", otp).group(1) or "FAILED"
+    stat = re.search( "(?:-([\\w]*))?$", otp).group(1) or "FAILED"
     return "\nstatus="+stat+"\n"
+
+
+
