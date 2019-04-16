@@ -51,7 +51,7 @@ def getEncryptedCredentials(otp,checksum):
 @app.route("/putEncryptedCredentials/<masterotp>/<otpid>/<checksum>", methods=['POST'])
 def putEncryptedCredentials(masterotp,otpid, checksum):
     assert masterotp[:12] in masters, "Invalid master OTP" #validate master is in the list
-    verify(masterotp,True)
+    verify(masterotp)
     #not validating client otp: we trust masterotp
     app.data[ otpid[:12] ] = Data(request.get_json()["encryptedCredentials"] ,checksum)
     return jsonify( result="put" )
