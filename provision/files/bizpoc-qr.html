@@ -11,7 +11,7 @@
 .center {
   margin: 0;
   position: absolute;
-  top: 30%;
+  top: 40%;
   left:50%;
   transform: translateX(-50%);
 }
@@ -53,6 +53,10 @@
     <tr><td>Encrypt:</td>
       <td><input type=checkbox name="encrypt" >
       </td></tr>
+
+  <tr><td>Wrap output:</td>
+  <td><input type=checkbox name="pretty" >
+  </td></tr>
 
   <tr><td></td>
   <td><input type=submit onclick="update()">
@@ -119,8 +123,10 @@ function makeqr(text) {
     qr.addData(text)
     qr.make();
     strPretty = JSON.stringify(JSON.parse(text),null,2)
+    if ( form.pretty.checked )
+      strPretty = strPretty.replace( /(.{40,80})/g, "$1\n" )
     document.getElementById('placeHolder').innerHTML = qr.createImgTag(form.size.value) +
-        "<pre>"+strPretty.replace( /(.{40,80})/g, "$1\n" )
+        "<pre>"+strPretty
 }
 
 </script>
