@@ -114,7 +114,7 @@ public class HttpReq {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (++fakeCount < 2) {
+            if (++fakeCount < 0) {
                 return "{\"result\":\"sdfg\"}";
             }
             return "{\"result\":\"ok\"}";
@@ -127,7 +127,28 @@ public class HttpReq {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            return "{\"encodedCredentials\":{\"iv\":\"rafNW54Dgz0jyKpVi0N3LQ==\",\"v\":1,\"iter\":1000,\"ks\":128,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"xO8jBPNQbwI=\",\"ct\":\"8ZwCH2d0q86oWekVwH1YoZGENbA9gw==\"}}";
+            return "{\n" +
+                    "  \"enc\": {\n" +
+                    "    \"iv\": \"pz0laXGaH510/8FQWYMVEg==\",\n" +
+                    "    \"v\": 1,\n" +
+                    "    \"iter\": 1000,\n" +
+                    "    \"ks\": 128,\n" +
+                    "    \"ts\": 64,\n" +
+                    "    \"mode\": \"ccm\",\n" +
+                    "    \"adata\": \"\",\n" +
+                    "    \"cipher\": \"aes\",\n" +
+                    "    \"salt\": \"MEO2U83OdB4=\",\n" +
+                    "    \"ct\": \"4QG8N6LT5U1lXAOQWcx1LeBgUos/mqJw3RfvU3PC8+IP+zGywgDC8ReHb9t313JIzfrRS3bMiEl82T0h85ynBZETv4ALaNRGskRyfbOOYaYT0LMx8aXTA4QOwNQ0W1unpimqkB+B18SQQ0mV6RFk8bN6aDPLVH3pAdprNXk=\"\n" +
+                    "  },\n" +
+                    "  \"scryptOptions\": {\n" +
+                    "    \"salt\": \"salt\",\n" +
+                    "    \"N\": 8192,\n" +
+                    "    \"r\": 64,\n" +
+                    "    \"p\": 4,\n" +
+                    "    \"dkLen\": 32\n" +
+                    "  }\n" +
+                    "}";
+            // Decrypts to: {"prod":false,"token":"v2xtoken","password":"passphrase"}
         }
         Request.Builder bld = new Request.Builder();
 

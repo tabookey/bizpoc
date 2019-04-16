@@ -14,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.infideap.blockedittext.BlockEditText;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
+import com.tabookey.bizpoc.impl.HttpReq;
 import com.tabookey.bizpoc.impl.Utils;
 import com.tabookey.bizpoc.utils.Crypto;
 
@@ -35,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Base64;
 
 import static com.tabookey.bizpoc.SecretStorage.PREFS_API_KEY_ENCODED;
 import static com.tabookey.bizpoc.SecretStorage.PREFS_PASSWORD_ENCODED;
@@ -66,6 +69,7 @@ public class ImportApiKeyFragment extends Fragment {
     public static class RespResult {
         public String result;
     }
+
 
     @Nullable
     @Override
@@ -146,22 +150,21 @@ public class ImportApiKeyFragment extends Fragment {
                 try {
                     String resp = Global.http.sendRequestNotBitgo("getEncodedCredentials", null, "GET");
                     didRequest = true;
-                    String encodedCredentials = Utils.fromJson(resp, JsonNode.class).get("encodedCredentials").toString();
+                    JsonNode json = Utils.fromJson(resp, JsonNode.class);
+                    String encodedCredentials = json.get("enc").toString();
+                    Crypto.ScryptOptions scryptOptions = Utils.fromJson(json.get("scryptOptions").toString(), Crypto.ScryptOptions.class);
                     if (encodedCredentials.length() > 0) {
                         didReceiveValidResponse = true;
                     }
-                    String activationKey = blockEditText.getText();
-                    byte[] scrypt = Crypto.scrypt(activationKey, "pepper");
-                    char[] scryptPwdChar = new char[32];
-                    for (int i = 0; i < 32; i++) {
-                        scryptPwdChar[i] = (char) scrypt[i];
+                    String activationKey = blockEditText.getText().substring(0, 12);
+                    byte[] scrypt = Crypto.scrypt(activationKey, scryptOptions);
+                    String stringPasswBase64 = Crypto.toBase64(scrypt);
+                    Log.e("scrypt", stringPasswBase64);
+                    String decryptedInfo = Crypto.decrypt(encodedCredentials, stringPasswBase64.toCharArray());
+                    saveTokenDataAndWoohoo(decryptedInfo);
+                    if (BuildConfig.DEBUG) {
+                        mActivity.runOnUiThread(() -> Toast.makeText(mActivity, decryptedInfo, Toast.LENGTH_SHORT).show());
                     }
-                    String decryptedInfo = Crypto.decrypt(encodedCredentials, scryptPwdChar);
-
-                    mActivity.runOnUiThread(() -> {
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(mActivity, decryptedInfo, Toast.LENGTH_SHORT).show();
-                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                     boolean finalDidReceiveValidResponse = didReceiveValidResponse;
@@ -204,7 +207,7 @@ public class ImportApiKeyFragment extends Fragment {
                 hideKeyboard(mActivity);
                 new Thread(() ->
                 {
-                    String resultCheckBitgo = Global.http.sendRequestNotBitgo("checkYubikeyExists", null, "GET");
+                    String resultCheckBitgo = HttpReq.sendRequestNotBitgo("checkYubikeyExists", null, "GET");
                     RespResult resp = Utils.fromJson(resultCheckBitgo, RespResult.class);
                     if (resp.result.equals("ok")) {
                         mActivity.runOnUiThread(() -> {
@@ -226,7 +229,7 @@ public class ImportApiKeyFragment extends Fragment {
                     } else {
                         mActivity.runOnUiThread(() -> {
                             progressBar.setVisibility(View.GONE);
-                            Utils.showErrorDialog(getActivity(), "Wrong Yubikey", "The Yubikey dongle you have used is not valid.", ()->mActivity.promptOtp(this, cancelCallback));
+                            Utils.showErrorDialog(getActivity(), "Wrong Yubikey", "The Yubikey dongle you have used is not valid.", () -> mActivity.promptOtp(this, cancelCallback));
                         });
                     }
                 }).start();
@@ -257,36 +260,38 @@ public class ImportApiKeyFragment extends Fragment {
             String tokenPwdString = data.getStringExtra(ScanActivity.SCANNED_STRING_EXTRA);
             progressBar.setVisibility(View.VISIBLE);
             hideKeyboard(mActivity);
-            new Thread(() -> {
-                try {
-                    TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
-                    Global.setIsTest(!tokenPassword.prod);
-                    Global.setAccessToken(tokenPassword.token);
-                    String name = Global.ent.getMe().name;
-                    IBitgoWallet wallet = Global.ent.getMergedWallets().get(0);
+            new Thread(() -> saveTokenDataAndWoohoo(tokenPwdString)).start();
+        }
+    }
 
-                    if (!wallet.checkPassphrase(tokenPassword.password))
-                        throw new RuntimeException("Invalid QRcode\nwallet: " + wallet.getLabel() + "\nUser: " + name);
-                    byte[] encryptToken = secretStorage.encrypt(tokenPassword.token.getBytes());
-                    String encryptedToken = Arrays.toString(encryptToken);
-                    byte[] encryptPwd = secretStorage.encrypt(tokenPassword.password.getBytes());
-                    String encryptedPassword = Arrays.toString(encryptPwd);
-                    SecretStorage.getPrefs(mActivity).edit()
-                            .putString(PREFS_API_KEY_ENCODED, encryptedToken)
-                            .putString(PREFS_PASSWORD_ENCODED, encryptedPassword)
-                            .apply();
-                    mActivity.runOnUiThread(() -> {
-                        WoohooFragment f = new WoohooFragment();
-                        mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, f).commit();
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    mActivity.runOnUiThread(() -> {
-                        progressBar.setVisibility(View.GONE);
-                        Utils.showErrorDialog(getActivity(), "Error", e.getMessage(), null);
-                    });
-                }
-            }).start();
+    void saveTokenDataAndWoohoo(String tokenPwdString) {
+        try {
+            TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
+            Global.setIsTest(!tokenPassword.prod);
+            Global.setAccessToken(tokenPassword.token);
+            String name = Global.ent.getMe().name;
+            IBitgoWallet wallet = Global.ent.getMergedWallets().get(0);
+
+            if (!wallet.checkPassphrase(tokenPassword.password))
+                throw new RuntimeException("Invalid QRcode\nwallet: " + wallet.getLabel() + "\nUser: " + name);
+            byte[] encryptToken = secretStorage.encrypt(tokenPassword.token.getBytes());
+            String encryptedToken = Arrays.toString(encryptToken);
+            byte[] encryptPwd = secretStorage.encrypt(tokenPassword.password.getBytes());
+            String encryptedPassword = Arrays.toString(encryptPwd);
+            SecretStorage.getPrefs(mActivity).edit()
+                    .putString(PREFS_API_KEY_ENCODED, encryptedToken)
+                    .putString(PREFS_PASSWORD_ENCODED, encryptedPassword)
+                    .apply();
+            mActivity.runOnUiThread(() -> {
+                WoohooFragment f = new WoohooFragment();
+                mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, f).commit();
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            mActivity.runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                Utils.showErrorDialog(getActivity(), "Error", e.getMessage(), null);
+            });
         }
     }
 
@@ -301,7 +306,7 @@ public class ImportApiKeyFragment extends Fragment {
         for (int i = 0; i < 4; i++) {
             checksumBytes[i] = hash[i];
         }
-        int checksum = new BigInteger(checksumBytes).intValue() % 10000;
+        int checksum = new BigInteger(1, checksumBytes).intValue() % 10000;
         return checksum == checksumInput;
     }
 

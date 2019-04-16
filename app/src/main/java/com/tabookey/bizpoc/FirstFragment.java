@@ -167,6 +167,9 @@ public class FirstFragment extends Fragment {
                         //TODO: can't be really used, since it TERC/TBST areupdated on EACH call (with random data, probably...)
                         Log.d("TAG", "========= ENTERPRISE CHANGE");
                     });
+                    if (mBitgoWallet == null) {
+                        return;
+                    }
                     mBitgoWallet.update(() ->
                             mActivity.runOnUiThread(() -> fillWindow(false))
                     );

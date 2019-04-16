@@ -174,7 +174,6 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/error_red"
                 android:textSize="12sp"
-                android:visibility="visible"
                 tools:text="Please enter amount" />
 
             <View

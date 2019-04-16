@@ -5,9 +5,11 @@ import android.util.Log;
 import org.bouncycastle.crypto.generators.SCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import java.nio.charset.Charset;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Locale;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -16,15 +18,20 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import androidx.annotation.NonNull;
+
 import static com.tabookey.bizpoc.impl.Utils.fromJson;
 
 public class Crypto {
+    private final static String TAG = "scrypt";
+
 
     static class SjClData {
         public String iv;
-        public int v,iter,ks,ts;
-        public String mode,adata,cipher,salt,ct;
+        public int v, iter, ks, ts;
+        public String mode, adata, cipher, salt, ct;
     }
+
     static private Base64.Decoder base64decoder = Base64.getDecoder();
     static private Base64.Encoder base64encoder = Base64.getEncoder();
 
@@ -32,7 +39,7 @@ public class Crypto {
         return base64decoder.decode(s);
     }
 
-    public static String toBase64(byte[]b) {
+    public static String toBase64(byte[] b) {
         return new String(base64encoder.encode(b));
     }
 
@@ -43,9 +50,9 @@ public class Crypto {
 
         // We need the salt, the IV and the cipher text;
         // all of them need to be Base64 decoded
-        byte[] salt= base64decoder.decode(j.salt);
-        byte[] iv= base64decoder.decode(j.iv);
-        byte[] cipherText= base64decoder.decode(j.ct);
+        byte[] salt = base64decoder.decode(j.salt);
+        byte[] iv = base64decoder.decode(j.iv);
+        byte[] cipherText = base64decoder.decode(j.ct);
 
         // Also, we need the keySize and the iteration count
         int keySize = j.ks, iterations = j.iter;
@@ -57,11 +64,11 @@ public class Crypto {
         // 4 (everything larger).
         // c.f. https://github.com/bitwiseshiftleft/sjcl/blob/master/core/ccm.js#L60
         int lol = 2;
-        if (cipherText.length >= 1<<16) lol++;
-        if (cipherText.length >= 1<<24) lol++;
+        if (cipherText.length >= 1 << 16) lol++;
+        if (cipherText.length >= 1 << 24) lol++;
 
         // Cut the IV to the appropriate length, which is 15 - L
-        iv = Arrays.copyOf(iv, 15-lol);
+        iv = Arrays.copyOf(iv, 15 - lol);
 
         // Crypto stuff.
         // First, we need the secret AES key,
@@ -81,15 +88,38 @@ public class Crypto {
         return new String(cipher.doFinal(cipherText));
     }
 
-    public static byte[] scrypt(String password, String salt) {
-        int N= 16384;   // CPU/memory cost parameter, must be power of two
-        int r=64;       // block size
-        int p= 4;       // parallelization parameter
-        int dkLen=32;   // length of derived key, default = 32
+    @SuppressWarnings("WeakerAccess")
+    public static class ScryptOptions {
+        public String salt;
+        public int N, r, p, dkLen;
 
-        Log.v("scrypt", String.format("start generation with parameters: N=%d r=%d p=%d dkLen=%d", N, r, p, dkLen));
-        byte[] generate = SCrypt.generate(password.getBytes(), salt.getBytes(), N, r, p, dkLen);
-        Log.v("scrypt", "end generation");
+        public ScryptOptions() {
+
+        }
+
+        public ScryptOptions(String salt, int n, int r, int p, int dkLen) {
+            this.salt = salt;
+            this.N = n;
+            this.r = r;
+            this.p = p;
+            this.dkLen = dkLen;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return String.format(Locale.US, "salt=%s N=%d r=%d p=%d dkLen=%d", salt, N, r, p, dkLen);
+        }
+
+        public byte[] getSalt() {
+            return salt.getBytes();
+        }
+    }
+
+    public static byte[] scrypt(String password, ScryptOptions scryptOptions) {
+        Log.v(TAG, String.format("start generation with parameters: %s", scryptOptions));
+        byte[] generate = SCrypt.generate(password.getBytes(), scryptOptions.getSalt(), scryptOptions.N, scryptOptions.r, scryptOptions.p, scryptOptions.dkLen);
+        Log.v(TAG, "end generation");
         return generate;
     }
 }

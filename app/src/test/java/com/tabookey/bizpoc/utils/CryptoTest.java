@@ -33,7 +33,12 @@ public class CryptoTest {
 
     @Test
     public void test_scrypt() throws Exception {
-        assertEquals( "asd" ,Crypto.scrypt("password", "salt") );
+        int N = 16384;   // CPU/memory cost parameter, must be power of two
+        int r = 64;       // block size
+        int p = 4;       // parallelization parameter
+        int dkLen = 32;   // length of derived key, default = 32
+        Crypto.ScryptOptions options = new Crypto.ScryptOptions("salt", N, r, p, dkLen);
+        assertEquals( "asd" ,Crypto.scrypt("password", options) );
     }
 
 

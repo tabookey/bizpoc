@@ -13,7 +13,6 @@
         android:padding="8dp"
         android:text=""
         android:textAppearance="?android:attr/textAppearanceLarge"
-        tools:text="Pending"
-        android:visibility="visible" />
+        tools:text="Pending"/>
 
 </LinearLayout>

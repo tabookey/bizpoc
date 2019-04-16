@@ -10,7 +10,7 @@
 //    that is, "enc" the encrypted block (in base64), and also all parameters needed to run scrypt for decode
 function scryptWrapper(pwd, options, cb) {
   soptions = Object.assign({encoding:"base64"},options)
-
+  console.log("Will wrap password = " + pwd)
   scrypt( pwd,
       options.salt,
       soptions,
@@ -30,7 +30,7 @@ function encryptWithScrypt( pwd, plaintext, cb) {
                 // (alternatively, you can specify logN)
      r: 64,     // block size
      p: 4,      // parallelization parameter
-     //dkLen:   // length of derived key, default = 32
+     dkLen: 32   // length of derived key, default = 32
      // encoding:  "base64" //- standard Base64 encoding
                      // "hex" — hex encoding,
                      // "binary" — Uint8Array,
@@ -49,6 +49,16 @@ function encryptWithScrypt( pwd, plaintext, cb) {
   })
 }
 
+
+function calculateChecksum(password, yubikey) {
+  var joined = password + yubikey;
+  var hashBitsArray = sjcl.hash.sha256.hash(joined);
+  var number = sjcl.bitArray.bitSlice(hashBitsArray, 0, 32)[0];
+  var checksum = number % 10000;
+  console.log(checksum);
+  return checksum;
+}
+
 //wrap password with scrypt, and then decrypt back original string.
 // @param pwd - string password
 // @param encrypted - encoded string, which is the json block returned by encryptWithScript
@@ -65,6 +75,7 @@ function decryptWithScrypt(pwd, encrypted, cb) {
 
   scryptWrapper(pwd, encJson.scryptOptions, encBlock=> {
     try {
+      console.log("password = " + encBlock.enc)
       result = sjcl.decrypt( encBlock.enc, JSON.stringify(encJson.enc))
       cb( null, result )
     } catch (e) {
