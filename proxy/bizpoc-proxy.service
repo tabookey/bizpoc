@@ -1,4 +1,8 @@
 # copy this file to /lib/systemd/system/
+# systemctl start bizpoc-service #start-once
+# systemctl enable bizpoc-service #enable start-on-boot
+# systemctl status bizpoc-service 
+# journalctl -u bizpoc-proxy	# to show service logs
 
 [Unit]
 Description=Bizpoc Proxy Service
