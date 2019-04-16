@@ -290,7 +290,7 @@ public class ImportApiKeyFragment extends Fragment {
             e.printStackTrace();
             mActivity.runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
-                Utils.showErrorDialog(getActivity(), "Error", e.getMessage(), null);
+                Utils.showErrorDialog(getActivity(), "Error", "Contact us at support@tabookey.com", null);
             });
         }
     }
