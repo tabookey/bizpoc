@@ -6,6 +6,7 @@
 
     <application
         android:allowBackup="false"
+        android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".TestSendActivity"

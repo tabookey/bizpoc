@@ -37,7 +37,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Base64;
 
 import static com.tabookey.bizpoc.SecretStorage.PREFS_API_KEY_ENCODED;
 import static com.tabookey.bizpoc.SecretStorage.PREFS_PASSWORD_ENCODED;
@@ -47,6 +46,7 @@ public class ImportApiKeyFragment extends Fragment {
 
     private View progressBar;
     private SecretStorage secretStorage = new SecretStorage();
+    private static String checksum = "mychecksum";
     private static String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
     private MainActivity mActivity;
     private TextView testNameTextView;
@@ -148,9 +148,10 @@ public class ImportApiKeyFragment extends Fragment {
                 boolean didRequest = false;
                 boolean didReceiveValidResponse = false;
                 try {
-                    String resp = Global.http.sendRequestNotBitgo("getEncodedCredentials", null, "GET");
+                    String api = String.format("http://192.168.1.243:5000/getEncryptedCredentials/%s%s/%s", mOtp, BuildConfig.DEBUG ? "-OK" : "", checksum);
+                    String resp = HttpReq.sendRequestNotBitgo(api, null, "GET");
                     didRequest = true;
-                    JsonNode json = Utils.fromJson(resp, JsonNode.class);
+                    JsonNode json = Utils.fromJson(resp, JsonNode.class).get("encryptedCredentials");
                     String encodedCredentials = json.get("enc").toString();
                     Crypto.ScryptOptions scryptOptions = Utils.fromJson(json.get("scryptOptions").toString(), Crypto.ScryptOptions.class);
                     if (encodedCredentials.length() > 0) {
@@ -207,29 +208,42 @@ public class ImportApiKeyFragment extends Fragment {
                 hideKeyboard(mActivity);
                 new Thread(() ->
                 {
-                    String resultCheckBitgo = HttpReq.sendRequestNotBitgo("checkYubikeyExists", null, "GET");
-                    RespResult resp = Utils.fromJson(resultCheckBitgo, RespResult.class);
-                    if (resp.result.equals("ok")) {
-                        mActivity.runOnUiThread(() -> {
-                            mOtp = otp;
-                            progressBar.setVisibility(View.GONE);
-                            activationKeyView.setVisibility(View.VISIBLE);
-                            submitButton.setVisibility(View.VISIBLE);
+                    try {
+                        String api = String.format("http://192.168.1.243:5000/checkYubikeyExists/%s/%s", otp, checksum);
+                        String resultCheckBitgo = HttpReq.sendRequestNotBitgo(api, null, "GET");
+                        RespResult resp = Utils.fromJson(resultCheckBitgo, RespResult.class);
+                        if (resp.result.equals("ok")) {
+                            mActivity.runOnUiThread(() -> {
+                                mOtp = otp;
+                                progressBar.setVisibility(View.GONE);
+                                activationKeyView.setVisibility(View.VISIBLE);
+                                submitButton.setVisibility(View.VISIBLE);
 
-                            if (BuildConfig.DEBUG) {
-                                useTestCredentialsButton.setVisibility(View.VISIBLE);
-                                useTestCredentialsButton.setOnClickListener(v -> {
-                                    Intent data = new Intent();
-                                    data.putExtra(ScanActivity.SCANNED_STRING_EXTRA, defApi);
-                                    onActivityResult(0, Activity.RESULT_OK, data);
-                                });
-                                scanApiKeyButton.setVisibility(View.VISIBLE);
-                            }
-                        });
-                    } else {
+                                if (BuildConfig.DEBUG) {
+                                    useTestCredentialsButton.setVisibility(View.VISIBLE);
+                                    useTestCredentialsButton.setOnClickListener(v -> {
+                                        Intent data = new Intent();
+                                        data.putExtra(ScanActivity.SCANNED_STRING_EXTRA, defApi);
+                                        onActivityResult(0, Activity.RESULT_OK, data);
+                                    });
+                                    scanApiKeyButton.setVisibility(View.VISIBLE);
+                                }
+                            });
+                        } else {
+                            mActivity.runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE);
+                                Utils.showErrorDialog(getActivity(), "Wrong Yubikey", "The Yubikey dongle you have used is not valid.", () -> mActivity.promptOtp(this, cancelCallback));
+                            });
+                        }
+                    } catch (Throwable e) {
+                        e.printStackTrace();
                         mActivity.runOnUiThread(() -> {
+                            String errorMessage = "Contact us at support@tabookey.com";
+                            if (e.getMessage().contains("Invalid otp/checksum")) {
+                                errorMessage = "Invalid otp/checksum"; // TODO: come up with a real error message
+                            }
+                            Utils.showErrorDialog(getActivity(), "Error", errorMessage, () -> mActivity.promptOtp(this, cancelCallback));
                             progressBar.setVisibility(View.GONE);
-                            Utils.showErrorDialog(getActivity(), "Wrong Yubikey", "The Yubikey dongle you have used is not valid.", () -> mActivity.promptOtp(this, cancelCallback));
                         });
                     }
                 }).start();

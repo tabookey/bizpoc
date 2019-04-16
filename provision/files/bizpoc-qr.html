@@ -94,7 +94,7 @@ if ( tok.token.indexOf("v2")!=0 ) {
 }
 
 if ( !form.encrypt.checked ) makeqr(JSON.stringify(tok) )
-else encryptWithScrypt(form.encrypt_password, JSON.stringify(tok), (err,enc)=> {
+else encryptWithScrypt(form.encrypt_password.value, JSON.stringify(tok), (err,enc)=> {
   if ( err ) {
       error(err)
       return
@@ -102,7 +102,7 @@ else encryptWithScrypt(form.encrypt_password, JSON.stringify(tok), (err,enc)=> {
     console.log("enc=",enc)
     makeqr(enc)
   //SAMPLE: also decode the just-encrypted string:
-  decryptWithScrypt( form.encrypt_password, enc, (err,res) => {
+  decryptWithScrypt( form.encrypt_password.value, enc, (err,res) => {
         console.log( "decrypt: err=", err, "plaintext=", res )
     })
 
