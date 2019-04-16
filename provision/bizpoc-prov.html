@@ -1,0 +1,172 @@
+<body>
+    <script>
+    //from: http://jsfiddle.net/epinapala/WdeTM/4/
+    function selectText(element) {
+        var doc = document;
+        var text = doc.getElementById(element);    
+
+        if (doc.body.createTextRange) { // ms
+            var range = doc.body.createTextRange();
+            range.moveToElementText(text);
+            range.select();
+        } else if (window.getSelection) { // moz, opera, webkit
+            var selection = window.getSelection();            
+            var range = doc.createRange();
+            range.selectNodeContents(text);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
+    function selectAndCopy(element) {
+        selectText(element)
+        document.execCommand('copy')
+    }
+
+    function genpwd(id) {
+        var item = document.getElementById(id);    
+        item.innerText="bad-random-"+Math.floor(Math.random()*1e18).toString(36)
+        selectAndCopy(id)
+    }
+
+    function genActivationKey(id) {
+        var item = document.getElementById(id);    
+        var accesstoken = document.getElementById("accesstoken").value;
+        var walletpwd = document.getElementById("wpwd");    
+        key = Math.floor(Math.random()*1e16).toString().replace(/(\d\d\d\d)\B/g, "$1-")
+        selectAndCopy(id)
+
+        item.innerText = "\nactivation key: "+key+"\n\n Data sent to server:"+
+            "\n    accesstoken:"+accesstoken +
+            "\n    wpwd:"+walletpwd.innerText
+    }
+</script>
+
+<title>BizPOC New Customer Provisioning Flow</title>
+<H1>BizPOC New Customer Provisioning Flow</H1>
+
+<h3>Prerequisites:</h3> 
+<ul>
+<li> Run this script on a TRUSTED host, and only from a local file (NOT form the network)
+<li> Must have AUDITOR present.
+<li> Must have Bitgo accounts for all guardians, each with his own Yubikey.
+</ul>
+<p>
+
+<h3>Flow</h3>
+
+
+<ol>
+<li> <input type=submit value="Generate client password (in clipboard)"  onclick="genpwd('pwd')"> -  <font size=1><span id=pwd></span> </font>
+<font size=1><ul>
+    <li> password used by customer's web user, during provisioning only.
+    <li> not saved anywhere, since we're generating "Access key" for the app.
+    <li> can't be used later (by admin), since login requires Yubikey.
+</ul></font>
+
+<li> In <b>incognito</b> window, open <a href="https://www.bitgo.com/login", target="_incognito">https://www.bitgo.com/login</a>
+
+<li> Register customer:
+
+    <ul>
+    <li> use email with auto-forward to admin's email.<br>
+        - e.g: dror+custname@tabookey.com (Google's auto-forward to dror@tabookey.com) 
+    <li> (Enter full name of customer)
+    <li> paste password from clipboard
+    </ul>
+
+<li> Close window.
+<li> Open mail, <b>"Bitgo Email Verification"</b>. Right-click on <b>"Click to Verify"</b> and open in <b>incognito window</b> again.
+<li> Paste password again to login<br>
+
+   * (password is not needed anymore, unless the incognito window is closed)
+
+<li> Add a Yubikey device to user.
+
+<li> <input type=submit value="Generate wallet password (in clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><span id=wpwd></span> </font>
+<li> Open <a href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
+<li> Invite customer's email to enterprise.
+<li> Switch to Customer's incognito window to accept invitation.
+<li> In <b>Admin</b> window: Create new wallet:
+
+    <ul>
+    <li> Coin: <b>Ethereum</b>, click "Next"
+    <li> <b>Quick Setup</b>, click "Next"
+    <li> Wallet name: (customer name)
+    <li> Click: <b>Secondary Password</b>. 
+    <li> Paste from clipboard <i>wallet password</i> (twice), create wallet.
+    <li> Print <b>Bitgo Keycard PDF</b>
+    <li> Enter activation code (from PDF) to activate wallet
+    <li> Click <a href="javascript:'<H1>Wallet Password</H1><p>\n'+wpwd.innerText" target="print">Print Wallet Password</a>
+    </ul>
+
+<li> Invite guardians to wallet with role "Admin"
+    <ul>
+    <li> must use "Select people in your organization", and NOT "Invite new users" for both guardians and customer
+    <li> requires <i>wallet password</i>. Its still in the clipboard, so paste it.
+    <li> make sure guardians accept invitation to join wallet.
+    </ul>
+<li> Invite user to wallet with role "Spender"
+    <li> switch to the customer's incognito window, to accept invitation to join wallet.
+    
+<li> In <b>Admin</b> window: Create Customer's Access-Token:
+    <ul>
+    <li> in customer's window, top-right menu, User-Settings
+    <li> Select, "Developer Options" and then "+ Add Access Token"
+    <li> give it a Label
+    <li> scroll to the end of the page (very long..)
+    <li> Enter "IP Address Allowed": <b><span id=serverIP>35.177.187.77</b> <input type=submit value="Copy" onclick="selectAndCopy('serverIP')">
+    <li> Check View, Spend, Full-Administrative-Access and "agree"
+    <li> (that is, all checkboxes except "create wallets")
+    <li> Click <b>"+Add Token"</b>, enter Yubikey
+    <li> copy the on-screen access token
+    <li> Paste access-token here: <input id=accesstoken placeholder="{paste}">
+    </ul>
+    
+<li> Change wallet Policy (can only be done after above users accepted invitations)
+    <ul>
+    <li> Check: Approve All Outgoing Transactions
+    <li> Check: Require Multiple (2) Admin Approvals
+    </ul>
+    
+<li> Upload to server:
+    <ul>
+    <li> Put in <b>ADMINISTRATOR's</b> Yubikey OTP: <input id=adminotp>
+    <li> Put in <i>Customer's</i> Yubikey OTP-ID: <input id=otp>
+
+    <font size=1><ul>
+          <li> Script below uses above <i>wallet password</i>
+          <li>Customer's Yubikey not verified here: can put id (12chars) or entire key
+    </ul></font>
+
+    <li> Click <input type=submit value="Upload User Info" onclick="genActivationKey('activation')"> - <font size=1><span id=activation></span></font>
+    <li> Save above activation key (until user receives Yubikey) 
+    </ul>
+
+<li> Send Yubikey to user.
+</ol>
+<h3> After Yubikey is received by customer: </h3>
+
+<ol>
+<li> Make video call, validate customer
+<li> Customer must enable fingerprint on device.
+<li> Let customer install App (from Google Play)
+<li> Cutomer launches application: 
+    <ul>
+    <li> App requires user to enter Yubikey
+    <li> Guardian gives <b>activation key</b> to customer on the phone
+    <li> Customer enters <b>activation key</b>
+    <li> Customer click <b>VERIFY</b> (enabled only if activation key is valid for yubikey)
+    <ul><font size=1>
+    <li> ~30 seconds waiting:
+    <li> Pull encryped data from server, decrypt, configure app.
+    </font></ul>
+    <li> App says "<b>Woohoo!</b>"
+    </ul>
+</ol>
+<h3>Perform first transaction with client</h3>
+
+</ol>
+
+
+</body>
