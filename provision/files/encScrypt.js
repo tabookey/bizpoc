@@ -3,6 +3,21 @@
 //<script src="scrypt-async.js"></script>
 
 
+//helper: format array of numbers into a string: each number is modulu radix, and then
+// generates a digit/letter
+// radix: up to 36
+function arrayToString(arr,radix) {
+  return Array.from(arr).map(c=>(c%radix).toString(radix)).join("")
+}
+
+//create a random string
+// count - length of string
+// radix - character set to use, up to 36
+function randomString(count,radix) {
+  arr = window.crypto.getRandomNumbers(new Uint32Array(count))
+  return arrayToString(arr,radix)
+}
+
 //internal wrapper for scrypt function, used by both encrypt and decrypt methods.
 // @param password - password to use
 // @param options - N,r,p,salt - all required, and all passed to output
