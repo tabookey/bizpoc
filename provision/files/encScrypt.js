@@ -14,8 +14,8 @@ function arrayToString(arr,radix) {
 // count - length of string
 // radix - character set to use, up to 36
 function randomString(count,radix) {
-  arr = window.crypto.getRandomNumbers(new Uint32Array(count))
-  return arrayToString(arr,radix)
+  arr = window.crypto.getRandomValues(new Uint32Array(count))
+  return arrayToString(arr,radix || 36)
 }
 
 //internal wrapper for scrypt function, used by both encrypt and decrypt methods.
@@ -38,19 +38,19 @@ function scryptWrapper(pwd, options, cb) {
 // @param cb - callback function(error, encodedString)
 //     NOTE: encodedString is: {enc, scryptOptions}, but should be treated as verbatim string.
 function encryptWithScrypt( pwd, plaintext, cb) {
-  salt="salt" //TODO: better salt?
+  salt=randomString(8)
   let scryptOptions = {
      salt,
-     N: 8192,   // CPU/memory cost parameter, must be power of two
+     N: 32768,   // CPU/memory cost parameter, must be power of two
                 // (alternatively, you can specify logN)
      r: 64,     // block size
      p: 4,      // parallelization parameter
-     dkLen: 32   // length of derived key, default = 32
+     dkLen: 32,   // length of derived key, default = 32
      // encoding:  "base64" //- standard Base64 encoding
                      // "hex" — hex encoding,
                      // "binary" — Uint8Array,
                      // undefined/null - Array of bytes
-     // interruptStep: // optional, steps to split calculations (default is 0)
+     interruptStep: 1024// optional, steps to split calculations (default is 0)
 
   }
 
@@ -95,7 +95,6 @@ function decryptWithScrypt(pwd, encrypted, cb) {
 
   scryptWrapper(pwd, encJson.scryptOptions, encBlock=> {
     try {
-      console.log("password = " + encBlock.enc)
       result = sjcl.decrypt( encBlock.enc, JSON.stringify(encJson.enc))
       cb( null, result )
     } catch (e) {

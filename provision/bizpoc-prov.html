@@ -1,5 +1,18 @@
+<head>
+    <style type="text/css">
+        
+        input[type="submit"] {
+            background-color: #0099cc;
+        }
+    </style>
+</head>
 <body>
+    <script src="files/axios.min.js"></script>
+    <script src="files/scrypt-async.js"></script>
+    <script src="files/sjcl.js"></script>
+    <script src="files/encScrypt.js"></script>
     <script>
+
     //from: http://jsfiddle.net/epinapala/WdeTM/4/
     function selectText(element) {
         var doc = document;
@@ -25,20 +38,60 @@
 
     function genpwd(id) {
         var item = document.getElementById(id);    
-        item.innerText="bad-random-"+Math.floor(Math.random()*1e18).toString(36)
+        item.innerText= id+"-"+randomString(20,36)
         selectAndCopy(id)
     }
 
-    function genActivationKey(id) {
-        var item = document.getElementById(id);    
-        var accesstoken = document.getElementById("accesstoken").value;
-        var walletpwd = document.getElementById("wpwd");    
-        key = Math.floor(Math.random()*1e16).toString().replace(/(\d\d\d\d)\B/g, "$1-")
-        selectAndCopy(id)
+    function genActivationKey(statusid, resultid,adminotp, userotp, accesstoken) {
+        var statusObj = document.getElementById(statusid)
+        var result = document.getElementById(resultid);    
+        function status(msg) {
+            statusObj.innerHTML = msg
+        }
+        function error(msg) {
+            status("<font color=red>"+msg+"</font>")
+        }
+        status("")
 
-        item.innerText = "\nactivation key: "+key+"\n\n Data sent to server:"+
-            "\n    accesstoken:"+accesstoken +
-            "\n    wpwd:"+walletpwd.innerText
+        var walletpwd = document.getElementById("wpwd").innerText
+        verify=!debugserver.checked
+        if (verify) {
+            if ( !walletpwd ) return error("no wallet password")
+            if ( !adminotp ) return error( "Missing admin otp")
+            if ( !userotp ) return error( "Missing customer otp")
+            if ( !accesstoken.startsWith("v2x")) error("No access token")
+        } else {
+            if ( !adminotp) adminotp ="cccccckftlhc-OK"
+            if ( !userotp ) userotp = "userotp"
+        }
+
+        key = randomString(12,10)
+        keyPadded = key.replace(/(\d\d\d\d)\B/g, "$1-")
+
+        // selectAndCopy(resultid)
+        checksum = calculateChecksum(key, userotp.substring(0,12))
+        keyPadded = keyPadded+"-"+checksum
+
+        serverUrl = "http://localhost:5000/putEncryptedCredentials/" + adminotp+"/"+userotp+"/"+checksum
+
+        provisionInfo={
+            prod:!bitgoTestEnv.checked,
+            token:accesstoken,
+            password:walletpwd 
+        }
+        console.log( JSON.stringify(provisionInfo,null,2))
+
+        status( "calculating..")
+        encryptWithScrypt( key, JSON.stringify(provisionInfo), (err,encryptedCreds) => {
+            if (err) return error(err)
+
+            status( "uploading..")
+
+            axios.post( serverUrl, { encryptedCredentials: JSON.parse(encryptedCreds) }) 
+                .then( res=>status("<p>Uploaded<br>\n"+ "Activation key for user: "+keyPadded+"<p>") )
+                .catch( (err)=>error( (err.response && err.response.data) || err ) )
+        })
+
     }
 </script>
 
@@ -55,9 +108,11 @@
 
 <h3>Flow</h3>
 
+<input type="checkbox" id=debugserver checked="true" >  DEBUG: Use localhost server.<br>
+<input type="checkbox" id=bitgoTestEnv checked="false" >  DEBUG: Use Bitgo TESTNET<br>
 
 <ol>
-<li> <input type=submit value="Generate client password (in clipboard)"  onclick="genpwd('pwd')"> -  <font size=1><span id=pwd></span> </font>
+<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> -  <font size=1><span id=pwd></span> </font>
 <font size=1><ul>
     <li> password used by customer's web user, during provisioning only.
     <li> not saved anywhere, since we're generating "Access key" for the app.
@@ -83,7 +138,7 @@
 
 <li> Add a Yubikey device to user.
 
-<li> <input type=submit value="Generate wallet password (in clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><span id=wpwd></span> </font>
+<li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><span id=wpwd></span> </font>
 <li> Open <a href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
 <li> Invite customer's email to enterprise.
 <li> Switch to Customer's incognito window to accept invitation.
@@ -139,7 +194,10 @@
           <li>Customer's Yubikey not verified here: can put id (12chars) or entire key
     </ul></font>
 
-    <li> Click <input type=submit value="Upload User Info" onclick="genActivationKey('activation')"> - <font size=1><span id=activation></span></font>
+    <li> Click <input type=submit value="Upload User Info"
+        onclick="genActivationKey('genstatus', 'activationKey', adminotp.value, otp.value, accesstoken.value)"
+        >
+     <b><div id=genstatus></div></b>
     <li> Save above activation key (until user receives Yubikey) 
     </ul>
 
