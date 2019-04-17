@@ -32,7 +32,7 @@ app.verifyOtp=verify
 
 @app.route('/checkYubikeyExists/<otpid>')
 def checkYubikeyExists1(otpid):
-    assert data.get(otpid[:12]), "unknown"
+    assert app.data.get(otpid[:12]), "unknown"
     return jsonify( result="ok" )
 
 @app.route('/checkYubikeyExists/<otpid>/<checksum>')
