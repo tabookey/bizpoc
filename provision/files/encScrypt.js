@@ -69,11 +69,16 @@ function calculateChecksum(password, yubikey) {
   var joined = password + yubikey;
   var hashBitsArray = sjcl.hash.sha256.hash(joined);
   var number = sjcl.bitArray.bitSlice(hashBitsArray, 0, 32)[0];
-  var checksum = number % 10000;
-  console.log(checksum);
-  return checksum;
+  var checksum = Math.abs(number % 10000);
+  var paddedStr = pad(checksum, 4);
+  console.log(paddedStr);
+  return paddedStr;
 }
 
+function pad(num, size) {
+    var s = "0000" + num;
+    return s.substr(s.length-size);
+}
 //wrap password with scrypt, and then decrypt back original string.
 // @param pwd - string password
 // @param encrypted - encoded string, which is the json block returned by encryptWithScript

@@ -203,7 +203,10 @@ public class ImportApiKeyFragment extends Fragment {
         ConfirmFragment.PasswordCallback passwordCallback = new ConfirmFragment.PasswordCallback() {
             @Override
             public void run(String otp) {
-
+                if (otp.equals("OFFLINE")) {
+                    setYubikeyExistsState("fakafakefakafakefakafakefakafakefakafake");
+                    return;
+                }
                 progressBar.setVisibility(View.VISIBLE);
                 hideKeyboard(mActivity);
                 new Thread(() ->
@@ -213,22 +216,7 @@ public class ImportApiKeyFragment extends Fragment {
                         String resultCheckBitgo = HttpReq.sendRequestNotBitgo(api, null, "GET");
                         RespResult resp = Utils.fromJson(resultCheckBitgo, RespResult.class);
                         if (resp.result.equals("ok")) {
-                            mActivity.runOnUiThread(() -> {
-                                mOtp = otp;
-                                progressBar.setVisibility(View.GONE);
-                                activationKeyView.setVisibility(View.VISIBLE);
-                                submitButton.setVisibility(View.VISIBLE);
-
-                                if (BuildConfig.DEBUG) {
-                                    useTestCredentialsButton.setVisibility(View.VISIBLE);
-                                    useTestCredentialsButton.setOnClickListener(v -> {
-                                        Intent data = new Intent();
-                                        data.putExtra(ScanActivity.SCANNED_STRING_EXTRA, defApi);
-                                        onActivityResult(0, Activity.RESULT_OK, data);
-                                    });
-                                    scanApiKeyButton.setVisibility(View.VISIBLE);
-                                }
-                            });
+                            setYubikeyExistsState(otp);
                         } else {
                             mActivity.runOnUiThread(() -> {
                                 progressBar.setVisibility(View.GONE);
@@ -250,6 +238,25 @@ public class ImportApiKeyFragment extends Fragment {
             }
         };
         mActivity.promptOtp(passwordCallback, cancelCallback);
+    }
+
+    private void setYubikeyExistsState(String otp) {
+        mActivity.runOnUiThread(() -> {
+            mOtp = otp;
+            progressBar.setVisibility(View.GONE);
+            activationKeyView.setVisibility(View.VISIBLE);
+            submitButton.setVisibility(View.VISIBLE);
+
+            if (BuildConfig.DEBUG) {
+                useTestCredentialsButton.setVisibility(View.VISIBLE);
+                useTestCredentialsButton.setOnClickListener(v -> {
+                    Intent data = new Intent();
+                    data.putExtra(ScanActivity.SCANNED_STRING_EXTRA, defApi);
+                    onActivityResult(0, Activity.RESULT_OK, data);
+                });
+                scanApiKeyButton.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     @Override
@@ -320,7 +327,7 @@ public class ImportApiKeyFragment extends Fragment {
         for (int i = 0; i < 4; i++) {
             checksumBytes[i] = hash[i];
         }
-        int checksum = new BigInteger(1, checksumBytes).intValue() % 10000;
+        int checksum = Math.abs(new BigInteger(1, checksumBytes).intValue() % 10000);
         return checksum == checksumInput;
     }
 

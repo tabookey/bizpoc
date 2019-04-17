@@ -57,6 +57,14 @@
             android:background="@null"/>
 
         <Button
+            android:id="@+id/offlineModeButton"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Offline"
+            android:background="@null"/>
+
+        <Button
             android:id="@+id/cancel_button"
             android:text="Cancel"
             style="?android:attr/buttonBarNegativeButtonStyle"

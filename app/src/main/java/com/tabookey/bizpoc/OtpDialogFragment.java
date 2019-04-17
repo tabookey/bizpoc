@@ -83,8 +83,15 @@ public class OtpDialogFragment extends DialogFragment {
         mIcon = view.findViewById(R.id.fingerprint_icon);
         mErrorTextView = view.findViewById(R.id.fingerprint_status);
         Button fakeOtpButton = view.findViewById(R.id.fakeOtpButton);
+        Button offlineModeButton = view.findViewById(R.id.offlineModeButton);
         if (BuildConfig.DEBUG) {
             fakeOtpButton.setVisibility(View.VISIBLE);
+            offlineModeButton.setVisibility(View.VISIBLE);
+            offlineModeButton.setOnClickListener(v -> {
+                getActivity().runOnUiThread(() -> {
+                    onOtpTagRecognised("OFFLINE");
+                });
+            });
             fakeOtpButton.setOnClickListener(v -> {
                 getActivity().runOnUiThread(() -> {
                     onOtpTagRecognised("cccjgjgkhcbbirdrfdnlnghhfgrtnnlgedjlftrbdeut");
