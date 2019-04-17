@@ -3,6 +3,7 @@ package com.tabookey.bizpoc;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
@@ -51,9 +52,13 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         String encryptedApiKey = SecretStorage.getPrefs(this).getString(SecretStorage.PREFS_API_KEY_ENCODED, null);
 
         if (encryptedApiKey == null) {
-            Fragment apiKeyFragment = new ImportApiKeyFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame_layout, apiKeyFragment).commit();
+            int delay = BuildConfig.DEBUG ? 0 : 3000;
+            new Handler().postDelayed(() -> {
+                Fragment apiKeyFragment = new ImportApiKeyFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.frame_layout, apiKeyFragment).commit();
+
+            }, delay);
             return;
         }
 
