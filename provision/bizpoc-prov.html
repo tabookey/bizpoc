@@ -134,13 +134,13 @@
 <li> Open mail, <b>"Bitgo Email Verification"</b>. Right-click on <b>"Click to Verify"</b> and open in <b>incognito window</b> again.
 <li> Paste password again to login<br>
 
-   * (password is not needed anymore, unless the incognito window is closed)
+   * (password <b> will be needed again </b> to join the wallet and to create an access token. Do not lose it. )
 
 <li> Add a Yubikey device to user.
 
 <li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><span id=wpwd></span> </font>
 <li> Open <a href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
-<li> Invite customer's email to enterprise.
+<li> Invite customer's email to enterprise. (In dropdown menu in top left choose ‘manage organisation’ -> ‘invite user’)
 <li> Switch to Customer's incognito window to accept invitation.
 <li> In <b>Admin</b> window: Create new wallet:
 
@@ -150,6 +150,7 @@
     <li> Wallet name: (customer name)
     <li> Click: <b>Secondary Password</b>. 
     <li> Paste from clipboard <i>wallet password</i> (twice), create wallet.
+    <li> Select "For small balances" as an option to generate Backup key</li>
     <li> Print <b>Bitgo Keycard PDF</b>
     <li> Enter activation code (from PDF) to activate wallet
     <li> Click <a href="javascript:'<H1>Wallet Password</H1><p>\n'+wpwd.innerText" target="print">Print Wallet Password</a>
@@ -164,7 +165,7 @@
 <li> Invite user to wallet with role "Spender"
     <li> switch to the customer's incognito window, to accept invitation to join wallet.
     
-<li> In <b>Admin</b> window: Create Customer's Access-Token:
+<li> In <b>Customer's</b> window: Create Customer's Access-Token:
     <ul>
     <li> in customer's window, top-right menu, User-Settings
     <li> Select, "Developer Options" and then "+ Add Access Token"
