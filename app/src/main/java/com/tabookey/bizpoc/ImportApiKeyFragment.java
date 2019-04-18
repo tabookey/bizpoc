@@ -46,7 +46,6 @@ public class ImportApiKeyFragment extends Fragment {
 
     private View progressBar;
     private SecretStorage secretStorage = new SecretStorage();
-    private static String checksum = "mychecksum";
     private static String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
     private MainActivity mActivity;
     private TextView testNameTextView;
@@ -148,7 +147,8 @@ public class ImportApiKeyFragment extends Fragment {
                 boolean didRequest = false;
                 boolean didReceiveValidResponse = false;
                 try {
-                    String api = String.format("http://192.168.1.243:5000/getEncryptedCredentials/%s%s/%s", mOtp, BuildConfig.DEBUG ? "-OK" : "", checksum);
+                    String checksum = blockEditText.getText().substring(12, 16);
+                    String api = String.format("http://192.168.1.243:5000/getEncryptedCredentials/%s/%s", mOtp, checksum);
                     String resp = HttpReq.sendRequestNotBitgo(api, null, "GET");
                     didRequest = true;
                     JsonNode json = Utils.fromJson(resp, JsonNode.class).get("encryptedCredentials");
@@ -212,7 +212,7 @@ public class ImportApiKeyFragment extends Fragment {
                 new Thread(() ->
                 {
                     try {
-                        String api = String.format("http://192.168.1.243:5000/checkYubikeyExists/%s/%s", otp, checksum);
+                        String api = String.format("http://192.168.1.243:5000/checkYubikeyExists/%s", otp);
                         String resultCheckBitgo = HttpReq.sendRequestNotBitgo(api, null, "GET");
                         RespResult resp = Utils.fromJson(resultCheckBitgo, RespResult.class);
                         if (resp.result.equals("ok")) {

@@ -41,7 +41,7 @@ function encryptWithScrypt( pwd, plaintext, cb) {
   salt=randomString(8)
   let scryptOptions = {
      salt,
-     N: 32768,   // CPU/memory cost parameter, must be power of two
+     N: 16384,   // CPU/memory cost parameter, must be power of two
                 // (alternatively, you can specify logN)
      r: 64,     // block size
      p: 4,      // parallelization parameter
