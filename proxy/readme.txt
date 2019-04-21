@@ -11,4 +11,8 @@ systemctl start bizpoc-proxy
 systemctl enable bizpoc-proxy
 
 view log:
-journalctl -u bizpoc-proxy
+journalctl -u bizpoc-proxy -f
+
+NOTE: greenlock creates certificate, and automatically updates it.
+debug server (port 8090) uses the same certificate, but doesn't get it update.
+if the debug server has stale certificate, then simply stop/start the service, so it will re-read new one.

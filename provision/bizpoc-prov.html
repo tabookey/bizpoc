@@ -5,44 +5,125 @@
             background-color: #0099cc;
         }
     </style>
+     <style media="screen">
+      .noPrint{ display: block; }
+      .yesPrint{ display: block !important; }
+    </style>
+    <style media="print">
+      .noPrint{ display: none; }
+      .yesPrint{ display: block !important; }
+    </style>
 </head>
 <body>
     <script src="files/axios.min.js"></script>
     <script src="files/scrypt-async.js"></script>
     <script src="files/sjcl.js"></script>
     <script src="files/encScrypt.js"></script>
+    <script src="files/bitgojs_min.js"></script>
     <script>
 
+        //proxy server (to allow API access from html)
+    bitgoTestServer = "https://bizpoc.ddns.tabookey.com:8090"
+    bitgoProdServer = "https://bizpoc.ddns.tabookey.com"
+
+    var username
+    var debugProvisioningUrl = "http://localhost:5000"
+    var releaseProvisioningUrl = "http://prov-bizpoc.ddns.tabookey.com"
+
+    function selectInputText(element) {
+        element.select()
+    }
     //from: http://jsfiddle.net/epinapala/WdeTM/4/
     function selectText(element) {
+        if ( element.type=='text' ) {
+            console.log( "selecting input: "+element )
+            return selectInputText(element)
+        }
+
+        console.log( "selecting span: "+element )
+
         var doc = document;
-        var text = doc.getElementById(element);    
 
         if (doc.body.createTextRange) { // ms
             var range = doc.body.createTextRange();
-            range.moveToElementText(text);
+            range.moveToElementText(element);
             range.select();
         } else if (window.getSelection) { // moz, opera, webkit
             var selection = window.getSelection();            
             var range = doc.createRange();
-            range.selectNodeContents(text);
+            range.selectNodeContents(element);
             selection.removeAllRanges();
             selection.addRange(range);
         }
     }
 
-    function selectAndCopy(element) {
+    function selectAndCopy(elementid) {
+        element=document.getElementById(elementid)
         selectText(element)
         document.execCommand('copy')
     }
 
     function genpwd(id) {
         var item = document.getElementById(id);    
-        item.innerText= id+"-"+randomString(20,36)
+        item.value = id+"-"+randomString(20,36)
         selectAndCopy(id)
     }
 
-    function genActivationKey(statusid, resultid,adminotp, userotp, accesstoken) {
+    async function verifyUserInfo(accessToken, statusid) {
+        var statusObj = document.getElementById(statusid);    
+        function status(msg) {
+            statusObj.innerHTML = msg
+        }
+        function error(msg) {
+            status("<font color=red>"+msg+"</font>")
+        }
+        status("")
+
+        try {
+            res = await verifyAccount(accessToken)
+
+            status("Validated: "+res)
+        } catch(e) {
+            console.log( e)
+            error("Verify failed: "+e)
+        }
+
+    }
+    async function verifyAccount( accessToken, otp, walletpwd ) {
+
+        istest = bitgoTestEnv.checked
+
+        env = istest ? "test": "prod" ;
+        coin = istest ? "teth" : "eth"
+
+        console.log( {accessToken})
+        bitgo = new BitGoJS.BitGo({customRootURI: istest?bitgoTestServer:bitgoProdServer, accessToken });
+        if ( !otp && !walletpwd ) {
+            let user = await bitgo.me()
+            //TODO: tried to automatically accept incoming share request...
+            //  failes on "missing prv", which is not documented param
+            // let wallets = bitgo.coin(coin).wallets()
+            // let walletShares = await wallets.listShares()
+            // let share = walletShares.incoming[0]
+            // if ( ! share )
+            //     throw new Error( "No pending wallet share for "+user.name.full)
+
+            // await  wallets.updateShare({walletShareId:share.id, state:'accepted'})
+            username = user.name.full
+            return user.name.full 
+        }
+
+        wallets = await bitgo.coin(coin).wallets().list()
+        wallet = wallets.wallets[0]
+
+        walletAddr = wallet._wallet.coinSpecific.baseAddress
+        await bitgo.unlock({otp})
+        await wallet.getPrv({walletPassphrase:walletpwd})
+        return "ok"
+    }
+
+    async function genActivationKey(statusid, resultid,adminotp, userotp, accesstoken) {
+
         var statusObj = document.getElementById(statusid)
         var result = document.getElementById(resultid);    
         function status(msg) {
@@ -53,8 +134,9 @@
         }
         status("")
 
-        var walletpwd = document.getElementById("wpwd").innerText
-        verify=!debugserver.checked
+        var walletpwd = document.getElementById("wpwd").value
+        console.log( "walletpwd=",walletpwd)
+        verify= true //!debugProvServer.checked
         if (verify) {
             if ( !walletpwd ) return error("no wallet password")
             if ( !adminotp ) return error( "Missing admin otp")
@@ -64,15 +146,24 @@
             if ( !adminotp) adminotp ="cccccckftlhc-OK"
             if ( !userotp ) userotp = "userotp"
         }
-
         key = randomString(12,10)
+        status( "verify account info..")
+
+        try {
+            await verifyAccount( accesstoken, userotp, walletpwd )
+        } catch(e) {
+            console.log(e)
+            return error("Verification failed: "+e)
+        }
+
         keyPadded = key.replace(/(\d\d\d\d)\B/g, "$1-")
 
         // selectAndCopy(resultid)
         checksum = calculateChecksum(key, userotp.substring(0,12))
         keyPadded = keyPadded+"-"+checksum
 
-        serverUrl = "http://localhost:5000/putEncryptedCredentials/" + adminotp+"/"+userotp+"/"+checksum
+        provisioningServer = debugProvServer.checked ? debugProvisioningUrl : releaseProvisioningUrl
+        serverUrl = provisioningServer + "/putEncryptedCredentials/" + adminotp+"/"+userotp+"/"+checksum
 
         provisionInfo={
             prod:!bitgoTestEnv.checked,
@@ -81,18 +172,36 @@
         }
         console.log( JSON.stringify(provisionInfo,null,2))
 
-        status( "calculating..")
+        status( "calculating scrypt-access-key..")
         encryptWithScrypt( key, JSON.stringify(provisionInfo), (err,encryptedCreds) => {
             if (err) return error(err)
 
             status( "uploading..")
 
             axios.post( serverUrl, { encryptedCredentials: JSON.parse(encryptedCreds) }) 
-                .then( res=>status("<p>Uploaded<br>\n"+ "Activation key for user: "+keyPadded+"<p>") )
+                .then( res=>status("<p>Uploaded.<p>\n"+
+                    "Customer OTP-ID: "+userotp.substring(0,12)+"<br>\n" +
+                    "Activation key: "+keyPadded+"<p>" ) )
                 .catch( (err)=>error( (err.response && err.response.data) || err ) )
         })
-
     }
+
+    function printPage(title, str) {
+        w = window.open()
+        w.document.write(
+            '<body onAfterPrint="window.close()">' + 
+            "<H1>"+title+"</H1>\n" +
+            str + "\n</body>" )
+
+        w.window.print()
+    }
+
+    function printWalletPassword() {
+        printPage("Wallet Password",
+            ( username ? "Customer: "+username+"<p>\n":"" )+
+            "Password: " + wpwd.value )
+    }
+
 </script>
 
 <title>BizPOC New Customer Provisioning Flow</title>
@@ -108,11 +217,14 @@
 
 <h3>Flow</h3>
 
-<input type="checkbox" id=debugserver checked="true" >  DEBUG: Use localhost server.<br>
-<input type="checkbox" id=bitgoTestEnv checked="false" >  DEBUG: Use Bitgo TESTNET<br>
+<input type="checkbox" id=debugProvServer >  DEBUG: Use localhost provisioning server.<br>
+<input type="checkbox" id=bitgoTestEnv >  DEBUG: Use Bitgo TESTNET<br>
 
+<script>
+    bitgoTestEnv.checked = window.location.href.indexOf('debug')>0
+</script>
 <ol>
-<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> -  <font size=1><span id=pwd></span> </font>
+<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> -  <font size=1><input size=2 id=pwd> </font>
 <font size=1><ul>
     <li> password used by customer's web user, during provisioning only.
     <li> not saved anywhere, since we're generating "Access key" for the app.
@@ -138,9 +250,28 @@
 
 <li> Add a Yubikey device to user.
 
-<li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><span id=wpwd></span> </font>
+<li> Create Customer's Access-Token:
+    <ul>
+    <li> in customer's window, top-right menu, User-Settings
+    <li> Select, "Developer Options" and then "+ Add Access Token"
+    <li> Give it a Label
+    <li> scroll to the end of the page (very long..)
+    <li> Enter "<b>IP Address Allowed</b>": <span id=serverIP>35.177.187.77 <input type=submit value="Copy" onclick="selectAndCopy('serverIP')">
+    <li> Check View, Spend, Full-Administrative-Access and "agree"
+    <ul>
+        <li> (that is, all checkboxes except "create wallets")
+    </ul>
+    <li> Click <b>"+Add Token"</b>, enter Yubikey
+    <li> copy the on-screen access token
+    <li> Paste access-token here: <input id=accesstoken placeholder="{paste}"> <input type=submit value="Verify" onclick="verifyUserInfo(accesstoken.value, 'userinfo')"> <span id=userinfo></span>
+    </ul>
+
+<li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><input size=2 id=wpwd> </font>
 <li> Open <a href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
-<li> Invite customer's email to enterprise. (In dropdown menu in top left choose ‘manage organisation’ -> ‘invite user’)
+<li> Invite customer's email to enterprise.
+    <font size=1>
+        <ul><li> Top/left menu, select "Manage Organization" and <b>Invite Users</b>, as role "Member"</ul>
+    </font>
 <li> Switch to Customer's incognito window to accept invitation.
 <li> In <b>Admin</b> window: Create new wallet:
 
@@ -149,11 +280,11 @@
     <li> <b>Quick Setup</b>, click "Next"
     <li> Wallet name: (customer name)
     <li> Click: <b>Secondary Password</b>. 
-    <li> Paste from clipboard <i>wallet password</i> (twice), create wallet.
-    <li> Select "For small balances" as an option to generate Backup key</li>
-    <li> Print <b>Bitgo Keycard PDF</b>
+    <li> Paste from clipboard <i>wallet password</i> (twice), click "Next"
+    <li> Select "For Small Balances", "Next" to create wallet.
+    <li> Print the generated <b>Bitgo Keycard PDF</b>
     <li> Enter activation code (from PDF) to activate wallet
-    <li> Click <a href="javascript:'<H1>Wallet Password</H1><p>\n'+wpwd.innerText" target="print">Print Wallet Password</a>
+    <li> Click <input type=submit value="Print Wallet Password page" onclick="printWalletPassword()">
     </ul>
 
 <li> Invite guardians to wallet with role "Admin"
@@ -164,21 +295,8 @@
     </ul>
 <li> Invite user to wallet with role "Spender"
     <li> switch to the customer's incognito window, to accept invitation to join wallet.
-    
-<li> In <b>Customer's</b> window: Create Customer's Access-Token:
-    <ul>
-    <li> in customer's window, top-right menu, User-Settings
-    <li> Select, "Developer Options" and then "+ Add Access Token"
-    <li> give it a Label
-    <li> scroll to the end of the page (very long..)
-    <li> Enter "IP Address Allowed": <b><span id=serverIP>35.177.187.77</b> <input type=submit value="Copy" onclick="selectAndCopy('serverIP')">
-    <li> Check View, Spend, Full-Administrative-Access and "agree"
-    <li> (that is, all checkboxes except "create wallets")
-    <li> Click <b>"+Add Token"</b>, enter Yubikey
-    <li> copy the on-screen access token
-    <li> Paste access-token here: <input id=accesstoken placeholder="{paste}">
-    </ul>
-    
+
+
 <li> Change wallet Policy (can only be done after above users accepted invitations)
     <ul>
     <li> Check: Approve All Outgoing Transactions

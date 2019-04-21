@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+
+$in=shift;
+$out=shift;
+
+die "usage: $0 {htmlfile} {outfile}\n" unless $out;
+
+open( IN, $in ) || die "unable to read: $in\n";
+
+while (<IN>) {
+	s/<script\s+src="(.*?)"\s*>/readScriptSrc($1)/ge;
+	print;
+}
+
+sub readScriptSrc {
+	($file)=@_;
+	die "not found: $file\n" unless -r $file;
+	return "<script>".`cat $file|grep -v "^//"`;
+}
+
+

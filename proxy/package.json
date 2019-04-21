@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.16.4",
     "greenlock-express": "^2.6.8",
     "http-proxy-middleware": "^0.19.1",
