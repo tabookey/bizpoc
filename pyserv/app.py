@@ -12,7 +12,8 @@ class Data:
         self.checksum=checksum
 
          # 123456789012
-masters=[ "cccccckftlhc" #dror's
+masters=[ "cccccckftlhc", #dror's
+          "cccccckftivv", #alex's
         ]
 app.data=dict()
 
@@ -21,14 +22,13 @@ app.allowReplay=False
 
 @app.errorhandler(AssertionError)
 def handle_assertion_error(error):
-    return str(dict(error=str(error))), 400
+    return jsonify(name="failed", error=str(error)), 400
 
-def verify(otp):
+def verify(otp,name):
     c=requests.get(app.YUBI_API+otp ).content
-    res=re.search( r"(?:\nstatus=(\w+))?", c).group(1) or ""
-    assert res=='OK' or ( app.allowReplay and res=='REPLAYED_REQUEST' ), "OTP failed:" + res
-
-app.verifyOtp=verify
+    searchres=re.search( r"\n(?:status=(\S+))", c)
+    res = searchres.group(1) if searchres else "no-status"
+    assert res=='OK' or ( app.allowReplay and res=='REPLAYED_REQUEST' ), "OTP "+name+" failed:" + res
 
 @app.route('/checkYubikeyExists/<otpid>')
 def checkYubikeyExists1(otpid):
@@ -45,13 +45,16 @@ def checkYubikeyExists(otpid, checksum):
 def getEncryptedCredentials(otp,checksum):
     id=otp[:12]
     checkYubikeyExists(otp,checksum)
-    verify(otp) #verify only after validating checksum: avoid "POP" if checksum doesn't match
+    verify(otp, "user") #verify only after validating checksum: avoid "POP" if checksum doesn't match
     return jsonify( encryptedCredentials=app.data.pop(id).creds )
 
 @app.route("/putEncryptedCredentials/<masterotp>/<otpid>/<checksum>", methods=['POST'])
 def putEncryptedCredentials(masterotp,otpid, checksum):
     assert masterotp[:12] in masters, "Invalid master OTP" #validate master is in the list
-    verify(masterotp)
+    verify(masterotp, "master")
     #not validating client otp: we trust masterotp
     app.data[ otpid[:12] ] = Data(request.get_json()["encryptedCredentials"] ,checksum)
     return jsonify( result="put" )
+
+if __name__ == "__main__":
+	app.run(host='0.0.0.0', port=443, ssl_context=('certs/cert.pem', 'certs/privkey.pem'))

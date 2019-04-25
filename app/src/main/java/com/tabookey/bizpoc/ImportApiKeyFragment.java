@@ -55,6 +55,13 @@ public class ImportApiKeyFragment extends Fragment {
     private BlockEditText blockEditText;
     private TextView invalidCodeWarning;
 
+    static String debugProvisionServerUrl = "http://192.168.1.243:5000";
+    static String prodProvisionServerUrl = "https://prov-bizpoc.ddns.tabookey.com";
+
+    static String provisionServerUrl =
+//            BuildConfig.DEBUG ? debugProvisionServerUrl :
+            prodProvisionServerUrl;
+
     private String mOtp;
     private Button useTestCredentialsButton;
 
@@ -148,7 +155,7 @@ public class ImportApiKeyFragment extends Fragment {
                 boolean didReceiveValidResponse = false;
                 try {
                     String checksum = blockEditText.getText().substring(12, 16);
-                    String api = String.format("http://192.168.1.243:5000/getEncryptedCredentials/%s/%s", mOtp, checksum);
+                    String api = String.format(provisionServerUrl +"/getEncryptedCredentials/%s/%s", mOtp, checksum);
                     String resp = HttpReq.sendRequestNotBitgo(api, null, "GET");
                     didRequest = true;
                     JsonNode json = Utils.fromJson(resp, JsonNode.class).get("encryptedCredentials");
@@ -212,7 +219,7 @@ public class ImportApiKeyFragment extends Fragment {
                 new Thread(() ->
                 {
                     try {
-                        String api = String.format("http://192.168.1.243:5000/checkYubikeyExists/%s", otp);
+                        String api = String.format(provisionServerUrl+"/checkYubikeyExists/%s", otp);
                         String resultCheckBitgo = HttpReq.sendRequestNotBitgo(api, null, "GET");
                         RespResult resp = Utils.fromJson(resultCheckBitgo, RespResult.class);
                         if (resp.result.equals("ok")) {

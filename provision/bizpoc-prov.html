@@ -28,7 +28,7 @@
 
     var username
     var debugProvisioningUrl = "http://localhost:5000"
-    var releaseProvisioningUrl = "http://prov-bizpoc.ddns.tabookey.com"
+    var releaseProvisioningUrl = "https://prov-bizpoc.ddns.tabookey.com"
 
     function selectInputText(element) {
         element.select()
@@ -64,7 +64,11 @@
     }
 
     function genpwd(id) {
-        var item = document.getElementById(id);    
+        var item = document.getElementById(id);
+        if ( item.value ) {
+            if ( !confirm( "Already created "+(id=="pwd"?"user":"wallet")+" password. Are you sure you want to recreate?"))
+                return
+        }
         item.value = id+"-"+randomString(20,36)
         selectAndCopy(id)
     }
@@ -180,9 +184,10 @@
 
             axios.post( serverUrl, { encryptedCredentials: JSON.parse(encryptedCreds) }) 
                 .then( res=>status("<p>Uploaded.<p>\n"+
+                    ( username ? "Customer: "+username+"<br>\n":"" )+
                     "Customer OTP-ID: "+userotp.substring(0,12)+"<br>\n" +
                     "Activation key: "+keyPadded+"<p>" ) )
-                .catch( (err)=>error( (err.response && err.response.data) || err ) )
+                .catch( (err)=>error( JSON.stringify( (err.response && err.response.data) || err ) ) )
         })
     }
 
@@ -224,7 +229,7 @@
     bitgoTestEnv.checked = window.location.href.indexOf('debug')>0
 </script>
 <ol>
-<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> -  <font size=1><input size=2 id=pwd> </font>
+<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> -  <font size=1><input size=3 id=pwd> </font> <input type=submit value="Copy" onclick="selectAndCopy('pwd')">
 <font size=1><ul>
     <li> password used by customer's web user, during provisioning only.
     <li> not saved anywhere, since we're generating "Access key" for the app.
@@ -245,8 +250,6 @@
 <li> Close window.
 <li> Open mail, <b>"Bitgo Email Verification"</b>. Right-click on <b>"Click to Verify"</b> and open in <b>incognito window</b> again.
 <li> Paste password again to login<br>
-
-   * (password <b> will be needed again </b> to join the wallet and to create an access token. Do not lose it. )
 
 <li> Add a Yubikey device to user.
 

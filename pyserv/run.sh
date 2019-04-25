@@ -7,13 +7,11 @@ if [ ! -d $dir/venv ]; then
         cd $dir
         virtualenv venv
         source venv/bin/activate
-        pip install flask flask-cors requests
+        pip install flask flask-cors requests pyopenssl
 fi
 
 source $dir/venv/bin/activate
 export FLASK_ENV=production
-case "$1" in 
-	"") flask run -h 0.0.0.0 ;;
-	*) flask $*
-esac
+cd $dir
+python app.py
 
