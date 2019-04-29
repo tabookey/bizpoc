@@ -22,7 +22,7 @@ public class HttpReq {
 
     //note that we have one proxy, but it can determine actual server based on "x-origin" header.
 
-    static String testUrl = "https://test.bitgo.com";
+    static String testUrl = "https://bizpoc.ddns.tabookey.com:8090";
     static String prodUrl = "https://bizpoc.ddns.tabookey.com";
 
     private final String accessKey;

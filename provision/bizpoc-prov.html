@@ -138,7 +138,9 @@
         }
         status("")
 
-        var walletpwd = document.getElementById("wpwd").value
+        // we shared the wallet with the customer, so from his perspective, 
+        // the wallet password is the user's password. only the admin has different pwd for wallet and user.  
+        var walletpwd = document.getElementById("pwd").value
         console.log( "walletpwd=",walletpwd)
         verify= true //!debugProvServer.checked
         if (verify) {
@@ -147,6 +149,7 @@
             if ( !userotp ) return error( "Missing customer otp")
             if ( !accesstoken.startsWith("v2x")) error("No access token")
         } else {
+            //debug-only
             if ( !adminotp) adminotp ="cccccckftlhc-OK"
             if ( !userotp ) userotp = "userotp"
         }
@@ -223,20 +226,43 @@
 <h3>Flow</h3>
 
 <input type="checkbox" id=debugProvServer >  DEBUG: Use localhost provisioning server.<br>
-<input type="checkbox" id=bitgoTestEnv >  DEBUG: Use Bitgo TESTNET<br>
+<input type="checkbox" id=bitgoTestEnv onclick='toggleDebug(this.checked)'>  DEBUG: Use Bitgo TESTNET<br>
 
 <script>
     bitgoTestEnv.checked = window.location.href.indexOf('debug')>0
+
+    function toggleDebug(on) {
+
+        document.getElementById('pwd').readOnly = !on
+        document.getElementById('wpwd').readOnly = !on
+
+        seturl( 'signup', on)
+        seturl( 'mainlogin', on )
+    }
+
+    function seturl(id, debug) {
+        aref = document.getElementById(id)
+        text = aref.innerText
+        if ( debug ) {
+            text = text.replace( "www", "test")
+        } else {
+            text = text.replace( "test", "www")
+        }
+        aref.innerHTML = text
+        aref.href = text
+
+    }
 </script>
 <ol>
-<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> -  <font size=1><input size=3 id=pwd> </font> <input type=submit value="Copy" onclick="selectAndCopy('pwd')">
+<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> - 
+     <font size=1><input size=5 id=pwd readonly> </font> <input type=submit value="Copy" onclick="selectAndCopy('pwd')">
 <font size=1><ul>
     <li> password used by customer's web user, during provisioning only.
     <li> not saved anywhere, since we're generating "Access key" for the app.
     <li> can't be used later (by admin), since login requires Yubikey.
 </ul></font>
 
-<li> In <b>incognito</b> window, open <a href="https://www.bitgo.com/login", target="_incognito">https://www.bitgo.com/login</a>
+<li> In <b>incognito</b> window, open <a id="signup" href="https://www.bitgo.com/info/signup", target="_incognito">https://www.bitgo.com/info/signup</a>
 
 <li> Register customer:
 
@@ -269,19 +295,20 @@
     <li> Paste access-token here: <input id=accesstoken placeholder="{paste}"> <input type=submit value="Verify" onclick="verifyUserInfo(accesstoken.value, 'userinfo')"> <span id=userinfo></span>
     </ul>
 
-<li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><input size=2 id=wpwd> </font>
-<li> Open <a href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
+<li> Open <a id=mainlogin href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
 <li> Invite customer's email to enterprise.
     <font size=1>
         <ul><li> Top/left menu, select "Manage Organization" and <b>Invite Users</b>, as role "Member"</ul>
     </font>
-<li> Switch to Customer's incognito window to accept invitation.
+<li> On Customer's incognito window: select enterprise from top/left menu.
 <li> In <b>Admin</b> window: Create new wallet:
 
     <ul>
-    <li> Coin: <b>Ethereum</b>, click "Next"
+    <li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><input size=4 id=wpwd readonly> </font><input type=submit value="Copy" onclick="selectAndCopy('wpwd')">
+    <li> Select "Wallets", click "Create Wallet"
+    <li> Select coin: <b>Ethereum</b>, click "Create"
     <li> <b>Quick Setup</b>, click "Next"
-    <li> Wallet name: (customer name)
+    <li> Wallet name: (customer name), click "Next"
     <li> Click: <b>Secondary Password</b>. 
     <li> Paste from clipboard <i>wallet password</i> (twice), click "Next"
     <li> Select "For Small Balances", "Next" to create wallet.
@@ -300,7 +327,7 @@
     <li> switch to the customer's incognito window, to accept invitation to join wallet.
 
 
-<li> Change wallet Policy (can only be done after above users accepted invitations)
+<li> Change wallet <b>Policy</b> (can only be done after above users accepted invitations)
     <ul>
     <li> Check: Approve All Outgoing Transactions
     <li> Check: Require Multiple (2) Admin Approvals

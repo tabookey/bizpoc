@@ -6,10 +6,12 @@ $out=shift;
 die "usage: $0 {htmlfile} {outfile}\n" unless $out;
 
 open( IN, $in ) || die "unable to read: $in\n";
+die "$out: already exists\n" if -r $out;
+open OUT, ">$out";
 
 while (<IN>) {
 	s/<script\s+src="(.*?)"\s*>/readScriptSrc($1)/ge;
-	print;
+	print OUT;
 }
 
 sub readScriptSrc {
