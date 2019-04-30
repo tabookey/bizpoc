@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         if (encryptedApiKey == null) {
             int delay = BuildConfig.DEBUG ? 0 : 3000;
             new Handler().postDelayed(() -> {
-                Fragment apiKeyFragment = new ImportApiKeyFragment();
+                Fragment welcomeFragment = new WelcomeFragment();
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.frame_layout, apiKeyFragment).commit();
+                        .replace(R.id.frame_layout, welcomeFragment).commit();
 
             }, delay);
             return;
