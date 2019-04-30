@@ -3,6 +3,8 @@ const express = require('express')
 const proxy = require('http-proxy-middleware')
 var cors = require('cors')
 
+jwtverify = require('./jwtverify')
+
 const greenlock_express = require('greenlock-express')
 const url = require('url')
 const fs = eval("require('fs')")
@@ -42,7 +44,45 @@ server.use((req, res, next) => {
     next();
 });
 
-server.use( '/api', proxy( {target, changeOrigin:true, logLevel:"debug" }))
+myProxy=proxy( {target, changeOrigin:true, logLevel:"debug" })
+
+//getKey requests must have safetynet header
+function validateSafetynet(req,res,next) {
+    //bitgo requests that require "x-safetynet" header 
+    let requestsWithSafetyNet= '/api/v2/\\w+/(key|wallet/)'
+
+    if (!req.originalUrl.match(requestsWithSafetyNet) ){
+        //other requests are passed-through.
+        next()
+    }
+
+    header = req.headers["x-safetynet"]
+    if ( !header ) 
+        return res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
+    jwtverify.validateJwt(header).then(res=>{
+        if ( res.error ) { 
+            throw new Error(res.error)
+        }
+        next()
+    }).catch( err=> {
+        res.send("Safetynet failure: "+err+"\n").status(400)
+    })
+
+}
+
+//wrapper for safetynet check. used by the provisioning server.
+server.get( "/safetynet/:jwt", (req,res) => {
+    jwtverify.validateJwt(req.params.jwt)
+        .then(ret=>{
+            res.send(ret)
+        })
+        .catch(err=>{
+            res.send(err.toString(),400)
+        })
+})
+
+// server.use( '/api/v2/teth/key/', validateSafetynet, myProxy )
+server.use( '/api', validateSafetynet, myProxy )
 
 if ( !greenlock ) {
     var keyfile = "certs/live/"+hostname+"/privkey.pem"
