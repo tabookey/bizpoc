@@ -54,11 +54,14 @@ function validateSafetynet(req,res,next) {
     if (!req.originalUrl.match(requestsWithSafetyNet) ){
         //other requests are passed-through.
         next()
+	return
     }
 
     header = req.headers["x-safetynet"]
-    if ( !header ) 
-        return res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
+    if ( !header ) {
+        res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
+	return
+    }
     jwtverify.validateJwt(header).then(res=>{
         if ( res.error ) { 
             throw new Error(res.error)
