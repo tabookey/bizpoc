@@ -89,7 +89,7 @@ server.use( '/api', validateSafetynet, myProxy )
 
 if ( !greenlock ) {
     var keyfile = "certs/live/"+hostname+"/privkey.pem"
-    var certfile = "certs/live/"+hostname+"/cert.pem"
+    var certfile = "certs/live/"+hostname+"/fullchain.pem"
 
 	if ( https ) {
         counter=5
