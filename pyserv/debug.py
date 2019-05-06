@@ -2,9 +2,10 @@ from flask import Flask
 import re
 from app import app,verify,jsonify
 
+port=8080
 app.allowReplay=True
-#app.YUBI_API="http://localhost:6000/mock_verify/"
-app.YUBI_API="https://prov-bizpoc.ddns.tabookey.com/mock_verify/"
+app.YUBI_API="http://localhost:"+str(port)+"/mock_verify/"
+#app.YUBI_API="https://prov-bizpoc.ddns.tabookey.com/mock_verify/"
 
 #yubimock=Flask("yubimock")
 
@@ -21,4 +22,7 @@ def dummy_verify(otp):
 
 
 if __name__ == "__main__":
-	app.run(host='0.0.0.0', port=443, ssl_context=('certs/cert.pem', 'certs/privkey.pem'))
+    if port == 443:
+	app.run(host='0.0.0.0', port=port, ssl_context=('certs/cert.pem', 'certs/privkey.pem'))
+    else:
+	app.run(host='0.0.0.0', port=port)
