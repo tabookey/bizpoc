@@ -19,6 +19,9 @@ masters=[ "cccccckftlhc", #dror's
 app.data=dict()
 
 app.YUBI_API='https://api2.yubico.com/wsapi/2.0/verify?id=1&nonce=1234567890123456&otp='
+
+app.VERIFY_SAFETYNET='https://bizpoc.ddns.tabookey.com/safetynet/'
+
 app.allowReplay=False
 
 @app.errorhandler(AssertionError)
@@ -28,7 +31,7 @@ def handle_assertion_error(error):
 def verify(otp,name):
     c=requests.get(app.YUBI_API+otp ).content
     searchres=re.search( r"\n(?:status=(\S+))", c)
-    res = searchres.group(1) if searchres else "no-status"
+    res = searchres.group(1) if searchres else "no-status" + app.YUBI_API
     assert res=='OK' or ( app.allowReplay and res=='REPLAYED_REQUEST' ), "OTP "+name+" failed:" + res
 
 @app.route('/checkYubikeyExists/<otpid>')
@@ -47,6 +50,9 @@ def getEncryptedCredentials(otp,checksum):
     id=otp[:12]
     checkYubikeyExists(otp,checksum)
     verify(otp, "user") #verify only after validating checksum: avoid "POP" if checksum doesn't match
+
+    safetyres=requests.get( app.VERIFY_SAFETYNET+str(request.headers.get('x-safetynet')) )
+    assert safetyres.status_code == 200 and safetyres.content.nonce, "failed to verify safetynet: "+str(safetyres.content)
     return jsonify( encryptedCredentials=app.data.pop(id).creds )
 
 @app.route("/putEncryptedCredentials/<masterotp>/<otpid>/<checksum>", methods=['POST'])
