@@ -235,7 +235,7 @@ public class ImportApiKeyFragment extends Fragment {
                 {
                     try {
                         String api = String.format(provisionServerUrl + "/checkYubikeyExists/%s", otp);
-                        String resultCheckBitgo = HttpReq.sendRequestNotBitgo(api, null, "GET");
+                        String resultCheckBitgo = HttpReq.sendRequestNotBitgo(api, null, "GET", null);
                         RespResult resp = Utils.fromJson(resultCheckBitgo, RespResult.class);
                         if (resp.result.equals("ok")) {
                             setYubikeyExistsState(otp);
