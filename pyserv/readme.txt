@@ -8,24 +8,36 @@ it does not automatically restart, and should manually be restarted in case the 
 
 - configure .ssh/config entry:
   host prov-bizpoc
-        hostname 52.56.73.11
+        hostname prov-bizpoc.ddns.tabookey.com
+        user ubuntu
+        ForwardAgent yes
+
+  host dprov-bizpoc
+	hostname dprov-bizpoc.ddns.tabookey.com
         user ubuntu
         ForwardAgent yes
 
 - initial setup:
-	ssh prov-bizpoc mkdir prov
+	NOTE: ssh, scp hostname is taken from above sshconfig
+	ssh dprov-bizpoc mkdir prov
 	scp pyserv/run.sh pyserv/app.py prov-bizpoc:prov/
-	ssh prov-bizpoc
-	
+	ssh dprov-bizpoc
+
+	HOSTNAME=dprov-bizpoc.ddns.tabookey.com	
 	cd prov
 	mkdir certs
-	ln -s /etc/letsencrypt/live/prov-bizpoc.ddns.tabookey.com/fullchain.pem certs/cert.pem
-	ln -s /etc/letsencrypt/live/prov-bizpoc.ddns.tabookey.com/privkey.pem certs/privkey.pem
+	ln -s /etc/letsencrypt/live/$HOSTNAME/fullchain.pem certs/cert.pem
+	ln -s /etc/letsencrypt/live/$HOSTNAME/privkey.pem certs/privkey.pem
 
 - certificate created with certbot: MUST BE REPEATED MANUALLY every 2 months
-	sudo certbot certonly --standalone --preferred-challenges http -d prov-bizpoc.ddns.tabookey.com
+	sudo apt-get update
+	sudo apt-get install certbot
+	sudo certbot certonly --standalone --preferred-challenges http -d $HOSTNAME
 
-run server:
+-install virtualenv
+	sudo apt-get install virtualenv
+
+run server: (initial runs installs the virtualenv and takes longer)
 	sudo ./run.sh &
 	#following commands "break the bridge", to make the production server inaccessible
 	sudo pkill -f ssh 

@@ -27,7 +27,8 @@
     bitgoProdServer = "https://bizpoc.ddns.tabookey.com"
 
     var username
-    var debugProvisioningUrl = "http://localhost:5000"
+    //var debugProvisioningUrl = "http://localhost:5000"
+    var debugProvisioningUrl = "https://prov-bizpoc.ddns.tabookey.com"
     var releaseProvisioningUrl = "https://prov-bizpoc.ddns.tabookey.com"
 
     function selectInputText(element) {
@@ -225,7 +226,7 @@
 
 <h3>Flow</h3>
 
-<input type="checkbox" id=debugProvServer >  DEBUG: Use localhost provisioning server.<br>
+<input type="checkbox" id=debugProvServer >  DEBUG: Use dprov provisioning server.<br>
 <input type="checkbox" id=bitgoTestEnv onclick='toggleDebug(this.checked)'>  DEBUG: Use Bitgo TESTNET<br>
 
 <script>
