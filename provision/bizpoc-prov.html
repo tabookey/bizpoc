@@ -69,7 +69,7 @@
             if ( !confirm( "Already created "+(id=="pwd"?"user":"wallet")+" password. Are you sure you want to recreate?"))
                 return
         }
-        item.value = id+"-"+randomString(20,36)
+        item.value = id+"-"+randomString(50,36)
         selectAndCopy(id)
     }
 
@@ -317,15 +317,17 @@
     <li> Click <input type=submit value="Print Wallet Password page" onclick="printWalletPassword()">
     </ul>
 
-<li> Invite guardians to wallet with role "Admin"
+<li> Invite user to wallet with role "Spender"
     <ul>
     <li> must use "Select people in your organization", and NOT "Invite new users" for both guardians and customer
+    <li> switch to the customer's incognito window, to accept invitation to join wallet.
+    </ul>
+
+<li> Invite guardians to wallet with role "Admin"
+    <ul>
     <li> requires <i>wallet password</i>. Its still in the clipboard, so paste it.
     <li> make sure guardians accept invitation to join wallet.
     </ul>
-<li> Invite user to wallet with role "Spender"
-    <li> switch to the customer's incognito window, to accept invitation to join wallet.
-
 
 <li> Change wallet <b>Policy</b> (can only be done after above users accepted invitations)
     <ul>
@@ -349,7 +351,8 @@
      <b><div id=genstatus></div></b>
     <li> Save above activation key (until user receives Yubikey) 
     </ul>
-
+<li>Put initial deposit $4.99 in ETH into wallet.
+   
 <li> Send Yubikey to user.
 </ol>
 <h3> After Yubikey is received by customer: </h3>
