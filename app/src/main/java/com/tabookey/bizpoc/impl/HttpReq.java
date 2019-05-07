@@ -5,6 +5,8 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.BuildConfig;
 
+import java.util.Map;
+
 import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -49,16 +51,14 @@ public class HttpReq {
 
     public OkHttpClient getClient() { return client; }
 
-    public String get(String api, Object... params) {
-        if ( params.length>0 )
-            api = String.format(api, params);
-        return sendRequest(api, null,null);
+    public <T> T get(String api, Class<T> cls, Object... params) {
+        return get(api, cls, null, params);
     }
 
-    public <T> T get(String api, Class<T> cls, Object... params) {
+    public <T> T get(String api, Class<T> cls, Map<String, String> headers, Object... params) {
         if ( params.length>0 )
             api = String.format(api, params);
-        return fromJson(sendRequest(api,null,null), cls);
+        return fromJson(sendRequest(api,null,null, headers), cls);
     }
 
     public <T> T put(String api, Object data, Class<T> cls) {
@@ -69,7 +69,10 @@ public class HttpReq {
         return fromJson(sendRequest(api,data,"POST"), cls);
     }
 
-    public String sendRequest(String api, Object data, String method ) {
+    public String sendRequest(String api, Object data, String method) {
+        return sendRequest(api, data, method, null);
+    }
+    public String sendRequest(String api, Object data, String method, Map<String, String> headers) {
         Request.Builder bld = new Request.Builder();
 
         bld.url(host+api);
@@ -77,6 +80,13 @@ public class HttpReq {
         if ( data!=null ) {
             RequestBody body = RequestBody.create(MediaType.parse("application/json"), toJson(data));
             bld.method(method==null ? "PUT":method, body);
+        }
+
+        if (headers != null) {
+            for (String headerKey : headers.keySet()) {
+                //noinspection ConstantConditions
+                bld.addHeader(headerKey, headers.get(headerKey));
+            }
         }
 
         BitgoHmac.addRequestHeaders(bld, accessKey);
@@ -106,56 +116,20 @@ public class HttpReq {
         }
     }
 
-    private static int fakeCount = 0;
-    public static String sendRequestNotBitgo(String api, Object data, String method ) {
-        if (api.equals("checkYubikeyExists")){
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (++fakeCount < 0) {
-                return "{\"result\":\"sdfg\"}";
-            }
-            return "{\"result\":\"ok\"}";
-
-
-        }
-        if (api.equals("getEncodedCredentials")){
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return "{\n" +
-                    "  \"enc\": {\n" +
-                    "    \"iv\": \"pz0laXGaH510/8FQWYMVEg==\",\n" +
-                    "    \"v\": 1,\n" +
-                    "    \"iter\": 1000,\n" +
-                    "    \"ks\": 128,\n" +
-                    "    \"ts\": 64,\n" +
-                    "    \"mode\": \"ccm\",\n" +
-                    "    \"adata\": \"\",\n" +
-                    "    \"cipher\": \"aes\",\n" +
-                    "    \"salt\": \"MEO2U83OdB4=\",\n" +
-                    "    \"ct\": \"4QG8N6LT5U1lXAOQWcx1LeBgUos/mqJw3RfvU3PC8+IP+zGywgDC8ReHb9t313JIzfrRS3bMiEl82T0h85ynBZETv4ALaNRGskRyfbOOYaYT0LMx8aXTA4QOwNQ0W1unpimqkB+B18SQQ0mV6RFk8bN6aDPLVH3pAdprNXk=\"\n" +
-                    "  },\n" +
-                    "  \"scryptOptions\": {\n" +
-                    "    \"salt\": \"salt\",\n" +
-                    "    \"N\": 8192,\n" +
-                    "    \"r\": 64,\n" +
-                    "    \"p\": 4,\n" +
-                    "    \"dkLen\": 32\n" +
-                    "  }\n" +
-                    "}";
-            // Decrypts to: {"prod":false,"token":"v2xtoken","password":"passphrase"}
-        }
+    public static String sendRequestNotBitgo(String api, Object data, String method, Map<String, String> headers) {
         Request.Builder bld = new Request.Builder();
 
         bld.url(api);
         if ( data!=null ) {
             RequestBody body = RequestBody.create(MediaType.parse("application/json"), toJson(data));
             bld.method(method==null ? "PUT":method, body);
+        }
+
+        if (headers != null) {
+            for (String headerKey : headers.keySet()) {
+                //noinspection ConstantConditions
+                bld.addHeader(headerKey, headers.get(headerKey));
+            }
         }
 
         try {

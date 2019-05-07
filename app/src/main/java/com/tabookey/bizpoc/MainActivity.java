@@ -18,6 +18,8 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
+import com.tabookey.bizpoc.utils.SafetyNetHelper;
+import com.tabookey.bizpoc.utils.SafetyNetResponse;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public static String DETAILS_FRAGMENT = "details_frag";
     public static String SEND_FRAGMENT = "send_frag";
     private FirstFragment mFirstFragment;
+
+    SafetyNetHelper mSafetyNetHelper = new SafetyNetHelper();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +66,15 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             return;
         }
 
+        mSafetyNetHelper.sendSafetyNetRequest(this, response -> {
+            // TODO: if attestation takes long time, it may arrive too late
+            // this may lead to crashes (activity gone, etc.)
+            if (!mSafetyNetHelper.isAttestationLookingGood(response)) {
+                onSafetynetFailure();
+                return;
+            }
+            Global.setSafetynetResponseJwt(response.getJwsResult());
+        }, exception -> onSafetynetFailure());
         byte[] array = SecretStorage.getEncryptedBytes(encryptedApiKey);
         FingerprintAuthenticationDialogFragment fragment
                 = new FingerprintAuthenticationDialogFragment();
@@ -205,5 +218,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 .replace(R.id.frame_layout, tdf)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    public void onSafetynetFailure() {
+        Utils.showErrorDialog(this, "Safetynet", "Error", this::finish);
     }
 }

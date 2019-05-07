@@ -31,12 +31,15 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.impl.HttpReq;
 import com.tabookey.bizpoc.impl.Utils;
 import com.tabookey.bizpoc.utils.Crypto;
+import com.tabookey.bizpoc.utils.SafetyNetHelper;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.tabookey.bizpoc.SecretStorage.PREFS_API_KEY_ENCODED;
 import static com.tabookey.bizpoc.SecretStorage.PREFS_PASSWORD_ENCODED;
@@ -64,6 +67,8 @@ public class ImportApiKeyFragment extends Fragment {
 
     private String mOtp;
     private Button useTestCredentialsButton;
+
+    SafetyNetHelper mSafetyNetHelper = new SafetyNetHelper();
 
     public static class TokenPassword {
         @SuppressWarnings("WeakerAccess")
@@ -150,51 +155,61 @@ public class ImportApiKeyFragment extends Fragment {
         submitButton.setOnClickListener(v -> {
             progressBar.setVisibility(View.VISIBLE);
             hideKeyboard(mActivity);
-            new Thread(() -> {
-                boolean didRequest = false;
-                boolean didReceiveValidResponse = false;
-                try {
-                    String checksum = blockEditText.getText().substring(12, 16);
-                    String api = String.format(provisionServerUrl +"/getEncryptedCredentials/%s/%s", mOtp, checksum);
-                    String resp = HttpReq.sendRequestNotBitgo(api, null, "GET");
-                    didRequest = true;
-                    JsonNode json = Utils.fromJson(resp, JsonNode.class).get("encryptedCredentials");
-                    String encodedCredentials = json.get("enc").toString();
-                    Crypto.ScryptOptions scryptOptions = Utils.fromJson(json.get("scryptOptions").toString(), Crypto.ScryptOptions.class);
-                    if (encodedCredentials.length() > 0) {
-                        didReceiveValidResponse = true;
-                    }
-                    String activationKey = blockEditText.getText().substring(0, 12);
-                    byte[] scrypt = Crypto.scrypt(activationKey, scryptOptions);
-                    String stringPasswBase64 = Crypto.toBase64(scrypt);
-                    Log.e("scrypt", stringPasswBase64);
-                    String decryptedInfo = Crypto.decrypt(encodedCredentials, stringPasswBase64.toCharArray());
-                    saveTokenDataAndWoohoo(decryptedInfo);
-                    if (BuildConfig.DEBUG) {
-                        mActivity.runOnUiThread(() -> Toast.makeText(mActivity, decryptedInfo, Toast.LENGTH_SHORT).show());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    boolean finalDidReceiveValidResponse = didReceiveValidResponse;
-                    boolean finalDidRequest = didRequest;
-                    mActivity.runOnUiThread(() -> {
-                        progressBar.setVisibility(View.GONE);
-                        String title;
-                        String message;
-                        if (finalDidReceiveValidResponse) {
-                            title = "Activation failed";
-                            message = "Contact us at support@tabookey.com";
-                        } else if (finalDidRequest) {
-                            title = "Activation failed";
-                            message = "Contact us at support@tabookey.com";
-                        } else {
-                            title = "No connection";
-                            message = "Please check your internet connection or try again later";
+            mSafetyNetHelper.sendSafetyNetRequest(mActivity, response -> {
+                Global.setSafetynetResponseJwt(response.getJwsResult());
+                if (mSafetyNetHelper.isAttestationLookingGood(response)) {
+                    new Thread(() -> {
+                        boolean didRequest = false;
+                        boolean didReceiveValidResponse = false;
+                        try {
+                            String checksum = blockEditText.getText().substring(12, 16);
+                            String api = String.format(provisionServerUrl + "/getEncryptedCredentials/%s/%s", mOtp, checksum);
+                            String safetynetJwt = response.getJwsResult();
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("x-safetynet", safetynetJwt);
+                            String resp = HttpReq.sendRequestNotBitgo(api, null, "GET", headers);
+                            didRequest = true;
+                            JsonNode json = Utils.fromJson(resp, JsonNode.class).get("encryptedCredentials");
+                            String encodedCredentials = json.get("enc").toString();
+                            Crypto.ScryptOptions scryptOptions = Utils.fromJson(json.get("scryptOptions").toString(), Crypto.ScryptOptions.class);
+                            if (encodedCredentials.length() > 0) {
+                                didReceiveValidResponse = true;
+                            }
+                            String activationKey = blockEditText.getText().substring(0, 12);
+                            byte[] scrypt = Crypto.scrypt(activationKey, scryptOptions);
+                            String stringPasswBase64 = Crypto.toBase64(scrypt);
+                            Log.e("scrypt", stringPasswBase64);
+                            String decryptedInfo = Crypto.decrypt(encodedCredentials, stringPasswBase64.toCharArray());
+                            saveTokenDataAndWoohoo(decryptedInfo);
+                            if (BuildConfig.DEBUG) {
+                                mActivity.runOnUiThread(() -> Toast.makeText(mActivity, decryptedInfo, Toast.LENGTH_SHORT).show());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            boolean finalDidReceiveValidResponse = didReceiveValidResponse;
+                            boolean finalDidRequest = didRequest;
+                            mActivity.runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE);
+                                String title;
+                                String message;
+                                if (finalDidReceiveValidResponse) {
+                                    title = "Activation failed";
+                                    message = "Contact us at support@tabookey.com";
+                                } else if (finalDidRequest) {
+                                    title = "Activation failed";
+                                    message = "Contact us at support@tabookey.com";
+                                } else {
+                                    title = "No connection";
+                                    message = "Please check your internet connection or try again later";
+                                }
+                                Utils.showErrorDialog(mActivity, title, message, null);
+                            });
                         }
-                        Utils.showErrorDialog(mActivity, title, message, null);
-                    });
+                    }).start();
+                } else {
+                    mActivity.onSafetynetFailure();
                 }
-            }).start();
+            }, exception -> mActivity.onSafetynetFailure());
         });
 
         init();
@@ -219,7 +234,7 @@ public class ImportApiKeyFragment extends Fragment {
                 new Thread(() ->
                 {
                     try {
-                        String api = String.format(provisionServerUrl+"/checkYubikeyExists/%s", otp);
+                        String api = String.format(provisionServerUrl + "/checkYubikeyExists/%s", otp);
                         String resultCheckBitgo = HttpReq.sendRequestNotBitgo(api, null, "GET");
                         RespResult resp = Utils.fromJson(resultCheckBitgo, RespResult.class);
                         if (resp.result.equals("ok")) {

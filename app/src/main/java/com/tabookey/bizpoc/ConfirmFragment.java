@@ -232,7 +232,7 @@ public class ConfirmFragment extends Fragment {
                     this.text = text;
                 }
             }
-            String response = Global.http.sendRequestNotBitgo("https://xycdl3ahgj.execute-api.eu-west-2.amazonaws.com/DEBUG", new Message("failed: " + e.getMessage()), "POST");
+            String response = Global.http.sendRequestNotBitgo("https://xycdl3ahgj.execute-api.eu-west-2.amazonaws.com/DEBUG", new Message("failed: " + e.getMessage()), "POST", null);
             if (!response.equals("ok")) {
                 Log.e(TAG, "Failed to report a problem to the dev channel!");
             }
