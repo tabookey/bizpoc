@@ -1,9 +1,7 @@
 package com.tabookey.bizpoc.utils;
 
 import android.app.Activity;
-import android.util.Base64;
 import android.util.Log;
-import android.util.TimeUtils;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -20,7 +18,7 @@ import java.security.SecureRandom;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class SafetyNetHelper {
+public class SafetyNetHelper implements SafetynetHelperInterface{
 
     private static final String TAG = "SafetyNetHelper";
 
@@ -29,10 +27,7 @@ public class SafetyNetHelper {
     private String mResult;
 
 
-    public interface OnSuccessParsedListener {
-        void onSuccess(SafetyNetResponse response);
-    }
-
+    @Override
     public void sendSafetyNetRequest(Activity activity, OnSuccessParsedListener successListener, OnFailureListener failureListener) {
         Log.i(TAG, "Sending SafetyNet API request.");
 
@@ -105,7 +100,7 @@ public class SafetyNetHelper {
      * @param safetyNetResponse
      * @return
      */
-    public boolean isAttestationLookingGood(SafetyNetResponse safetyNetResponse) {
+    public static boolean isAttestationLookingGood(SafetyNetResponse safetyNetResponse) {
         boolean isPackageNameCorrect = BuildConfig.APPLICATION_ID.equals(safetyNetResponse.getApkPackageName());
         boolean isTimestampSane = Math.abs(safetyNetResponse.getTimestampMs() - System.currentTimeMillis()) < TimeUnit.HOURS.toMillis(1);
         return safetyNetResponse.isBasicIntegrity()

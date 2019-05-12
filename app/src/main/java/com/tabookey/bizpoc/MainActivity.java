@@ -18,8 +18,9 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
+import com.tabookey.bizpoc.utils.FakeSafetynetHelper;
 import com.tabookey.bizpoc.utils.SafetyNetHelper;
-import com.tabookey.bizpoc.utils.SafetyNetResponse;
+import com.tabookey.bizpoc.utils.SafetynetHelperInterface;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public static String SEND_FRAGMENT = "send_frag";
     private FirstFragment mFirstFragment;
 
-    SafetyNetHelper mSafetyNetHelper = new SafetyNetHelper();
+    SafetynetHelperInterface mSafetyNetHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +49,13 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setLogo(R.drawable.tabookey_safe);
+
+        if (Global.getFakeSafetynet()) {
+            mSafetyNetHelper = new FakeSafetynetHelper();
+        } else {
+            mSafetyNetHelper = new SafetyNetHelper();
+        }
+
         promptFingerprint();
     }
 
@@ -69,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         mSafetyNetHelper.sendSafetyNetRequest(this, response -> {
             // TODO: if attestation takes long time, it may arrive too late
             // this may lead to crashes (activity gone, etc.)
-            if (!mSafetyNetHelper.isAttestationLookingGood(response)) {
+            if (!SafetyNetHelper.isAttestationLookingGood(response)) {
                 onSafetynetFailure();
                 return;
             }

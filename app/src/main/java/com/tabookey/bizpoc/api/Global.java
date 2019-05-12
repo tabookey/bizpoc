@@ -8,13 +8,15 @@ import android.content.SharedPreferences;
 import com.tabookey.bizpoc.impl.BitgoEnterprise;
 import com.tabookey.bizpoc.impl.CachedEnterprise;
 import com.tabookey.bizpoc.impl.HttpReq;
-import com.tabookey.bizpoc.utils.SafetyNetResponse;
 
 public class Global {
     public static IBitgoEnterprise ent;
     public static HttpReq http;
     private static final String PREFS_IS_TEST = "istest";
     private static final String PREFS_SAFETYNET = "safetynet";
+    private static final String PREFS_FAKE_SAFETYNET = "fake_safetynet";
+    private static final String PREFS_ENVIRONMENT = "environment";
+    private static final String PREFS_PROV_SERVER_URL = "prov_server_url";
 
 
     public static boolean isTest() {
@@ -35,7 +37,6 @@ public class Global {
     @SuppressLint("ApplySharedPref") // There will be 2 threads involved in read/write JWT token
     public static void setSafetynetResponseJwt(String safetynetResponseJwt) {
         getPrefs().edit().putString(PREFS_SAFETYNET, safetynetResponseJwt).commit();
-        Global.lastSafetyNetResponseJwt = safetynetResponseJwt;
     }
 
     public static String getSafetynetResponseJwt() {
@@ -52,9 +53,31 @@ public class Global {
 
     public static Application applicationContext;
 
+    public static void setFakeSafetynet(boolean isFakeSafetynet) {
+        getPrefs().edit().putBoolean(PREFS_FAKE_SAFETYNET, isFakeSafetynet).apply();
+    }
+
+    public static boolean getFakeSafetynet() {
+        return getPrefs().getBoolean(PREFS_FAKE_SAFETYNET, false);
+    }
+
+
+    public static void setEnvironment(int environment) {
+        getPrefs().edit().putInt(PREFS_ENVIRONMENT, environment).apply();
+    }
+
+    public static int getEnvironment() {
+        return getPrefs().getInt(PREFS_ENVIRONMENT, 0);
+    }
 
     //    static String accessToken = "v2x7fa63b4f6b6b17c821f9b95a6313efa04fb29ecc7705f9dce774d4d6fd94109d";
     private static String accessToken;
-    private static String lastSafetyNetResponseJwt;
 
+    public static String getTestProvisionServer() {
+        return getPrefs().getString(PREFS_PROV_SERVER_URL, "");
+    }
+
+    public static void setTestProvisionServer(String url) {
+        getPrefs().edit().putString(PREFS_PROV_SERVER_URL, url).apply();
+    }
 }

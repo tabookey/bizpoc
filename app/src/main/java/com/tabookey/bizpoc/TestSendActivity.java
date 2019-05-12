@@ -1,10 +1,16 @@
 package com.tabookey.bizpoc;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
@@ -36,6 +42,8 @@ public class TestSendActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webv);
 
+        setDebugTools();
+
         log = findViewById(R.id.textlog);
         new Thread() {
             @Override
@@ -49,6 +57,43 @@ public class TestSendActivity extends AppCompatActivity {
                 }
             }
         }.start();
+    }
+
+    private void setDebugTools() {
+        ToggleButton fakeSafetynetToggle = findViewById(R.id.fakeSafetynetToggle);
+        fakeSafetynetToggle.setChecked(Global.getFakeSafetynet());
+        fakeSafetynetToggle.setOnClickListener(v -> Global.setFakeSafetynet(fakeSafetynetToggle.isChecked()));
+
+
+        String[] environments = {"Production", "Debug", "Custom"};
+        //Creating the ArrayAdapter instance having the country list
+        ArrayAdapter aa = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, environments);
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //Setting the ArrayAdapter data on the Spinner
+
+        Spinner spin = findViewById(R.id.spinner);
+        View customProvisioningView = findViewById(R.id.customProvisioningView);
+        spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                Global.setEnvironment(position);
+                if (position == 2) {
+                    customProvisioningView.setVisibility(View.VISIBLE);
+                }
+                else {
+                    customProvisioningView.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+        spin.setAdapter(aa);
+
+        EditText provisioningUrlEditText = findViewById(R.id.provisioningUrlEditText);
+        Button saveUrlButton = findViewById(R.id.saveUrlButton);
+        saveUrlButton.setOnClickListener(view -> Global.setTestProvisionServer(provisioningUrlEditText.getText().toString()));
     }
 
     private void sendfromwallet() {

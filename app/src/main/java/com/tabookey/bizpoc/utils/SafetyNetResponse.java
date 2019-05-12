@@ -42,6 +42,17 @@ public class SafetyNetResponse {
     private boolean ctsProfileMatch;
     private boolean basicIntegrity;
 
+    // Should only be used by fake helper
+    public SafetyNetResponse(String nonce, long timestampMs, String apkPackageName, String[] apkCertificateDigestSha256, String apkDigestSha256, String jwsResult, boolean ctsProfileMatch, boolean basicIntegrity) {
+        this.nonce = nonce;
+        this.timestampMs = timestampMs;
+        this.apkPackageName = apkPackageName;
+        this.apkCertificateDigestSha256 = apkCertificateDigestSha256;
+        this.apkDigestSha256 = apkDigestSha256;
+        this.jwsResult = jwsResult;
+        this.ctsProfileMatch = ctsProfileMatch;
+        this.basicIntegrity = basicIntegrity;
+    }
 
     //forces the parse()
     private SafetyNetResponse() {

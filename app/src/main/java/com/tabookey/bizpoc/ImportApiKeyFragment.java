@@ -31,7 +31,9 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.impl.HttpReq;
 import com.tabookey.bizpoc.impl.Utils;
 import com.tabookey.bizpoc.utils.Crypto;
+import com.tabookey.bizpoc.utils.FakeSafetynetHelper;
 import com.tabookey.bizpoc.utils.SafetyNetHelper;
+import com.tabookey.bizpoc.utils.SafetynetHelperInterface;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -58,17 +60,15 @@ public class ImportApiKeyFragment extends Fragment {
     private BlockEditText blockEditText;
     private TextView invalidCodeWarning;
 
-    static String debugProvisionServerUrl = "http://192.168.1.243:5000";
-    static String prodProvisionServerUrl = "https://prov-bizpoc.ddns.tabookey.com";
+    private static final String DEBUG_PROVISION_SERVER_URL = "https://dprov-bizpoc.ddns.tabookey.com";
+    private static final String PROD_PROVISION_SERVER_URL = "https://prov-bizpoc.ddns.tabookey.com";
 
-    static String provisionServerUrl =
-//            BuildConfig.DEBUG ? debugProvisionServerUrl :
-            prodProvisionServerUrl;
+    static String provisionServerUrl;
 
     private String mOtp;
     private Button useTestCredentialsButton;
 
-    SafetyNetHelper mSafetyNetHelper = new SafetyNetHelper();
+    SafetynetHelperInterface mSafetyNetHelper;
 
     public static class TokenPassword {
         @SuppressWarnings("WeakerAccess")
@@ -81,6 +81,28 @@ public class ImportApiKeyFragment extends Fragment {
         public String result;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (Global.getFakeSafetynet()) {
+            mSafetyNetHelper = new FakeSafetynetHelper();
+        } else {
+            mSafetyNetHelper = new SafetyNetHelper();
+        }
+
+        switch (Global.getEnvironment()) {
+            case 2:
+                provisionServerUrl = Global.getTestProvisionServer();
+                break;
+            case 1:
+                provisionServerUrl = DEBUG_PROVISION_SERVER_URL;
+                break;
+            case 0:
+            default:
+                provisionServerUrl = PROD_PROVISION_SERVER_URL;
+                break;
+        }
+    }
 
     @Nullable
     @Override
@@ -157,7 +179,7 @@ public class ImportApiKeyFragment extends Fragment {
             hideKeyboard(mActivity);
             mSafetyNetHelper.sendSafetyNetRequest(mActivity, response -> {
                 Global.setSafetynetResponseJwt(response.getJwsResult());
-                if (mSafetyNetHelper.isAttestationLookingGood(response)) {
+                if (SafetyNetHelper.isAttestationLookingGood(response)) {
                     new Thread(() -> {
                         boolean didRequest = false;
                         boolean didReceiveValidResponse = false;
