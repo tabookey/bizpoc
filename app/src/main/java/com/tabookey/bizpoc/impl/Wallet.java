@@ -30,6 +30,7 @@ public class Wallet implements IBitgoWallet {
     private final String balanceString;
     private final CoinSender coinSender;
     private final List<String> hiddenUsers = Arrays.asList(
+            "liraz+creator@proguard.network",
             "dror561@gmail.com",
             "kfirqa1@gmail.com"
     );
