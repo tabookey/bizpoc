@@ -1,6 +1,7 @@
 package com.tabookey.bizpoc.impl;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
@@ -9,13 +10,24 @@ import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
+import com.tabookey.bizpoc.utils.FakeSafetynetHelper;
+import com.tabookey.bizpoc.utils.SafetyNetHelper;
+import com.tabookey.bizpoc.utils.SafetynetHelperInterface;
 
 import static com.tabookey.bizpoc.impl.Utils.fromJson;
 
 public class CoinSender extends WebViewExecutor {
 
     public CoinSender(Context ctx, HttpReq http) {
-        super(ctx, http);
+        super(ctx, http, getSafetynetHelper());
+    }
+
+    static SafetynetHelperInterface getSafetynetHelper() {
+        if (Global.getFakeSafetynet()) {
+            return new FakeSafetynetHelper();
+        } else {
+            return new SafetyNetHelper();
+        }
     }
 
     public String sendCoins(IBitgoWallet wallet, SendRequest req, IBitgoWallet.StatusCB cb) {

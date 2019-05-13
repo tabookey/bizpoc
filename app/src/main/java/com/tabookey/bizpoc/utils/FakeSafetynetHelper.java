@@ -10,9 +10,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 public class FakeSafetynetHelper implements SafetynetHelperInterface {
     @Override
     public void sendSafetyNetRequest(Activity activity, OnSuccessParsedListener successListener, OnFailureListener failureListener) {
-
-        new Handler().postDelayed(() -> {
-            if (System.currentTimeMillis() % 2 == 0) {
+        activity.runOnUiThread(() -> new Handler().postDelayed(() -> {
+            if (false && System.currentTimeMillis() % 2 == 0) {
                 failureListener.onFailure(new RuntimeException("I don't wanna work! :'-( "));
             } else {
                 String[] apkDigest = new String[1];
@@ -28,6 +27,6 @@ public class FakeSafetynetHelper implements SafetynetHelperInterface {
                                 false));
             }
 
-        }, 7000);
+        }, 7000));
     }
 }

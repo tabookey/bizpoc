@@ -3,7 +3,6 @@ package com.tabookey.bizpoc;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
@@ -50,6 +49,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setLogo(R.drawable.tabookey_safe);
 
+        Global.mainActivity = this;
+
         if (Global.getFakeSafetynet()) {
             mSafetyNetHelper = new FakeSafetynetHelper();
         } else {
@@ -64,13 +65,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         String encryptedApiKey = SecretStorage.getPrefs(this).getString(SecretStorage.PREFS_API_KEY_ENCODED, null);
 
         if (encryptedApiKey == null) {
-            int delay = BuildConfig.DEBUG ? 0 : 3000;
-            new Handler().postDelayed(() -> {
-                Fragment welcomeFragment = new WelcomeFragment();
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.frame_layout, welcomeFragment).commit();
-
-            }, delay);
+            Fragment welcomeFragment = new WelcomeFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.frame_layout, welcomeFragment).commit();
             return;
         }
 

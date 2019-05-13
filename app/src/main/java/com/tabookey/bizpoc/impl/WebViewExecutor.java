@@ -10,11 +10,17 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.tabookey.bizpoc.api.Global;
+import com.tabookey.bizpoc.utils.SafetyNetResponse;
+import com.tabookey.bizpoc.utils.SafetynetHelperInterface;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -32,6 +38,8 @@ public class WebViewExecutor {
     private WebView webview;
     private final HttpReq http;
 
+    SafetynetHelperInterface mSafetyNetHelper;
+
     void runOnUiThread(Runnable run) {
         if (Looper.getMainLooper().getThread() == Thread.currentThread())
             run.run();
@@ -39,9 +47,10 @@ public class WebViewExecutor {
             new Handler(Looper.getMainLooper()).post(run);
     }
 
-    public WebViewExecutor(Context ctx, HttpReq http) {
+    public WebViewExecutor(Context ctx, HttpReq http, SafetynetHelperInterface safetyNetHelper) {
         this.http = http;
         this.ctx = ctx;
+        this.mSafetyNetHelper = safetyNetHelper;
     }
 
     /**
@@ -56,29 +65,29 @@ public class WebViewExecutor {
     public void exec(String path, Object appData) {
 
         runOnUiThread(() -> {
-            initWebView(appData,true);
+            initWebView(appData, true);
             webview.loadUrl("file:///android_asset/" + path);
         });
     }
 
     @SuppressLint("JavascriptInterface")
     void initWebView(Object appData, boolean intercept) {
-        if ( webview==null )
-               webview = new WebView(ctx);
+        if (webview == null)
+            webview = new WebView(ctx);
 
         if (intercept)
             webview.setWebViewClient(new MyWebviewClient());
         String webViewPackageName = WebView.getCurrentWebViewPackage().packageName;
-        Log.d(TAG, "webview pkg: "+ webViewPackageName);
-        if ( !webViewPackageName.equals("com.android.chrome"))
-            throw new RuntimeException("Invalid webview package: "+webViewPackageName);
+        Log.d(TAG, "webview pkg: " + webViewPackageName);
+        if (!webViewPackageName.equals("com.android.chrome"))
+            throw new RuntimeException("Invalid webview package: " + webViewPackageName);
         webview.getSettings().setJavaScriptEnabled(true);
         webview.addJavascriptInterface(appData, "app");
     }
 
     public void loadData(String html, Object appData) {
         runOnUiThread(() -> {
-            initWebView(appData,false);
+            initWebView(appData, false);
             webview.loadData(html, "application/html", "UTF-8");
         });
     }
@@ -128,6 +137,9 @@ public class WebViewExecutor {
             Request.Builder reqbuilder = new Request.Builder().url(url);
 
             Log.d(TAG, ">> " + request.getMethod() + " " + request.getUrl());
+            if (request.getUrl().getPath().contains("/key/")) {
+                addFreshSafetynetHeader(reqbuilder);
+            }
             request.getRequestHeaders().forEach((key, value) -> {
                 if ("Authorization, HMAC, Auth-Timestamp, BitGo-Auth-Version".toLowerCase().contains(key.toLowerCase())) {
                     reqbuilder.addHeader(key, value);
@@ -144,8 +156,8 @@ public class WebViewExecutor {
             Response resp = client.newCall(reqbuilder.build()).execute();
 
             String message = resp.message();
-            if ( message==null || message.trim().length()==0 )
-                message="no-status";        //BUG in www.bitgo.com (which actually return proper value on test.bitgo.com
+            if (message == null || message.trim().length() == 0)
+                message = "no-status";        //BUG in www.bitgo.com (which actually return proper value on test.bitgo.com
             Log.d(TAG, "<< " + resp.code() + " " + message);
             HashMap<String, String> headers = new HashMap<>();
             resp.headers().toMultimap().forEach((key, val) -> {
@@ -159,8 +171,32 @@ public class WebViewExecutor {
             return new WebResourceResponse("application/json", "UTF-8", resp.code(), message, headers, resp.body().byteStream());
         }
 
-        /**/
+        private void addFreshSafetynetHeader(Request.Builder reqbuilder) throws IOException {
+            AtomicReference<SafetyNetResponse> safetyNetResponse = new AtomicReference<>();
+            CountDownLatch s = new CountDownLatch(1);
+            mSafetyNetHelper.sendSafetyNetRequest(Global.mainActivity, response -> {
+                safetyNetResponse.set(response);
+                s.countDown();
+            }, exception -> {
+                exception.printStackTrace();
+                s.countDown();
+            });
+            try {
+                s.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                throw new IOException("Failed to get SafetyNet");
+            }
 
+            if (safetyNetResponse.get() == null) {
+                throw new IOException("Failed to get SafetyNet");
+            }
+
+            String key = "x-safetynet";
+            String value = safetyNetResponse.get().getJwsResult();
+            Log.d(TAG, ">> " + key + ": " + value);
+            reqbuilder.addHeader(key, value);
+        }
     }
 
 }

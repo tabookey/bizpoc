@@ -338,7 +338,7 @@ public class ImportApiKeyFragment extends Fragment {
             IBitgoWallet wallet = Global.ent.getMergedWallets().get(0);
 
             if (!wallet.checkPassphrase(tokenPassword.password))
-                throw new RuntimeException("Invalid QRcode\nwallet: " + wallet.getLabel() + "\nUser: " + name);
+                throw new RuntimeException("Invalid Activation Details\nwallet: " + wallet.getLabel() + "\nUser: " + name);
             byte[] encryptToken = secretStorage.encrypt(tokenPassword.token.getBytes());
             String encryptedToken = Arrays.toString(encryptToken);
             byte[] encryptPwd = secretStorage.encrypt(tokenPassword.password.getBytes());
