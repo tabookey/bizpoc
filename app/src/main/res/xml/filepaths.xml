@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- "/" is app's /data/files/ directory AFAIK. It does not store anything important now -->
+    <!-- Should be used for storing logs -->
+    <files-path path="/" name="files" />
+</paths>

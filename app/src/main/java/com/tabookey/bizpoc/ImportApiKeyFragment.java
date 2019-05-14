@@ -6,12 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.support.v7.widget.CardView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -24,6 +27,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.infideap.blockedittext.BlockEditText;
 import com.tabookey.bizpoc.api.Global;
@@ -35,10 +39,12 @@ import com.tabookey.bizpoc.utils.FakeSafetynetHelper;
 import com.tabookey.bizpoc.utils.SafetyNetHelper;
 import com.tabookey.bizpoc.utils.SafetynetHelperInterface;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,16 +55,18 @@ import static com.tabookey.bizpoc.SecretStorage.PREFS_PASSWORD_ENCODED;
 //https://stackoverflow.com/questions/46875774/using-fingerprints-for-encryption-in-combination-with-a-password
 public class ImportApiKeyFragment extends Fragment {
 
-    private View progressBar;
+    private View progressStepsDescriptionView;
     private SecretStorage secretStorage = new SecretStorage();
     private static String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
     private MainActivity mActivity;
-    private TextView testNameTextView;
     private View activationKeyView;
     private Button scanApiKeyButton;
     private Button submitButton;
     private BlockEditText blockEditText;
     private TextView invalidCodeWarning;
+    private CardView activationFailureCard;
+    private View progressBar;
+    private Button sendReportButton;
 
     private static final String DEBUG_PROVISION_SERVER_URL = "https://dprov-bizpoc.ddns.tabookey.com";
     private static final String PROD_PROVISION_SERVER_URL = "https://prov-bizpoc.ddns.tabookey.com";
@@ -70,6 +78,24 @@ public class ImportApiKeyFragment extends Fragment {
 
     SafetynetHelperInterface mSafetyNetHelper;
 
+    // Ordinals values in enum match indexes of animation views
+    enum ActivationState {
+        NOT_INITIATED,
+        VERIFY_SAFETYNET,
+        REQUESTING_CREDENTIALS,
+        DECRYPTING_CREDENTIALS,
+        CHECKING_BALANCE,
+        VALIDATING_ACCOUNT,
+        LOADING_HISTORY
+    }
+
+    private ActivationState mActivationState = ActivationState.NOT_INITIATED;
+    private String mActivationError = null;
+    private Throwable mActivationException = null;
+
+    ArrayList<LottieAnimationView> mAnimationViews = new ArrayList<>();
+    ArrayList<TextView> mProgressStepsText = new ArrayList<>();
+
     public static class TokenPassword {
         @SuppressWarnings("WeakerAccess")
         public String token, password;
@@ -79,6 +105,44 @@ public class ImportApiKeyFragment extends Fragment {
 
     public static class RespResult {
         public String result;
+    }
+
+    private void setActivationFailureReason(String error, Throwable exception) {
+        mActivationError = error;
+        mActivationException = exception;
+        if (exception != null) {
+            exception.printStackTrace();
+        }
+        mActivity.runOnUiThread(() -> {
+            int ordinal = mActivationState.ordinal();
+            LottieAnimationView animationView = mAnimationViews.get(ordinal);
+            TextView textView = mProgressStepsText.get(ordinal);
+            textView.setTextColor(mActivity.getColor(R.color.reddish_brown));
+            animationView.setImageResource(R.drawable.ic_cancelled);
+            activationFailureCard.setVisibility(View.VISIBLE);
+            if (BuildConfig.DEBUG) {
+                Toast.makeText(mActivity, error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void setActivationState(ActivationState activationState) {
+        mActivationState = activationState;
+        mActivity.runOnUiThread(() -> {
+            for (int i = 0; i < mAnimationViews.size(); i++) {
+                int ordinal = mActivationState.ordinal();
+                LottieAnimationView animationView = mAnimationViews.get(i);
+                TextView textView = mProgressStepsText.get(i);
+                if (i < ordinal) {
+                    animationView.setImageResource(R.drawable.ic_checkmark_small);
+                    textView.setTextColor(mActivity.getColor(R.color.text_color));
+                } else if (i > ordinal) {
+                    animationView.setImageResource(R.drawable.ic_circle_pending);
+                } else {
+                    animationView.setAnimation(R.raw.progress_loader);
+                }
+            }
+        });
     }
 
     @Override
@@ -118,21 +182,35 @@ public class ImportApiKeyFragment extends Fragment {
         submitButton.setEnabled(false);
         submitButton.setBackgroundColor(mActivity.getColor(R.color.disabled_button));
         TextView fingerprintTextView = view.findViewById(R.id.fingerprintEnabledTextView);
-        testNameTextView = view.findViewById(R.id.testNameTextView);
         activationKeyView = view.findViewById(R.id.activationKeyView);
-        progressBar = view.findViewById(R.id.progressBar);
+        progressStepsDescriptionView = view.findViewById(R.id.progressStepsDescriptionView);
         blockEditText = view.findViewById(R.id.blockEditText);
         invalidCodeWarning = view.findViewById(R.id.invalidCodeWarning);
         useTestCredentialsButton = view.findViewById(R.id.useTestCredentialsButton);
+        activationFailureCard = view.findViewById(R.id.activationFailureCard);
+        sendReportButton = view.findViewById(R.id.sendReportButton);
+        progressBar = view.findViewById(R.id.progressBar);
+        mAnimationViews.add(new LottieAnimationView(mActivity)); // Dull object at index 0
+        mAnimationViews.add(view.findViewById(R.id.animationView1));
+        mAnimationViews.add(view.findViewById(R.id.animationView2));
+        mAnimationViews.add(view.findViewById(R.id.animationView3));
+        mAnimationViews.add(view.findViewById(R.id.animationView4));
+        mAnimationViews.add(view.findViewById(R.id.animationView5));
+        mAnimationViews.add(view.findViewById(R.id.animationView6));
+        mProgressStepsText.add(new TextView(mActivity)); // Dull object at index 0
+        mProgressStepsText.add(view.findViewById(R.id.stepDescription1));
+        mProgressStepsText.add(view.findViewById(R.id.stepDescription2));
+        mProgressStepsText.add(view.findViewById(R.id.stepDescription3));
+        mProgressStepsText.add(view.findViewById(R.id.stepDescription4));
+        mProgressStepsText.add(view.findViewById(R.id.stepDescription5));
+        mProgressStepsText.add(view.findViewById(R.id.stepDescription6));
         blockEditText.setTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
@@ -166,6 +244,23 @@ public class ImportApiKeyFragment extends Fragment {
             scanApiKeyButton.setEnabled(false);
             fingerprintTextView.setText("User hasn't enrolled any fingerprints to authenticate with");
         }
+
+        sendReportButton.setOnClickListener(v ->
+        {
+            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+            emailIntent.setType("vnd.android.cursor.dir/email"); // Normal SENDTO intents don't seem to pick up files. We will attach log files soon.
+            String[] to = {"support@tabookey.com"};
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, to);
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Activation error - TabooKey Safe");
+            emailIntent.putExtra(Intent.EXTRA_TEXT, "Hi there,\n\nActivation failed during step:\n" + getFailedStep() + "\n\nThank you,\nName: ");
+            String pathname = Utils.getFolder(mActivity) + "/files/samplefile.txt";
+            File file = new File(pathname);
+            Uri uriForFile = FileProvider.getUriForFile(mActivity, "com.tabookey.bizpoc.fileprovider", file);
+            /* Uncomment this line to attach file to email
+            emailIntent.putExtra(Intent.EXTRA_STREAM, uriForFile);
+             **/
+            startActivity(Intent.createChooser(emailIntent, "Send email..."));
+        });
         scanApiKeyButton.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -175,29 +270,37 @@ public class ImportApiKeyFragment extends Fragment {
             startActivityForResult(new Intent(mActivity, ScanActivity.class), 1);
         });
         submitButton.setOnClickListener(v -> {
-            progressBar.setVisibility(View.VISIBLE);
+            progressStepsDescriptionView.setVisibility(View.VISIBLE);
             hideKeyboard(mActivity);
+            setActivationState(ActivationState.VERIFY_SAFETYNET);
             mSafetyNetHelper.sendSafetyNetRequest(mActivity, response -> {
                 Global.setSafetynetResponseJwt(response.getJwsResult());
                 if (SafetyNetHelper.isAttestationLookingGood(response)) {
                     new Thread(() -> {
+                        String encodedCredentials = "";
                         boolean didRequest = false;
                         boolean didReceiveValidResponse = false;
                         try {
-                            String checksum = blockEditText.getText().substring(12, 16);
+                            setActivationState(ActivationState.REQUESTING_CREDENTIALS);
+                            String activationKeyInput = blockEditText.getText();
+                            String checksum = "0000";
+                            if (activationKeyInput.length() == 16) { // Only during manual testing
+                                checksum = activationKeyInput.substring(12, 16);
+                            }
                             String api = String.format(provisionServerUrl + "/getEncryptedCredentials/%s/%s", mOtp, checksum);
                             String safetynetJwt = response.getJwsResult();
                             Map<String, String> headers = new HashMap<>();
                             headers.put("x-safetynet", safetynetJwt);
                             String resp = HttpReq.sendRequestNotBitgo(api, null, "GET", headers);
                             didRequest = true;
+                            setActivationState(ActivationState.DECRYPTING_CREDENTIALS);
                             JsonNode json = Utils.fromJson(resp, JsonNode.class).get("encryptedCredentials");
-                            String encodedCredentials = json.get("enc").toString();
+                            encodedCredentials = json.get("enc").toString();
                             Crypto.ScryptOptions scryptOptions = Utils.fromJson(json.get("scryptOptions").toString(), Crypto.ScryptOptions.class);
                             if (encodedCredentials.length() > 0) {
                                 didReceiveValidResponse = true;
                             }
-                            String activationKey = blockEditText.getText().substring(0, 12);
+                            String activationKey = activationKeyInput.substring(0, 12);
                             byte[] scrypt = Crypto.scrypt(activationKey, scryptOptions);
                             String stringPasswBase64 = Crypto.toBase64(scrypt);
                             Log.e("scrypt", stringPasswBase64);
@@ -208,33 +311,28 @@ public class ImportApiKeyFragment extends Fragment {
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
-                            boolean finalDidReceiveValidResponse = didReceiveValidResponse;
-                            boolean finalDidRequest = didRequest;
-                            mActivity.runOnUiThread(() -> {
-                                progressBar.setVisibility(View.GONE);
-                                String title;
-                                String message;
-                                if (finalDidReceiveValidResponse) {
-                                    title = "Activation failed";
-                                    message = "Contact us at support@tabookey.com";
-                                } else if (finalDidRequest) {
-                                    title = "Activation failed";
-                                    message = "Contact us at support@tabookey.com";
-                                } else {
-                                    title = "No connection";
-                                    message = "Please check your internet connection or try again later";
-                                }
-                                Utils.showErrorDialog(mActivity, title, message, null);
-                            });
+                            String message;
+                            if (didReceiveValidResponse) {
+                                message = "Did receive response from provisioning server, seems to be decryption error." + encodedCredentials;
+                            } else if (didRequest) {
+                                message = "Did make a request to provisioning server and response seems to be invalid.";
+                            } else {
+                                message = "Please check your internet connection or try again later";
+                            }
+                            setActivationFailureReason(message, e);
                         }
                     }).start();
                 } else {
-                    mActivity.onSafetynetFailure();
+                    setActivationFailureReason("SafetyNet attestation does not look valid: " + response.getJwsResult(), null);
                 }
-            }, exception -> mActivity.onSafetynetFailure());
+            }, exception -> setActivationFailureReason("SafetyNet attestation request failed", exception));
         });
 
         init();
+    }
+
+    private String getFailedStep() {
+        return mProgressStepsText.get(mActivationState.ordinal()).getText().toString();
     }
 
     @Override
@@ -334,9 +432,11 @@ public class ImportApiKeyFragment extends Fragment {
             TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
             Global.setIsTest(!tokenPassword.prod);
             Global.setAccessToken(tokenPassword.token);
+            setActivationState(ActivationState.CHECKING_BALANCE);
             String name = Global.ent.getMe().name;
             IBitgoWallet wallet = Global.ent.getMergedWallets().get(0);
 
+            setActivationState(ActivationState.VALIDATING_ACCOUNT);
             if (!wallet.checkPassphrase(tokenPassword.password))
                 throw new RuntimeException("Invalid Activation Details\nwallet: " + wallet.getLabel() + "\nUser: " + name);
             byte[] encryptToken = secretStorage.encrypt(tokenPassword.token.getBytes());
@@ -347,16 +447,14 @@ public class ImportApiKeyFragment extends Fragment {
                     .putString(PREFS_API_KEY_ENCODED, encryptedToken)
                     .putString(PREFS_PASSWORD_ENCODED, encryptedPassword)
                     .apply();
+            setActivationState(ActivationState.LOADING_HISTORY); // There is no distinct 6th step in this flow, but I will keep it just in case
+            Thread.sleep(500);
             mActivity.runOnUiThread(() -> {
                 WoohooFragment f = new WoohooFragment();
                 mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, f).commit();
             });
         } catch (Exception e) {
-            e.printStackTrace();
-            mActivity.runOnUiThread(() -> {
-                progressBar.setVisibility(View.GONE);
-                Utils.showErrorDialog(getActivity(), "Error", "Contact us at support@tabookey.com", null);
-            });
+            setActivationFailureReason("Saving token seems to have failed", e);
         }
     }
 
