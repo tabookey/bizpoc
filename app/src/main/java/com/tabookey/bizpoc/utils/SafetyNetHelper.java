@@ -18,7 +18,7 @@ import java.security.SecureRandom;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class SafetyNetHelper implements SafetynetHelperInterface{
+public class SafetyNetHelper implements SafetynetHelperInterface {
 
     private static final String TAG = "SafetyNetHelper";
 
@@ -28,7 +28,7 @@ public class SafetyNetHelper implements SafetynetHelperInterface{
 
 
     @Override
-    public void sendSafetyNetRequest(Activity activity, OnSuccessParsedListener successListener, OnFailureListener failureListener) {
+    public void sendSafetyNetRequest(Activity activity, byte[] nonce, OnSuccessParsedListener successListener, OnFailureListener failureListener) {
         Log.i(TAG, "Sending SafetyNet API request.");
 
          /*
@@ -46,9 +46,14 @@ public class SafetyNetHelper implements SafetynetHelperInterface{
          */
         // TODO(developer): Change the nonce generation to include your own, used once value,
         // ideally from your remote server.
-        String nonceData = "Safety Net Sample: " + System.currentTimeMillis();
-        byte[] nonce = getRequestNonce(nonceData);
-
+        if (nonce == null) {
+            Log.w(TAG, "Will create a local SafetyNet nonce");
+            String nonceData = "Safety Net Sample: " + System.currentTimeMillis();
+            nonce = getRequestNonce(nonceData);
+        }
+        if (nonce == null) {
+            throw new RuntimeException("How is this even possible? Lint wont stop complaining.");
+        }
         /*
          Call the SafetyNet API asynchronously.
          The result is returned through the success or failure listeners.
@@ -96,9 +101,6 @@ public class SafetyNetHelper implements SafetynetHelperInterface{
 
     /**
      * There is little value in checking the attestation locally. Just a sanity check.
-     *
-     * @param safetyNetResponse
-     * @return
      */
     public static boolean isAttestationLookingGood(SafetyNetResponse safetyNetResponse) {
         boolean isPackageNameCorrect = BuildConfig.APPLICATION_ID.equals(safetyNetResponse.getApkPackageName());

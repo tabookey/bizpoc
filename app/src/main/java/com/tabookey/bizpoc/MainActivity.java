@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             return;
         }
 
-        mSafetyNetHelper.sendSafetyNetRequest(this, response -> {
+        mSafetyNetHelper.sendSafetyNetRequest(this, null, response -> {
             // TODO: if attestation takes long time, it may arrive too late
             // this may lead to crashes (activity gone, etc.)
             if (!SafetyNetHelper.isAttestationLookingGood(response)) {

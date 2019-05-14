@@ -10,5 +10,5 @@ public interface SafetynetHelperInterface {
         void onSuccess(SafetyNetResponse response);
     }
 
-    void sendSafetyNetRequest(Activity activity, SafetyNetHelper.OnSuccessParsedListener successListener, OnFailureListener failureListener);
+    void sendSafetyNetRequest(Activity activity, byte[] nonce, SafetyNetHelper.OnSuccessParsedListener successListener, OnFailureListener failureListener);
 }

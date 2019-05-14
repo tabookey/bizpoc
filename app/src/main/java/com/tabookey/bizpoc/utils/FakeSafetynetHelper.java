@@ -9,7 +9,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 // In the meantime - for use in manual checks only.
 public class FakeSafetynetHelper implements SafetynetHelperInterface {
     @Override
-    public void sendSafetyNetRequest(Activity activity, OnSuccessParsedListener successListener, OnFailureListener failureListener) {
+    public void sendSafetyNetRequest(Activity activity, byte[] bytes, OnSuccessParsedListener successListener, OnFailureListener failureListener) {
         activity.runOnUiThread(() -> new Handler().postDelayed(() -> {
             if (false && System.currentTimeMillis() % 2 == 0) {
                 failureListener.onFailure(new RuntimeException("I don't wanna work! :'-( "));

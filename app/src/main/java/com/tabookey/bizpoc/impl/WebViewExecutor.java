@@ -138,7 +138,8 @@ public class WebViewExecutor {
 
             Log.d(TAG, ">> " + request.getMethod() + " " + request.getUrl());
             if (request.getUrl().getPath().contains("/key/")) {
-                addFreshSafetynetHeader(reqbuilder);
+                String hmac = request.getRequestHeaders().get("HMAC");
+                addFreshSafetynetHeader(reqbuilder, hmac);
             }
             request.getRequestHeaders().forEach((key, value) -> {
                 if ("Authorization, HMAC, Auth-Timestamp, BitGo-Auth-Version".toLowerCase().contains(key.toLowerCase())) {
@@ -171,10 +172,10 @@ public class WebViewExecutor {
             return new WebResourceResponse("application/json", "UTF-8", resp.code(), message, headers, resp.body().byteStream());
         }
 
-        private void addFreshSafetynetHeader(Request.Builder reqbuilder) throws IOException {
+        private void addFreshSafetynetHeader(Request.Builder reqbuilder, String hmac) throws IOException {
             AtomicReference<SafetyNetResponse> safetyNetResponse = new AtomicReference<>();
             CountDownLatch s = new CountDownLatch(1);
-            mSafetyNetHelper.sendSafetyNetRequest(Global.mainActivity, response -> {
+            mSafetyNetHelper.sendSafetyNetRequest(Global.mainActivity, hmac.getBytes(), response -> {
                 safetyNetResponse.set(response);
                 s.countDown();
             }, exception -> {

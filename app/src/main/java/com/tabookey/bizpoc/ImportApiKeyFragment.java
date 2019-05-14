@@ -273,7 +273,7 @@ public class ImportApiKeyFragment extends Fragment {
             progressStepsDescriptionView.setVisibility(View.VISIBLE);
             hideKeyboard(mActivity);
             setActivationState(ActivationState.VERIFY_SAFETYNET);
-            mSafetyNetHelper.sendSafetyNetRequest(mActivity, response -> {
+            mSafetyNetHelper.sendSafetyNetRequest(mActivity, null, response -> {
                 Global.setSafetynetResponseJwt(response.getJwsResult());
                 if (SafetyNetHelper.isAttestationLookingGood(response)) {
                     new Thread(() -> {
@@ -421,7 +421,8 @@ public class ImportApiKeyFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             String tokenPwdString = data.getStringExtra(ScanActivity.SCANNED_STRING_EXTRA);
-            progressBar.setVisibility(View.VISIBLE);
+            progressStepsDescriptionView.setVisibility(View.VISIBLE);
+            setActivationState(ActivationState.VALIDATING_ACCOUNT);
             hideKeyboard(mActivity);
             new Thread(() -> saveTokenDataAndWoohoo(tokenPwdString)).start();
         }
