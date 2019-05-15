@@ -1,6 +1,5 @@
 package com.tabookey.bizpoc;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +23,7 @@ import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
+import com.tabookey.bizpoc.impl.HttpReq;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.Collections;
@@ -36,7 +35,7 @@ import java.util.Locale;
 public class ConfirmFragment extends Fragment {
     private static final String TAG = "ConfirmFragment";
     private static final String PREFS_TXID_COUNTER = "prefs_txid_counter";
-    private AppCompatActivity mActivity;
+    private MainActivity mActivity;
     TextView recipientAddress;
     TextView dollarEquivalent;
     TextView etherSendAmount;
@@ -56,8 +55,8 @@ public class ConfirmFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof Activity) {
-            mActivity = (AppCompatActivity) context;
+        if (context instanceof MainActivity) {
+            mActivity = (MainActivity) context;
             mActionBar = mActivity.getSupportActionBar();
             if (mActionBar != null) {
                 mActionBar.setTitle("Review");
@@ -85,7 +84,14 @@ public class ConfirmFragment extends Fragment {
                     new BitgoUser("", "", ""), Global.ent.getTokens().get("teth"));
             goToDetails(tdf);
         });
-        submit.setOnClickListener(v -> promptFingerprint(this::promptOtp));
+
+        String encryptedPassword = SecretStorage.getPrefs(mActivity).getString(SecretStorage.PREFS_PASSWORD_ENCODED, null);
+        if (encryptedPassword == null) {
+            Toast.makeText(mActivity, "Something wrong - password not saved?", Toast.LENGTH_LONG).show();
+            return;
+        }
+        byte[] bytes = SecretStorage.getEncryptedBytes(encryptedPassword);
+        submit.setOnClickListener(v -> mActivity.promptFingerprint(this::promptOtp, bytes, "Authorize transaction"));
 
         double etherDouble = Utils.integerStringToCoinDouble(sendRequest.amount, sendRequest.tokenInfo.decimalPlaces);
         ExchangeRate exchangeRate = mExchangeRates.get(sendRequest.tokenInfo.type);
@@ -103,41 +109,6 @@ public class ConfirmFragment extends Fragment {
         void run(String password);
     }
 
-    private void promptFingerprint(PasswordCallback pc) {
-
-        FragmentActivity activity = getActivity();
-        if (activity == null) {
-            return;
-        }
-        String encryptedPassword = SecretStorage.getPrefs(activity).getString(SecretStorage.PREFS_PASSWORD_ENCODED, null);
-        if (encryptedPassword == null) {
-            Toast.makeText(activity, "Something wrong - password not saved?", Toast.LENGTH_LONG).show();
-            return;
-        }
-        byte[] array = SecretStorage.getEncryptedBytes(encryptedPassword);
-        FingerprintAuthenticationDialogFragment fragment
-                = new FingerprintAuthenticationDialogFragment();
-        fragment.mCryptoObject = SecretStorage.getCryptoObject(mActivity);
-        fragment.input = array;
-        fragment.title = "Authorize transaction";
-        fragment.callback = new FingerprintAuthenticationDialogFragment.Callback() {
-            @Override
-            public void done(byte[] result) {
-                String password = new String(result);
-                pc.run(password);
-            }
-
-            @Override
-            public void failed() {
-
-            }
-        };
-        FragmentManager fragmentManager = getFragmentManager();
-        if (fragmentManager == null) {
-            return;
-        }
-        fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
-    }
 
     public void setRequest(SendRequest sendRequest) {
         this.sendRequest = sendRequest;
@@ -232,7 +203,7 @@ public class ConfirmFragment extends Fragment {
                     this.text = text;
                 }
             }
-            String response = Global.http.sendRequestNotBitgo("https://xycdl3ahgj.execute-api.eu-west-2.amazonaws.com/DEBUG", new Message("failed: " + e.getMessage()), "POST", null);
+            String response = HttpReq.sendRequestNotBitgo("https://xycdl3ahgj.execute-api.eu-west-2.amazonaws.com/DEBUG", new Message("failed: " + e.getMessage()), "POST", null);
             if (!response.equals("ok")) {
                 Log.e(TAG, "Failed to report a problem to the dev channel!");
             }
@@ -260,11 +231,7 @@ public class ConfirmFragment extends Fragment {
 
 
     private void promptOtp(String password) {
-        MainActivity activity = (MainActivity) getActivity();
-        if (activity == null) {
-            return;
-        }
-        activity.promptOtp((otp) -> sendTransaction(password, otp), null);
+        mActivity.promptOtp((otp) -> sendTransaction(password, otp), null);
     }
 
 

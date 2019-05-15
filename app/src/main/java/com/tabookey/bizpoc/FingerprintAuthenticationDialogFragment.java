@@ -63,9 +63,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
         getDialog().setTitle(title);
         View v = inflater.inflate(R.layout.fingerprint_dialog_container, container, false);
         mCancelButton = v.findViewById(R.id.cancel_button);
-        mCancelButton.setOnClickListener(view -> {
-            getDialog().cancel();
-        });
+        mCancelButton.setOnClickListener(view -> getDialog().cancel());
         getDialog().setCanceledOnTouchOutside(false);
 
         mFingerprintContent = v.findViewById(R.id.fingerprint_container);
@@ -110,7 +108,8 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
 
     public interface Callback {
         void done(byte[] result);
-        void failed();
+
+        void failed(Throwable e);
     }
 
     @Override
@@ -120,7 +119,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
         try {
             output = cipher.doFinal(input);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
-            callback.failed();
+            callback.failed(e);
             dismiss();
             return;
         }

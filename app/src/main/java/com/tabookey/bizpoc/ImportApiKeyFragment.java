@@ -101,6 +101,16 @@ public class ImportApiKeyFragment extends Fragment {
         public String token, password;
         @SuppressWarnings("WeakerAccess")
         public boolean prod;
+
+        @SuppressWarnings("unused")
+        public TokenPassword() {
+        }
+
+        public TokenPassword(String token, String password, boolean prod) {
+            this.token = token;
+            this.password = password;
+            this.prod = prod;
+        }
     }
 
     public static class RespResult {
@@ -351,6 +361,20 @@ public class ImportApiKeyFragment extends Fragment {
                 }
                 progressBar.setVisibility(View.VISIBLE);
                 hideKeyboard(mActivity);
+                String encryptedCredentialsBefore = Global.getCredentialBeforeWoohoo();
+
+                if (encryptedCredentialsBefore.length() != 0) {
+                    mOtp = otp;
+                    progressStepsDescriptionView.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    setActivationState(ActivationState.VALIDATING_ACCOUNT);
+                    ConfirmFragment.PasswordCallback decryptionCallback = result -> {
+                        TokenPassword tokenPassword = Utils.fromJson(result, TokenPassword.class);
+                        new Thread(() -> saveTokenDataAndWoohoo(Utils.toJson(tokenPassword))).start();
+                    };
+                    mActivity.promptFingerprint(decryptionCallback, SecretStorage.getEncryptedBytes(encryptedCredentialsBefore), "Resume activation");
+                    return;
+                }
                 new Thread(() ->
                 {
                     try {
@@ -430,6 +454,12 @@ public class ImportApiKeyFragment extends Fragment {
 
     void saveTokenDataAndWoohoo(String tokenPwdString) {
         try {
+            // First, save tekenPwd without verification
+            // This is in case verification fails with some unrelated error
+            byte[] encryptTokenPwd = secretStorage.encrypt(tokenPwdString.getBytes());
+            String encryptedTokenPwd = Arrays.toString(encryptTokenPwd);
+            Global.setCredentialBeforeWoohoo(encryptedTokenPwd);
+
             TokenPassword tokenPassword = Utils.fromJson(tokenPwdString, TokenPassword.class);
             Global.setIsTest(!tokenPassword.prod);
             Global.setAccessToken(tokenPassword.token);
@@ -449,6 +479,7 @@ public class ImportApiKeyFragment extends Fragment {
                     .putString(PREFS_PASSWORD_ENCODED, encryptedPassword)
                     .apply();
             setActivationState(ActivationState.LOADING_HISTORY); // There is no distinct 6th step in this flow, but I will keep it just in case
+            Global.setCredentialBeforeWoohoo("");
             Thread.sleep(500);
             mActivity.runOnUiThread(() -> {
                 WoohooFragment f = new WoohooFragment();

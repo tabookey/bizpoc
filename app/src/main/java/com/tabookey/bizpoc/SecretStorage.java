@@ -4,11 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.fingerprint.FingerprintManager;
-import android.os.CancellationSignal;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
-import android.support.annotation.NonNull;
 
 import com.tabookey.bizpoc.impl.Utils;
 
@@ -171,6 +169,8 @@ class SecretStorage {
         return cipher;
     }
 
+    // TODO: Now that I look at this, what a stupid thing to do?? Fix that!
+    // bytes array is actually saved as "[12, 24, 71]" string and parsed back.
     static byte[] getEncryptedBytes(String encryptedApiKey) {
         String[] split = encryptedApiKey.substring(1, encryptedApiKey.length() - 1).split(", ");
         byte[] array = new byte[split.length];

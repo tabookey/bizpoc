@@ -19,6 +19,7 @@ public class Global {
     private static final String PREFS_FAKE_SAFETYNET = "fake_safetynet";
     private static final String PREFS_ENVIRONMENT = "environment";
     private static final String PREFS_PROV_SERVER_URL = "prov_server_url";
+    private static final String PREFS_CREDS_BEFORE_WOOHOO = "woohoo";
 
 
     public static boolean isTest() {
@@ -82,4 +83,14 @@ public class Global {
     public static void setTestProvisionServer(String url) {
         getPrefs().edit().putString(PREFS_PROV_SERVER_URL, url).apply();
     }
+
+
+    public static void setCredentialBeforeWoohoo(String credentialBeforeWoohoo) {
+        getPrefs().edit().putString(PREFS_CREDS_BEFORE_WOOHOO, credentialBeforeWoohoo).apply();
+    }
+
+    public static String getCredentialBeforeWoohoo() {
+        return getPrefs().getString(PREFS_CREDS_BEFORE_WOOHOO, "");
+    }
+
 }

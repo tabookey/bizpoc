@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener {
 
+    public static String TAG = "MainActivity";
     public static String DETAILS_FRAGMENT = "details_frag";
     public static String SEND_FRAGMENT = "send_frag";
     private FirstFragment mFirstFragment;
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         promptFingerprint();
     }
 
+    //TODO: duplicate code for fingerprint. Optimize!!!
     public void promptFingerprint() {
 
         String encryptedApiKey = SecretStorage.getPrefs(this).getString(SecretStorage.PREFS_API_KEY_ENCODED, null);
@@ -103,7 +105,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             }
 
             @Override
-            public void failed() {
+            public void failed(Throwable e) {
+                e.printStackTrace();
                 Utils.showErrorDialog(MainActivity.this, "Error", "Failed to decrypt the credentials. " +
                         "Reinstall the application if the problem does not resolve.", null);
             }
@@ -227,5 +230,32 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     public void onSafetynetFailure() {
         Utils.showErrorDialog(this, "Safetynet", "Error", this::finish);
+    }
+
+    //TODO: duplicate code for fingerprint. Optimize!!!
+    public void promptFingerprint(ConfirmFragment.PasswordCallback pc, byte[] input, String title) {
+        FingerprintAuthenticationDialogFragment fragment
+                = new FingerprintAuthenticationDialogFragment();
+        fragment.mCryptoObject = SecretStorage.getCryptoObject(this);
+        fragment.input = input;
+        fragment.title = title;
+        fragment.callback = new FingerprintAuthenticationDialogFragment.Callback() {
+            @Override
+            public void done(byte[] result) {
+                String password = new String(result);
+                pc.run(password);
+            }
+
+            @Override
+            public void failed(Throwable e) {
+                e.printStackTrace();
+                Log.e(TAG, "promptFingerprint failed");
+            }
+        };
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (fragmentManager == null) {
+            return;
+        }
+        fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
     }
 }
