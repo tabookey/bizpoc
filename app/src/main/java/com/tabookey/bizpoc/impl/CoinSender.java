@@ -2,7 +2,7 @@ package com.tabookey.bizpoc.impl;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
+import com.tabookey.logs.Log;
 import android.webkit.JavascriptInterface;
 
 import com.fasterxml.jackson.databind.JsonNode;

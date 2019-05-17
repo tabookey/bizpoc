@@ -1,6 +1,6 @@
 package com.tabookey.bizpoc.impl;
 
-import android.util.Log;
+import com.tabookey.logs.Log;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tabookey.bizpoc.BuildConfig;

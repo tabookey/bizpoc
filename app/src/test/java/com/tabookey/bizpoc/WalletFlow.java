@@ -7,6 +7,7 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.BitgoEnterprise;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -16,6 +17,8 @@ import static com.tabookey.bizpoc.impl.Utils.toJson;
 /**
  * command line to go throuh the wallet APIs
  */
+@Ignore
+@Deprecated
 public class WalletFlow {
 
 
@@ -49,7 +52,7 @@ public class WalletFlow {
     @Test public void sendCoin() {
         IBitgoEnterprise ent = new BitgoEnterprise(fullAccessKey, true);
         IBitgoWallet w = ent.getWallets("teth").get(0);
-        SendRequest req = new SendRequest("teth", "teth", "10000000000000000", "0xd21934ed8eaf27a67f0a70042af50a1d6d195e81",
+        SendRequest req = new SendRequest(ent.getToken("teth"), "10000000000000000", "0xd21934ed8eaf27a67f0a70042af50a1d6d195e81",
                 "000000", "walletphrase", "");
         w.sendCoins(req,null);
 

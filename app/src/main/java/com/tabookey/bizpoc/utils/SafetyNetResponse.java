@@ -3,7 +3,7 @@ package com.tabookey.bizpoc.utils;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
-import android.util.Log;
+import com.tabookey.logs.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;

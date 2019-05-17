@@ -7,7 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import com.tabookey.logs.Log;
 import android.widget.Toast;
 
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -59,6 +59,16 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         }
 
         promptFingerprint();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        //TODO: temporarily, save logs on each suspend.
+        // use "./logs.sh getzip" to get this logfile
+        if ( BuildConfig.DEBUG)
+            Log.getZipLogsToSend(Log.getAppInfo(), 30*60);
     }
 
     //TODO: duplicate code for fingerprint. Optimize!!!

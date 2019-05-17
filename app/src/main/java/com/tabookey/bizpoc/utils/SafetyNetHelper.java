@@ -1,7 +1,7 @@
 package com.tabookey.bizpoc.utils;
 
 import android.app.Activity;
-import android.util.Log;
+import com.tabookey.logs.Log;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;

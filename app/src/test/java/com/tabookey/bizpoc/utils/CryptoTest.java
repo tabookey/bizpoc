@@ -1,7 +1,6 @@
 package com.tabookey.bizpoc.utils;
 
-import com.tabookey.bizpoc.crypto.Crypto;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -31,6 +30,7 @@ public class CryptoTest {
         assertEquals(Crypto.decrypt(enc, password.toCharArray()), orig);
     }
 
+    @Ignore
     @Test
     public void test_scrypt() throws Exception {
         int N = 16384;   // CPU/memory cost parameter, must be power of two

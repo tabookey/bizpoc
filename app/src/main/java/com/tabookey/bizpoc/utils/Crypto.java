@@ -1,6 +1,6 @@
 package com.tabookey.bizpoc.utils;
 
-import android.util.Log;
+import com.tabookey.logs.Log;
 
 import org.bouncycastle.crypto.generators.SCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

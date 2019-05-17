@@ -17,7 +17,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.widget.CardView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import com.tabookey.logs.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

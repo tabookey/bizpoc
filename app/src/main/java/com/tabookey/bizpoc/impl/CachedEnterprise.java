@@ -1,6 +1,6 @@
 package com.tabookey.bizpoc.impl;
 
-import android.util.Log;
+import com.tabookey.logs.Log;
 
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.EnterpriseInfo;
