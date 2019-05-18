@@ -44,25 +44,30 @@ server.use((req, res, next) => {
     next();
 });
 
-myProxy=proxy( {target, changeOrigin:true, logLevel:"debug" })
+myProxy=proxy( {target, changeOrigin:true, headers: {Connection:"Keep-Alive"}, logLevel:"debug" })
 
 //getKey requests must have safetynet header
 function validateSafetynet(req,res,next) {
+
     //bitgo requests that require "x-safetynet" header 
     let requestsWithSafetyNet= '/api/v2/\\w+/(key|wallet/)'
 
     if (!req.originalUrl.match(requestsWithSafetyNet) ){
+	console.log( "req: "+req.originalUrl +" - pass-throug");
         //other requests are passed-through.
         next()
 	return
     }
 
     header = req.headers["x-safetynet"]
-    if ( !header ) {
-        res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
+    if ( !header )  {
+	console.log( "req: "+req.originalUrl +" - missing header" )
+	next(); //TEMPORARY: silently ACCEPT requests without this header
+        //res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
 	return
     }
     jwtverify.validateJwt(header).then(res=>{
+	console.log( "after validateJwt: err="+res.error )
         if ( res.error ) { 
             throw new Error(res.error)
         }

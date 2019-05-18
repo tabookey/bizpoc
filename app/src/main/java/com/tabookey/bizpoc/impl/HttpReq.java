@@ -25,10 +25,15 @@ public class HttpReq {
     //note that we have one proxy, but it can determine actual server based on "x-origin" header.
 
     static String testUrl = "https://bizpoc.ddns.tabookey.com:8090";
+//    static String testUrl = "https://test.bitgo.com";
     static String prodUrl = "https://bizpoc.ddns.tabookey.com";
 
     private final String accessKey;
     String host;
+
+    //used by sendRequestNotBitgo
+    private static OkHttpClient sclient;
+
     public HttpReq( String accessKey, boolean test) {
         this.accessKey = accessKey;
         this.host = test ? testUrl : prodUrl;
@@ -116,10 +121,10 @@ public class HttpReq {
         }
     }
 
-    public static String sendRequestNotBitgo(String api, Object data, String method, Map<String, String> headers) {
+    public static String sendRequestNotBitgo(String url, Object data, String method, Map<String, String> headers) {
         Request.Builder bld = new Request.Builder();
 
-        bld.url(api);
+        bld.url(url);
         if ( data!=null ) {
             RequestBody body = RequestBody.create(MediaType.parse("application/json"), toJson(data));
             bld.method(method==null ? "PUT":method, body);
@@ -140,9 +145,10 @@ public class HttpReq {
                     Log.d(TAG, "> "+s+": "+request.header(s));
                 }
             }
-            OkHttpClient client = new OkHttpClient.Builder()
+            if ( sclient==null )
+                sclient = new OkHttpClient.Builder()
                     .build();
-            Response res = client.newCall(request).execute();
+            Response res = sclient.newCall(request).execute();
             String str = res.body().string();
             if ( debug )
                 Log.d(TAG, "< "+str);
