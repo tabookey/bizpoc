@@ -263,12 +263,9 @@ public class ImportApiKeyFragment extends Fragment {
             emailIntent.putExtra(Intent.EXTRA_EMAIL, to);
             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Activation error - TabooKey Safe");
             emailIntent.putExtra(Intent.EXTRA_TEXT, "Hi there,\n\nActivation failed during step:\n" + getFailedStep() + "\n\nThank you,\nName: ");
-            String pathname = Utils.getFolder(mActivity) + "/files/samplefile.txt";
-            File file = new File(pathname);
+            File file = Log.getZipLogsToSend(Log.getAppInfo(), 30*60);
             Uri uriForFile = FileProvider.getUriForFile(mActivity, "com.tabookey.bizpoc.fileprovider", file);
-            /* Uncomment this line to attach file to email
             emailIntent.putExtra(Intent.EXTRA_STREAM, uriForFile);
-             **/
             startActivity(Intent.createChooser(emailIntent, "Send email..."));
         });
         scanApiKeyButton.setOnClickListener(v -> {

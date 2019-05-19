@@ -33,7 +33,7 @@ case "$1" in
 		;;
 
 	ls|list)
-		adb shell run-as com.tabookey.bizpoc ls files/logs
+		adb shell run-as com.tabookey.bizpoc ls -al files/logs
 		;;
 
 	get)
