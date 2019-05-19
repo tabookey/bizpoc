@@ -141,7 +141,7 @@
 
         // we shared the wallet with the customer, so from his perspective, 
         // the wallet password is the user's password. only the admin has different pwd for wallet and user.  
-        var walletpwd = document.getElementById("pwd").value
+        var walletpwd = document.getElementById("pwd").value.trim()
         console.log( "walletpwd=",walletpwd)
         verify= true //!debugProvServer.checked
         if (verify) {
@@ -286,14 +286,14 @@
     <li> Select, "Developer Options" and then "+ Add Access Token"
     <li> Give it a Label
     <li> scroll to the end of the page (very long..)
-    <li> Enter "<b>IP Address Allowed</b>": <span id=serverIP>35.177.187.77 <input type=submit value="Copy" onclick="selectAndCopy('serverIP')">
+    <li> Enter "<b>IP Address Allowed</b>": <input readonly id=serverIP value="35.177.187.77, 3.8.171.48" size=25 > <input type=submit value="Copy" onclick="selectAndCopy('serverIP')">
     <li> Check View, Spend, Full-Administrative-Access and "agree"
     <ul>
         <li> (that is, all checkboxes except "create wallets")
     </ul>
     <li> Click <b>"+Add Token"</b>, enter Yubikey
     <li> copy the on-screen access token
-    <li> Paste access-token here: <input id=accesstoken placeholder="{paste}"> <input type=submit value="Verify" onclick="verifyUserInfo(accesstoken.value, 'userinfo')"> <span id=userinfo></span>
+    <li> Paste access-token here: <input id=accesstoken placeholder="{paste}"> <input type=submit value="Verify" onclick="verifyUserInfo(accesstoken.value.trim(), 'userinfo')"> <span id=userinfo></span>
     </ul>
 
 <li> Open <a id=mainlogin href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
@@ -347,7 +347,8 @@
     </ul></font>
 
     <li> Click <input type=submit value="Upload User Info"
-        onclick="genActivationKey('genstatus', 'activationKey', adminotp.value, otp.value, accesstoken.value)"
+        onclick="genActivationKey('genstatus', 'activationKey', 
+                    adminotp.value.trim(), otp.value.trim(), accesstoken.value.trim())"
         >
      <b><div id=genstatus></div></b>
     <li> Save above activation key (until user receives Yubikey) 
