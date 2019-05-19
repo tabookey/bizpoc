@@ -55,6 +55,7 @@ import static com.tabookey.bizpoc.SecretStorage.PREFS_PASSWORD_ENCODED;
 //https://stackoverflow.com/questions/46875774/using-fingerprints-for-encryption-in-combination-with-a-password
 public class ImportApiKeyFragment extends Fragment {
 
+    static String TAG = "importapikey";
     private View progressStepsDescriptionView;
     private SecretStorage secretStorage = new SecretStorage();
     private static String defApi = "{\"token\":\"v2xf4fe8849788c60cc06c83f799c59b9b9712e4ba394e63ba50458f6a0593f72e8\", \"password\":\"asd/asd-ASD\"}";
@@ -120,9 +121,10 @@ public class ImportApiKeyFragment extends Fragment {
     private void setActivationFailureReason(String error, Throwable exception) {
         mActivationError = error;
         mActivationException = exception;
-        if (exception != null) {
-            exception.printStackTrace();
-        }
+
+        Log.e(TAG,"Activation failed: "+error, exception);
+        Log.restartLogs();
+
         mActivity.runOnUiThread(() -> {
             int ordinal = mActivationState.ordinal();
             LottieAnimationView animationView = mAnimationViews.get(ordinal);
