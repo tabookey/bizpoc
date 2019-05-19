@@ -115,6 +115,7 @@ public class TransactionDetailsFragment extends Fragment {
         if (transfer != null) {
             fillTransfer();
         } else if (pendingApproval != null) {
+            newRefresher();
             fillPending();
         } else {
             throw new RuntimeException("No transaction object");
@@ -138,7 +139,6 @@ public class TransactionDetailsFragment extends Fragment {
         if (refresher != null) {
             refresher.interrupt();
         }
-        newRefresher();
         refresher.start();
     }
 

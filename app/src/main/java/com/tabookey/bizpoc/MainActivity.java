@@ -7,7 +7,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+
 import com.tabookey.logs.Log;
+
 import android.widget.Toast;
 
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public static String DETAILS_FRAGMENT = "details_frag";
     public static String SEND_FRAGMENT = "send_frag";
     private FirstFragment mFirstFragment;
+    private static boolean active = false;
 
     SafetynetHelperInterface mSafetyNetHelper;
 
@@ -57,22 +60,44 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         } else {
             mSafetyNetHelper = new SafetyNetHelper();
         }
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        active = true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         promptFingerprint();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Global.forgetAccessToken();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
+        active = false;
         //TODO: temporarily, save logs on each suspend.
         // use "./logs.sh getzip" to get this logfile
-        if ( BuildConfig.DEBUG)
-            Log.getZipLogsToSend(Log.getAppInfo(), 30*60);
+        if (BuildConfig.DEBUG)
+            Log.getZipLogsToSend(Log.getAppInfo(), 30 * 60);
     }
 
     //TODO: duplicate code for fingerprint. Optimize!!!
     public void promptFingerprint() {
+
+        if (Global.getAccessToken() != null) {
+            // TODO: should we re-prompt the fingerprint after onPause?
+            Log.v(TAG, "Access token already decrypted");
+            return;
+        }
 
         String encryptedApiKey = SecretStorage.getPrefs(this).getString(SecretStorage.PREFS_API_KEY_ENCODED, null);
 
@@ -105,11 +130,17 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         fragment.callback = new FingerprintAuthenticationDialogFragment.Callback() {
             @Override
             public void done(byte[] apiKeyBytes) {
+                if (!active) {
+                    Log.e(TAG, "Activity is not in foreground, quitting!");
+                    finish();
+                    return;
+                }
                 String apiKeyPlaintext = new String(apiKeyBytes);
                 Global.setAccessToken(apiKeyPlaintext);
                 mFirstFragment = new FirstFragment();
                 // If we re-scan fingerprint, we also re-show splash loading view
                 FirstFragment.didShowSplashScreen = false;
+                // Do not support background decryption - quit the app silently
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.frame_layout, mFirstFragment).commit();
             }
@@ -267,5 +298,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             return;
         }
         fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
+    }
+
+    public boolean isActive() {
+        return active;
     }
 }

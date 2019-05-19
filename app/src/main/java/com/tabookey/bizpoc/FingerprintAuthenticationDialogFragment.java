@@ -27,6 +27,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.tabookey.logs.Log;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -38,6 +40,8 @@ import javax.crypto.IllegalBlockSizeException;
 public class FingerprintAuthenticationDialogFragment extends DialogFragment
         implements FingerprintUiHelper.Callback {
 
+
+    private static final String TAG = "FingerprintAuth";
     private Button mCancelButton;
     private View mFingerprintContent;
     String title;
@@ -93,6 +97,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     public void onPause() {
         super.onPause();
         mFingerprintUiHelper.stopListening();
+        dismiss();
     }
 
     @Override
@@ -114,6 +119,10 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
 
     @Override
     public void onAuthenticated(FingerprintManager.AuthenticationResult result) {
+        if (!mActivity.isActive()){
+            Log.e(TAG, "Activity is not in foreground, quitting!");
+            return;
+        }
         Cipher cipher = result.getCryptoObject().getCipher();
         byte[] output;
         try {
@@ -129,6 +138,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
 
     @Override
     public void onError() {
+        callback.failed(new RuntimeException("Weird error!"));
     }
 
 }

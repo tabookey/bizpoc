@@ -30,6 +30,10 @@ public class Global {
         getPrefs().edit().putBoolean(PREFS_IS_TEST, isTest).apply();
     }
 
+    public static void forgetAccessToken() {
+        Global.accessToken = null;
+    }
+
     public static void setAccessToken(String accessToken) {
         Global.accessToken = accessToken;
         BitgoEnterprise netent = new BitgoEnterprise(Global.accessToken, isTest());
