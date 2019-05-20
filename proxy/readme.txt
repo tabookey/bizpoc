@@ -12,8 +12,12 @@ Above DNS name is hard-coded into the client, and is completely static (A record
         user ubuntu
         ForwardAgent yes
 
-scp *sh *js bizpoc:proxy/
+scp package.json *service *sh *js bizpoc:proxy/
 ssh bizpoc
+
+#NOTE: if the server's DNS name is anything other than "bizpoc.ddns.tabookey.com", then "start.sh" should be updated,
+# so that let's encrypt will fetch cert for the right host name.
+
 sudo -s
 cp bizpoc-proxy.service /lib/systemd/system/
 systemctl start bizpoc-proxy
@@ -26,4 +30,4 @@ NOTE: greenlock creates certificate, and automatically updates it.
 debug server (port 8090) uses the same certificate, but doesn't get it update.
 if the debug server has stale certificate, then simply stop/start the service, so it will re-read new one:
 
-sydo systemctl restart bizpoc-proxy
+sudo systemctl restart bizpoc-proxy

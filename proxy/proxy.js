@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 const express = require('express')
 const proxy = require('http-proxy-middleware')
-var cors = require('cors')
+const  cors = require('cors')
+
+const https = require('https')
+const agent = new https.Agent({keepAlive:true})
+
 
 jwtverify = require('./jwtverify')
 
@@ -44,7 +48,7 @@ server.use((req, res, next) => {
     next();
 });
 
-myProxy=proxy( {target, changeOrigin:true, headers: {Connection:"Keep-Alive"}, logLevel:"debug" })
+myProxy=proxy( {target, changeOrigin:true, agent, headers: {Connection:"Keep-Alive"}, logLevel:"debug" })
 
 //getKey requests must have safetynet header
 function validateSafetynet(req,res,next) {
