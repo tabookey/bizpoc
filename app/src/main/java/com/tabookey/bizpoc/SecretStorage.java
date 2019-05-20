@@ -172,6 +172,9 @@ class SecretStorage {
     // TODO: Now that I look at this, what a stupid thing to do?? Fix that!
     // bytes array is actually saved as "[12, 24, 71]" string and parsed back.
     static byte[] getEncryptedBytes(String encryptedApiKey) {
+        if (encryptedApiKey == null || encryptedApiKey.length() == 0){
+            throw new RuntimeException("Decoding serialized byte array to string failed!");
+        }
         String[] split = encryptedApiKey.substring(1, encryptedApiKey.length() - 1).split(", ");
         byte[] array = new byte[split.length];
         for (int i = 0; i < split.length; i++) {

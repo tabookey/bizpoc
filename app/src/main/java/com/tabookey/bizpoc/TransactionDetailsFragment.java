@@ -138,8 +138,8 @@ public class TransactionDetailsFragment extends Fragment {
         });
         if (refresher != null) {
             refresher.interrupt();
+            refresher.start();
         }
-        refresher.start();
     }
 
     private void cancelTransaction() {

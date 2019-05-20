@@ -9,7 +9,9 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+
 import com.tabookey.logs.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,6 +69,7 @@ public class FirstFragment extends Fragment {
     private TextView searchingNetworkWarning;
 
     boolean whiteBackground = false;
+    private boolean didShowWarningOnGuardians = false;
 
     @Nullable
     @Override
@@ -233,6 +236,13 @@ public class FirstFragment extends Fragment {
                     }
                     mGuardians = mBitgoWallet.getGuardians();
 
+                    if ( !didShowWarningOnGuardians && (mGuardians == null || mGuardians.size() == 0)) {
+                        mActivity.runOnUiThread(() -> {
+                            didShowWarningOnGuardians = true;
+                            Utils.showErrorDialog(mActivity, "Warning!", "There seems to be no guardians added to this wallet", null);
+                        });
+                    }
+
                     /* * * */
                     List<PendingApproval> pendingApprovals;
                     List<Transfer> transfers;
@@ -241,6 +251,7 @@ public class FirstFragment extends Fragment {
                         pendingApprovals.sort((a, b) -> b.createDate.compareTo(a.createDate));
                         transfers = mBitgoWallet.getTransfers(3);
                     } catch (Exception e) {
+                        e.printStackTrace();
                         mActivity.runOnUiThread(() -> {
                             progressBar.setVisibility(View.GONE);
                             retryView.setVisibility(View.VISIBLE);
