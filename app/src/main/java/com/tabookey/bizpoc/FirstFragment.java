@@ -295,6 +295,7 @@ public class FirstFragment extends Fragment {
                     });
                     return;
                 }
+                BitgoUser entMe = Global.ent.getMe();
                 double finalAssetsWorth = assetsWorth;
                 mActivity.runOnUiThread(() -> {
                     progressView.setVisibility(View.GONE);
@@ -309,7 +310,7 @@ public class FirstFragment extends Fragment {
                     TextView owner = view.findViewById(R.id.ownerText);
                     balanceInDollarsText.setText(String.format(Locale.US, "%s" + NBSP + "USD", Utils.toMoneyFormat(finalAssetsWorth)));
                     address.setText(mBitgoWallet.getAddress());
-                    owner.setText(String.format("%s's safe%s", Global.ent.getMe().name, Global.isTest() ? " (testnet)" : ""));
+                    owner.setText(String.format("%s's safe%s", entMe.name, Global.isTest() ? " (testnet)" : ""));
                     adapter = new BalancesAdapter(mActivity, 0, balances);
                     balancesListView.setAdapter(adapter);
                     Utils.setListViewHeightBasedOnChildren(balancesListView);

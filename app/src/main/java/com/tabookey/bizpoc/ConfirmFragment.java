@@ -213,7 +213,7 @@ public class ConfirmFragment extends Fragment {
     }
 
     private void goToDetails(TransactionDetailsFragment tdf) {
-        tdf.showSuccessPopup = true;
+        tdf.showSuccessPopup = 0;
         tdf.mExchangeRates = mExchangeRates;
         tdf.guardians = guardians;
         tdf.mBitgoWallet = mBitgoWallet;

@@ -1,5 +1,8 @@
 package com.tabookey.bizpoc.impl;
 
+import android.os.Looper;
+import android.os.NetworkOnMainThreadException;
+
 import com.tabookey.logs.Log;
 
 import com.tabookey.bizpoc.api.BitgoUser;
@@ -13,19 +16,20 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CachedEnterprise implements IBitgoEnterprise {
     private final BitgoEnterprise networkEnterprise;
-    TokenInfo baseCoin;
+    private TokenInfo baseCoin;
     private EnterpriseInfo info;
     private ArrayList<BitgoUser> users;
     private BitgoUser userMe;
 
     private HashMap<String, TokenInfo> allTokensInfo;
-    public CachedWallet theWallet;
+    private CachedWallet theWallet;
     private Map<String, Double> allExchangeRates;
 
     @Override
@@ -38,8 +42,11 @@ public class CachedEnterprise implements IBitgoEnterprise {
         baseCoin = networkEnterprise.getBaseCoin();
     }
 
-    void init() {
-        if ( info!=null )
+    private void init() {
+        if (Looper.getMainLooper().isCurrentThread()){
+            throw new NetworkOnMainThreadException();
+        }
+        if (info != null)
             return;
         info = networkEnterprise.getInfo();
         userMe = networkEnterprise.getMe();
@@ -50,8 +57,8 @@ public class CachedEnterprise implements IBitgoEnterprise {
         getCachedWallet();
     }
 
-    CachedWallet getCachedWallet() {
-        if ( theWallet==null )
+    private CachedWallet getCachedWallet() {
+        if (theWallet == null)
             theWallet = new CachedWallet(networkEnterprise.getMergedWallets().get(0));
         return theWallet;
     }
@@ -62,14 +69,14 @@ public class CachedEnterprise implements IBitgoEnterprise {
      */
     public void update(Runnable onChange) {
         HashMap<String, Double> newExchangeRates = new HashMap<>(networkEnterprise.getAllExchangeRates());
-        if ( allExchangeRates!=null && newExchangeRates.toString().equals(allExchangeRates.toString()))
+        if (allExchangeRates != null && newExchangeRates.toString().equals(allExchangeRates.toString()))
             return;
 
-        Log.d("cache", "OLD: "+String.valueOf(allExchangeRates));
-        Log.d("cache", "NEW: "+String.valueOf(newExchangeRates));
+        Log.d("cache", "OLD: " + allExchangeRates);
+        Log.d("cache", "NEW: " + newExchangeRates);
         allExchangeRates = newExchangeRates;
 
-        if ( onChange!=null )
+        if (onChange != null)
             onChange.run();
     }
 
@@ -95,9 +102,10 @@ public class CachedEnterprise implements IBitgoEnterprise {
 
     /**
      * return market value of all known currencies and tokens.
+     *
      * @return map of token=>usd-value
      */
-    public Map<String,Double> getAllExchangeRates() {
+    public Map<String, Double> getAllExchangeRates() {
         init();
         return allExchangeRates;
     }
@@ -110,7 +118,7 @@ public class CachedEnterprise implements IBitgoEnterprise {
 
     public List<IBitgoWallet> getMergedWallets() {
         init();
-        return Arrays.asList(getCachedWallet());
+        return Collections.singletonList(getCachedWallet());
     }
 
     @Override
@@ -126,7 +134,7 @@ public class CachedEnterprise implements IBitgoEnterprise {
     @Override
     public List<IBitgoWallet> getWallets(String coin) {
         init();
-        return Arrays.asList(getCachedWallet());
+        return Collections.singletonList(getCachedWallet());
     }
 
     public BitgoUser getUserById(String id, boolean withFullName) {

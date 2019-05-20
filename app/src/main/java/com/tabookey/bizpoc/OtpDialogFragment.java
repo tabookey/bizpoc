@@ -50,20 +50,25 @@ public class OtpDialogFragment extends DialogFragment {
         // Do not create a new Fragment when the Activity is re-created such as orientation changes.
         setRetainInstance(true);
         setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Material_Light_Dialog);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
         //debug mode: if user doesn't have yubikey, use totp instead..
-        if (BuildConfig.DEBUG && Global.isTest() &&
-                Global.ent != null &&
-                !Global.ent.getMe().hasOtp(BitgoUser.OtpType.yubikey) &&
-                Global.ent.getMe().hasOtp(BitgoUser.OtpType.totp)) {
-            new Thread(() -> {
+        new Thread(() -> {
+            if (BuildConfig.DEBUG && Global.isTest() &&
+                    Global.ent != null &&
+                    !Global.ent.getMe().hasOtp(BitgoUser.OtpType.yubikey) &&
+                    Global.ent.getMe().hasOtp(BitgoUser.OtpType.totp)) {
                 SystemClock.sleep(2000);
                 // TODO: this will crash if click 'cancel' too soon.
-                getActivity().runOnUiThread(() -> {
+                ((MainActivity) context).runOnUiThread(() -> {
                     Toast.makeText(getActivity(), "Google Authenticator 000000", Toast.LENGTH_LONG).show();
                     onOtpTagRecognised("000000");
                 });
-            }).start();
-        }
+            }
+        }).start();
     }
 
     @Override
@@ -113,11 +118,6 @@ public class OtpDialogFragment extends DialogFragment {
     @Override
     public void onPause() {
         super.onPause();
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
     }
 
     public void onOtpTagRecognised(String result) {

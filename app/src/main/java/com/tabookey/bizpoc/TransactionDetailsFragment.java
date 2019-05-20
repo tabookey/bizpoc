@@ -15,7 +15,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
+
 import com.tabookey.logs.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,7 +74,11 @@ public class TransactionDetailsFragment extends Fragment {
     TextView popupTitle;
     private AppCompatActivity mActivity;
     private ActionBar mActionBar;
-    boolean showSuccessPopup = false;
+    /**
+     * Need 2 actions - set visibility is in onViewCreated, hide action bar in onResume
+     * Defaults to '2' (aka 'don't do anything)
+     */
+    int showSuccessPopup = 2;
     private View successPopup;
     private View transactionCommentLabel;
     private TextView searchingNetworkWarning;
@@ -115,7 +121,16 @@ public class TransactionDetailsFragment extends Fragment {
         if (transfer != null) {
             fillTransfer();
         } else if (pendingApproval != null) {
+            if (showSuccessPopup != 2) {
+                showSuccessPopup++;
+                successPopup.setVisibility(View.VISIBLE);
+                greatThanksButton.setOnClickListener(v -> {
+                    mActionBar.show();
+                    successPopup.setVisibility(View.GONE);
+                });
+            }
             newRefresher();
+            refresher.start();
             fillPending();
         } else {
             throw new RuntimeException("No transaction object");
@@ -126,20 +141,10 @@ public class TransactionDetailsFragment extends Fragment {
     public void onResume() {
         super.onResume();
         new Handler().post(() -> {
-            if (showSuccessPopup) {
-                showSuccessPopup = false;
+            if (showSuccessPopup != 2) {
                 mActionBar.hide();
-                successPopup.setVisibility(View.VISIBLE);
-                greatThanksButton.setOnClickListener(v -> {
-                    mActionBar.show();
-                    successPopup.setVisibility(View.GONE);
-                });
             }
         });
-        if (refresher != null) {
-            refresher.interrupt();
-            refresher.start();
-        }
     }
 
     private void cancelTransaction() {
