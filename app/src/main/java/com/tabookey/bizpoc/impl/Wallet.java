@@ -113,7 +113,7 @@ public class Wallet implements IBitgoWallet {
         public Trans[] transfers;
 
         static class Trans {
-            public String id, txid, coin, valueString, usd, comment, pendingApproval;
+            public String id, txid, coin, valueString, usd, comment, pendingApproval, state, type;
             public Date date;
             public Entry[] entries;
         }

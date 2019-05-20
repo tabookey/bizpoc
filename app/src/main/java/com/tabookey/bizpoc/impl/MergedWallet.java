@@ -7,6 +7,7 @@ import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.Transfer;
+import com.tabookey.logs.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
  * merged wallet - represent all tokens supported by this wallet.
  */
 class MergedWallet implements IBitgoWallet {
+    private final static String TAG = "MergedWallet";
 
     private final BitgoEnterprise ent;
     private final HashMap<String, String> balances = new HashMap<>();
@@ -47,7 +49,7 @@ class MergedWallet implements IBitgoWallet {
 
         MergedWalletsData.WalletData data = mergedData.wallets[0];
         coins.add(data.coin);
-        balances.put(data.coin, data.balanceString+Wallet.balanceExtraDigits());
+        balances.put(data.coin, data.balanceString + Wallet.balanceExtraDigits());
 
         for (String tokenName : data.tokens.keySet()) {
             MergedWalletsData.TokenData token = data.tokens.get(tokenName);
@@ -58,7 +60,7 @@ class MergedWallet implements IBitgoWallet {
                 continue;
 
             coins.add(tokenName);
-            balances.put(tokenName, token.balanceString+Wallet.balanceExtraDigits());
+            balances.put(tokenName, token.balanceString + Wallet.balanceExtraDigits());
         }
     }
 
@@ -182,6 +184,14 @@ class MergedWallet implements IBitgoWallet {
         Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (Wallet.TransferResp.Trans t : resp.transfers) {
+            if (t.state != null && t.state.equals("failed") && t.type != null && t.type.equals("receive")) {
+                Log.w(TAG, "Failed incoming transaction, hiding it from the UI.");
+                continue;
+            }
+            if (t.valueString.equals("0") && t.entries.length == 1 && t.state != null && !t.state.equals("failed")){
+                Log.w(TAG, "Non-failed transaction of 0 value is not relevant, hiding it from the UI.");
+                continue;
+            }
             Transfer tx = new Transfer(t.id, t.txid, t.valueString + Wallet.balanceExtraDigits(), t.coin, t.usd, t.date, null, t.comment, t.pendingApproval, ent.getToken(t.coin), ApprovalState.APPROVED, null, new ArrayList<>());
             // entries have the add/sub of each transaction "participant".
             // on ethereum there are exactly 2 such participants. one is our wallet, so we're
