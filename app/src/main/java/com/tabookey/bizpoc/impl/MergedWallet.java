@@ -31,19 +31,22 @@ class MergedWallet implements IBitgoWallet {
     MergedWalletsData.WalletData data;
     ArrayList<String> coins;
 
-    public MergedWallet(BitgoEnterprise ent, MergedWalletsData.WalletData walletData) {
+    public MergedWallet(BitgoEnterprise ent, MergedWalletsData.WalletData walletData, MergedWalletsData mergedWalletsData) {
         this.data = walletData;
         this.ent = ent;
         this.ethWallet = getCoinWallet(data.coin);
 
         coins = new ArrayList<>();
-        refreshBalances();
+        refreshBalances(mergedWalletsData);
     }
 
-    private void refreshBalances() {
+    private void refreshBalances(MergedWalletsData mergedData) {
 
         //TODO: this request is now duplicated. Fix!
-        MergedWalletsData mergedData = ent.http.get("/api/v2/wallets/merged?coin=" + this.data.coin + "&enterprise=" + Global.ent.getInfo().id, MergedWalletsData.class);
+        if (mergedData == null) {
+            mergedData = ent.http.get("/api/v2/wallets/merged?coin=" + this.data.coin + "&enterprise=" + Global.ent.getInfo().id, MergedWalletsData.class);
+            new Throwable("WALLLETTT").printStackTrace();
+        }
         balances.clear();
         coins.clear();
 
@@ -100,8 +103,13 @@ class MergedWallet implements IBitgoWallet {
     }
 
     @Override
+    public String getBalanceWithRefresh(String coin, Object mergedWalletsData) {
+        refreshBalances((MergedWalletsData) mergedWalletsData);
+        return balances.get(coin);
+    }
+
+    @Override
     public String getBalance(String coin) {
-        refreshBalances();
         return balances.get(coin);
     }
 
@@ -188,7 +196,7 @@ class MergedWallet implements IBitgoWallet {
                 Log.w(TAG, "Failed incoming transaction, hiding it from the UI.");
                 continue;
             }
-            if (t.valueString.equals("0") && t.entries.length == 1 && t.state != null && !t.state.equals("failed")){
+            if (t.valueString.equals("0") && t.entries.length == 1 && t.state != null && !t.state.equals("failed")) {
                 Log.w(TAG, "Non-failed transaction of 0 value is not relevant, hiding it from the UI.");
                 continue;
             }

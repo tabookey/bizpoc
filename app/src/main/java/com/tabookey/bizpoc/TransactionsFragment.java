@@ -70,7 +70,7 @@ public class TransactionsFragment extends Fragment {
         new Thread(() -> {
             List<Transfer> transfers;
             try {
-                ethWallet = Global.ent.getMergedWallets().get(0);
+                ethWallet = Global.ent.getMergedWallets(null).get(0);
                 transfers = ethWallet.getTransfers(0);
             } catch (Exception e) {
                 mActivity.runOnUiThread(() -> {

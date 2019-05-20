@@ -152,7 +152,7 @@ public class TransactionDetailsFragment extends Fragment {
         mActionBar.hide();
         new Thread(() -> {
             try {
-                Global.ent.getMergedWallets().get(0).rejectPending(pendingApproval);
+                Global.ent.getMergedWallets(null).get(0).rejectPending(pendingApproval);
                 mBitgoWallet.update(null);
                 mActivity.runOnUiThread(() -> {
                     mActionBar.show();

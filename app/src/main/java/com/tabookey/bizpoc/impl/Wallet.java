@@ -98,6 +98,11 @@ public class Wallet implements IBitgoWallet {
     }
 
     @Override
+    public String getBalanceWithRefresh(String coin, Object mergedWalletsData) {
+        throw new NotImplementedError();
+    }
+
+    @Override
     public String getBalance(String coin) {
         if (!coin.equals(this.coin))
             throw new RuntimeException("invalid coin " + coin + ". Wallet only has " + this.coin);

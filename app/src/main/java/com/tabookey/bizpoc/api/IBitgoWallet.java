@@ -13,6 +13,8 @@ public interface IBitgoWallet {
     //all vault users that are not "me"
     List<BitgoUser> getGuardians();
 
+    String getBalanceWithRefresh(String coin, Object mergedWalletsData);
+
     String getBalance(String coin);
 
     String getAddress();

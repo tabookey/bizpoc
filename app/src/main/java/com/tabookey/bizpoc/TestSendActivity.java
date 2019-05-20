@@ -107,7 +107,7 @@ public class TestSendActivity extends AppCompatActivity {
         Log.d(TAG, "rates: "+ent.getAllExchangeRates());
         log( "me: "+ent.getMe().name);
 
-            List<IBitgoWallet> allw = ent.getMergedWallets();
+            List<IBitgoWallet> allw = ent.getMergedWallets(null);
         IBitgoWallet w = allw.get(0);
 
 //        IBitgoWallet w = ent.getWallets("teth").get(3);

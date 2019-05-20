@@ -221,17 +221,21 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     public void update(Runnable onChange) {
     }
 
-    public List<IBitgoWallet> getMergedWallets() {
+    public MergedWalletsData getMergedWalletsData() {
         String coin = coinName();
 
         Map<String, String> headers = new HashMap<>();
         headers.put("x-safetynet", Global.getSafetynetResponseJwt());
         //must specify at least one coin name, to get back all tokens.
         MergedWalletsData data = http.get("/api/v2/wallets/merged?coin="+coin+"&enterprise=" + getInfo().id, MergedWalletsData.class, headers);
+        return data;
+    }
 
+    public List<IBitgoWallet> getMergedWallets(Object mergedWalletsData) {
+        MergedWalletsData data = (MergedWalletsData) mergedWalletsData;
         ArrayList<IBitgoWallet> ret = new ArrayList<>();
         for( MergedWalletsData.WalletData walletData : data.wallets) {
-            ret.add(new MergedWallet(this,walletData));
+            ret.add(new MergedWallet(this,walletData, data));
         }
         return ret;
     }
