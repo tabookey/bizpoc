@@ -297,11 +297,11 @@
     </ul>
 
 <li> Open <a id=mainlogin href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
-<li> Invite customer's email to enterprise.
+<li> Invite customer's email to organization.
     <font size=1>
         <ul><li> Top/left menu, select "Manage Organization" and <b>Invite Users</b>, as role "Member"</ul>
     </font>
-<li> On Customer's incognito window: select enterprise from top/left menu.
+<li> On Customer's incognito window: select organization from top/right menu.
 <li> In <b>Admin</b> window: Create new wallet:
 
     <ul>
@@ -314,26 +314,34 @@
     <li> Paste from clipboard <i>wallet password</i> (twice), click "Next"
     <li> Select "For Small Balances", "Next" to create wallet.
     <li> Print the generated <b>Bitgo Keycard PDF</b>
-    <li> Enter activation code (from PDF) to activate wallet
+    <li> Click activation checkboxes, and enter activation code (from PDF) to activate wallet
     <li> Click <input type=submit value="Print Wallet Password page" onclick="printWalletPassword()">
     </ul>
 
 <li> Invite user to wallet with role "Spender"
     <ul>
-    <li> must use "Select people in your organization", and NOT "Invite new users" for both guardians and customer
-    <li> switch to the customer's incognito window, to accept invitation to join wallet.
+    <li> Tap "select people from your organization"
+    <li> Choose customer's email from dropdown.
+    <li> Select role "Spender"   
+    <li> Switch to the customer's incognito window, to accept invitation to join wallet.
     </ul>
 
 <li> Invite guardians to wallet with role "Admin"
     <ul>
-    <li> requires <i>wallet password</i>. Its still in the clipboard, so paste it.
-    <li> make sure guardians accept invitation to join wallet.
+    <li> From <b>Admin</b> window: Tap "select people from your organization"
+    <li> Choose guardians emails from dropdown.
+    <li> Select role "Spender"   
+    <li> Requires <i>wallet password</i>. from step 12.
     </ul>
+<li> Contact guardians and make sure they accept invitation to join wallet.
+        <br>
+        You can only proceed <b>after</b> guardians (and customer) accepted the invitations.
 
-<li> Change wallet <b>Policy</b> (can only be done after above users accepted invitations)
+<li> Change wallet <b>Policy</b> 
     <ul>
     <li> Check: Approve All Outgoing Transactions
     <li> Check: Require Multiple (2) Admin Approvals
+    <li> Must use 2nd guardian to approve these changes.
     </ul>
     
 <li> Upload to server:
