@@ -37,17 +37,26 @@ class MergedWallet implements IBitgoWallet {
         this.ethWallet = getCoinWallet(data.coin);
 
         coins = new ArrayList<>();
-        refreshBalances();
+        loadCoinsAndBalances(walletData);
     }
 
-    private void refreshBalances() {
+    public void refreshBalances() {
 
+        Log.d(TAG, "refreshBalances");
         //TODO: this request is now duplicated. Fix!
         MergedWalletsData mergedData = ent.http.get("/api/v2/wallets/merged?coin=" + this.data.coin + "&enterprise=" + Global.ent.getInfo().id, MergedWalletsData.class);
         balances.clear();
         coins.clear();
-
         MergedWalletsData.WalletData data = mergedData.wallets[0];
+
+        loadCoinsAndBalances(data);
+    }
+
+    private void loadCoinsAndBalances(MergedWalletsData.WalletData data) {
+        Log.d(TAG, "loadbalances coins="+coins.size());
+
+        if( coins.size()> 0 )
+            return;
         coins.add(data.coin);
         balances.put(data.coin, data.balanceString + Wallet.balanceExtraDigits());
 
@@ -101,7 +110,9 @@ class MergedWallet implements IBitgoWallet {
 
     @Override
     public String getBalance(String coin) {
-        refreshBalances();
+        Log.d(TAG, "getbalance "+coin);
+
+//        refreshBalances();
         return balances.get(coin);
     }
 
@@ -188,7 +199,7 @@ class MergedWallet implements IBitgoWallet {
                 Log.w(TAG, "Failed incoming transaction, hiding it from the UI.");
                 continue;
             }
-            if (t.valueString.equals("0") && t.entries.length == 1 && t.state != null && !t.state.equals("failed")){
+            if (t.valueString.equals("0") && t.entries.length == 1 && t.state != null && !t.state.equals("failed")) {
                 Log.w(TAG, "Non-failed transaction of 0 value is not relevant, hiding it from the UI.");
                 continue;
             }

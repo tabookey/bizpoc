@@ -57,6 +57,13 @@ public class CachedWallet implements IBitgoWallet {
     public void update(Runnable onChange) {
         HashMap<String, String> newBalance = new HashMap<>();
         List<String> coins = new ArrayList<>(getCoins());
+
+        if ( onChange!=null ) {
+            //there's no need to refresh when called from the constructor.
+            //TODO: should be a nicer way to do it...
+            ((MergedWallet) netwallet).refreshBalances();
+        }
+
         for (String coin : coins)
             newBalance.put(coin, netwallet.getBalance(coin));
         List<Transfer> newTransfers = netwallet.getTransfers(0);

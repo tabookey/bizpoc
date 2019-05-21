@@ -163,9 +163,8 @@ public class FirstFragment extends Fragment {
             Log.e(TAG, "refresher thread started, ID:" + refresher.getId());
             while (!Thread.interrupted()) {
                 try {
-                    synchronized (refresher) {
-                        refresher.wait(10000);
-                    }
+                    Thread.sleep(20000);
+
                     Global.ent.update(() -> {
                         //TODO: can't be really used, since it TERC/TBST areupdated on EACH call (with random data, probably...)
                         Log.d("TAG", "========= ENTERPRISE CHANGE");

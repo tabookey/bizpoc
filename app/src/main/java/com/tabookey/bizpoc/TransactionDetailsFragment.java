@@ -269,10 +269,10 @@ public class TransactionDetailsFragment extends Fragment {
 
     private void newRefresher() {
         refresher = new Thread(() -> {
-            Log.e(TAG, "refresher thread started, ID:" + refresher.getId());
+            Log.i(TAG, "refresher thread started, ID:" + refresher.getId());
             while (!Thread.interrupted()) {
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(20000);
                     mBitgoWallet.update(() ->
                             mActivity.runOnUiThread(() -> new Handler().post(this::fillPending))
                     );
@@ -290,7 +290,7 @@ public class TransactionDetailsFragment extends Fragment {
 
                 }
             }
-            Log.e(TAG, "refresher thread interrupted, ID:" + refresher.getId());
+            Log.i(TAG, "refresher thread interrupted, ID:" + refresher.getId());
         });
     }
 
