@@ -44,7 +44,7 @@ class MergedWallet implements IBitgoWallet {
 
         Log.d(TAG, "refreshBalances");
         //TODO: this request is now duplicated. Fix!
-        MergedWalletsData mergedData = ent.http.get("/api/v2/wallets/merged?coin=" + this.data.coin + "&enterprise=" + Global.ent.getInfo().id, MergedWalletsData.class);
+        MergedWalletsData mergedData = ent.http.get("/api/v2/wallets/merged?coin=" + this.data.coin + "&enterprise=" + Global.ent.getEntId(), MergedWalletsData.class);
         balances.clear();
         coins.clear();
         MergedWalletsData.WalletData data = mergedData.wallets[0];
@@ -242,11 +242,7 @@ class MergedWallet implements IBitgoWallet {
     }
 
     public BitgoUser getUserById(String id) {
-        for (BitgoUser u : ent.getUsers()) {
-            if (u.id.equals(id))
-                return u;
-        }
-        return null;
+        return ent.getUserById(id, true);
     }
 
     @Override

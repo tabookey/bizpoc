@@ -29,8 +29,8 @@ public class BitgoEnterprise implements IBitgoEnterprise {
     private final boolean testNetwork;
     final TokenInfo baseCoin;
     HttpReq http;
-    private EnterpriseInfo info;
-    private ArrayList<BitgoUser> users;
+    private String entid;
+    private HashMap<String, BitgoUser> users = new HashMap<>();
     private HashMap<String,List<IBitgoWallet>> wallets = new HashMap<>();
     private BitgoUser userMe;
 
@@ -128,12 +128,9 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
     //TODO: read tokens, decimals from:  https://test.bitgo.com/api/v1/client/constants
     @Override
-    public EnterpriseInfo getInfo() {
-        if ( info==null ) {
-            EntResp res = http.get("/api/v1/enterprise", EntResp.class);
-            info = res.enterprises[0];
-        }
-        return info;
+    public String getEntId() {
+        getMe();
+        return entid;
     }
 
     static class UserMeResp {
@@ -154,6 +151,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         static class UserName {
             public String first, last, full;
         }
+
         static class OtpDevice {
             public BitgoUser.OtpType type;
             public String label;
@@ -171,18 +169,15 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         if ( userMe==null ) {
             UserMeResp.User u = http.get("/api/v2/user/me", UserMeResp.class).user;
 
-            boolean isAdmin = false;
-            for (UserMeResp.Enterprise e : u.enterprises) {
-                if (e.id.equals(getInfo().id) && e.permissions.contains("admin"))
-                    isAdmin = true;
-            }
+            entid = u.enterprises[0].id;
 
-            userMe = new BitgoUser(u.id, u.username, u.name.full, isAdmin, Collections.emptyList());
+            userMe = new BitgoUser(u.id, u.username, u.name.full, Collections.emptyList());
             ArrayList<BitgoUser.OtpType> otpTypes = new ArrayList<>();
             for (UserMeResp.OtpDevice otp : u.otpDevices ) {
                 otpTypes.add(otp.type);
             }
             userMe.otpTypes = otpTypes;
+            users.put(u.id, userMe);
         }
         return userMe;
     }
@@ -200,7 +195,8 @@ public class BitgoEnterprise implements IBitgoEnterprise {
 
         getTokens().keySet().forEach(token->{
             try {
-                double val = data.get("tokens").get(token.toUpperCase()).get("currencies").get(currency).get(fieldName).asDouble();
+                JsonNode tokenData = data.get("tokens").get(token.toUpperCase());
+                double val = tokenData.get("currencies").get(currency).get(fieldName).asDouble();
                 ret.put(token, val);
             } catch (Exception ignore) {
                 //ignore tokens without value
@@ -227,7 +223,7 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         Map<String, String> headers = new HashMap<>();
         headers.put("x-safetynet", Global.getSafetynetResponseJwt());
         //must specify at least one coin name, to get back all tokens.
-        MergedWalletsData data = http.get("/api/v2/wallets/merged?coin="+coin+"&enterprise=" + getInfo().id, MergedWalletsData.class, headers);
+        MergedWalletsData data = http.get("/api/v2/wallets/merged?coin="+coin+"&enterprise=" + getEntId(), MergedWalletsData.class, headers);
 
         ArrayList<IBitgoWallet> ret = new ArrayList<>();
         for( MergedWalletsData.WalletData walletData : data.wallets) {
@@ -250,58 +246,67 @@ public class BitgoEnterprise implements IBitgoEnterprise {
         JsonNode node = http.get("/api/v2/"+coin+"/wallet", JsonNode.class).get("wallets");
 
         ArrayList<IBitgoWallet> cointWallets = new ArrayList<>();
-        for (int i = 0; i < node.size(); i++) {
-            Wallet w = new Wallet(this, node.get(i), coin);
-            cointWallets.add(w);
-        }
+        //we only handle a SINGLE wallet per user..
+        Wallet w = new Wallet(this, node.get(0), coin);
+        cointWallets.add(w);
         wallets.put(coin, cointWallets);
         return wallets.get(coin);
     }
 
-    public static class UserResp {
+    public static class UserByIdResp {
+        public UserInfo user;
+    }
+
+    public static class UserInfo {
         public String id, username;
         public boolean isActive, verified;
         public Email email;
+        public UserMeResp.UserName name;
 
         public static class Email {
             public String email, verified;
         }
     }
     public static class EntUsersResp {
-        public UserResp[] adminUsers;
-        public UserResp[] nonAdminUsers;
+        public UserInfo[] adminUsers;
+        public UserInfo[] nonAdminUsers;
     }
 
     public BitgoUser getUserById(String id, boolean withFullName) {
-        for (BitgoUser u : getUsers()) {
-            if (u.id.equals(id)) {
-                if ( withFullName && u.name.equals(u.email) )
-                    u.name = getFullName(u.id);
-                return u;
-            }
+        if( users.containsKey(id))
+            return users.get(id);
+
+        UserByIdResp resp = http.get("/api/v2/user/"+id, UserByIdResp.class);
+        BitgoUser buser = null;
+        UserInfo user = resp.user;
+        if ( user !=null )
+            buser = new BitgoUser(user.id, user.email.email, user.name.full);
+
+        synchronized (users) {
+            users.put(id, buser);
         }
-        return null;
+        return buser;
     }
 
-    @Override
-    public List<BitgoUser> getUsers() {
-        if ( users==null ) {
-            ArrayList<BitgoUser> newusers = new ArrayList<>();
-
-            String ent_id = getInfo().id;
-            EntUsersResp resp = http.get("/api/v1/enterprise/" + ent_id + "/user", EntUsersResp.class);
-
-            for (UserResp u : resp.adminUsers) {
-                BitgoUser user = new BitgoUser(u.id, u.email.email, u.username, true, null);
-                newusers.add(user);
-            }
-            for (UserResp u : resp.nonAdminUsers) {
-                BitgoUser user = new BitgoUser(u.id, u.email.email, u.username, false, null);
-                newusers.add(user);
-            }
-            users = newusers;
-        }
-
-        return users;
-    }
+//    @Override
+//    public List<BitgoUser> getUsers() {
+//        if ( users==null ) {
+//            ArrayList<BitgoUser> newusers = new ArrayList<>();
+//
+//            String ent_id = getEntId();
+//            EntUsersResp resp = http.get("/api/v1/enterprise/" + ent_id + "/user", EntUsersResp.class);
+//
+//            for (UserInfo u : resp.adminUsers) {
+//                BitgoUser user = new BitgoUser(u.id, u.email.email, u.username, null);
+//                newusers.add(user);
+//            }
+//            for (UserInfo u : resp.nonAdminUsers) {
+//                BitgoUser user = new BitgoUser(u.id, u.email.email, u.username, null);
+//                newusers.add(user);
+//            }
+//            users = newusers;
+//        }
+//
+//        return users;
+//    }
 }

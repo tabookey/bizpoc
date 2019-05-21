@@ -17,8 +17,6 @@ public class BitgoUser {
     final public List<Perm> permissions;
 
     public List<OtpType> otpTypes;
-    final public boolean isEnterpriseAdmin;
-
 
     public boolean hasPerm(Perm perm) {
         return permissions!=null && permissions.contains(perm);
@@ -27,7 +25,7 @@ public class BitgoUser {
     public boolean hasOtp(OtpType type) { return otpTypes.contains(type); }
 
     public BitgoUser(String id, String email, String name) {
-        this(id,email,name,false,Collections.emptyList());
+        this(id,email,name,Collections.emptyList());
     }
 
     //copy a user, just set wallet-permissions
@@ -35,15 +33,13 @@ public class BitgoUser {
         this.id = from.id;
         this.email = from.email;
         this.name = from.name;
-        this.isEnterpriseAdmin = from.isEnterpriseAdmin;
         this.permissions = Collections.unmodifiableList(permissions);
     }
 
-    public BitgoUser(String id, String email, String name, boolean isEnterpriseAdmin, List<Perm> permissions) {
+    public BitgoUser(String id, String email, String name, List<Perm> permissions) {
         this.id = id;
         this.email = email;
         this.name = name;
-        this.isEnterpriseAdmin = isEnterpriseAdmin;
         this.permissions = Collections.unmodifiableList(permissions==null ? Collections.emptyList() : permissions);
     }
 

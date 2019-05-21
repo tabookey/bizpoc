@@ -8,8 +8,7 @@ import java.util.Map;
  */
 public interface IBitgoEnterprise {
 
-    //current enterprise ID
-    EnterpriseInfo getInfo();
+    String getEntId();
 
     //return the user object representing the current user
     BitgoUser getMe();
@@ -25,9 +24,6 @@ public interface IBitgoEnterprise {
     public void update(Runnable onChange);
 
     List<IBitgoWallet> getWallets(String coin);
-
-    //return enterprise users (NOTE: "role" are not set on enterprise-level, only on wallet level)
-    List<BitgoUser> getUsers();
 
     //return specific user by ID, or "null" if not found.
     // @param withFullName - if true, make an extra call to fill in full name.

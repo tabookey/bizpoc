@@ -6,7 +6,6 @@ import android.os.NetworkOnMainThreadException;
 import com.tabookey.logs.Log;
 
 import com.tabookey.bizpoc.api.BitgoUser;
-import com.tabookey.bizpoc.api.EnterpriseInfo;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.IBitgoEnterprise;
 import com.tabookey.bizpoc.api.IBitgoWallet;
@@ -15,7 +14,6 @@ import com.tabookey.bizpoc.api.TokenInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +22,7 @@ import java.util.Map;
 public class CachedEnterprise implements IBitgoEnterprise {
     private final BitgoEnterprise networkEnterprise;
     private TokenInfo baseCoin;
-    private EnterpriseInfo info;
-    private ArrayList<BitgoUser> users;
+    private String entid;
     private BitgoUser userMe;
 
     private HashMap<String, TokenInfo> allTokensInfo;
@@ -46,11 +43,10 @@ public class CachedEnterprise implements IBitgoEnterprise {
         if (Looper.getMainLooper().isCurrentThread()){
             throw new NetworkOnMainThreadException();
         }
-        if (info != null)
+        if (entid != null)
             return;
-        info = networkEnterprise.getInfo();
+        entid = networkEnterprise.getEntId();
         userMe = networkEnterprise.getMe();
-        users = new ArrayList<>(networkEnterprise.getUsers());
         allTokensInfo = new HashMap<>(networkEnterprise.getTokens());
         update(null);
 
@@ -89,9 +85,9 @@ public class CachedEnterprise implements IBitgoEnterprise {
 
     //TODO: read tokens, decimals from:  https://test.bitgo.com/api/v1/client/constants
     @Override
-    public EnterpriseInfo getInfo() {
+    public String getEntId() {
         init();
-        return info;
+        return entid;
     }
 
     @Override
@@ -138,17 +134,7 @@ public class CachedEnterprise implements IBitgoEnterprise {
     }
 
     public BitgoUser getUserById(String id, boolean withFullName) {
-        for (BitgoUser u : getUsers()) {
-            if (u.id.equals(id)) {
-                return u;
-            }
-        }
-        return null;
+        return networkEnterprise.getUserById(id,withFullName);
     }
 
-    @Override
-    public List<BitgoUser> getUsers() {
-        init();
-        return users;
-    }
 }
