@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import kotlin.NotImplementedError;
-
 public class CachedWallet implements IBitgoWallet {
     private static final String TAG = "CachedWallet";
 
@@ -33,16 +31,15 @@ public class CachedWallet implements IBitgoWallet {
      * later calls return cached values, except for update()
      *
      * @param netwallet - network-connected wallet, to fetch dated data.
-     * @param data
      */
-    public CachedWallet(IBitgoWallet netwallet, MergedWalletsData data) {
+    public CachedWallet(IBitgoWallet netwallet) {
         this.netwallet = netwallet;
         this.id = netwallet.getId();
         this.label = netwallet.getLabel();
         this.address = netwallet.getAddress();
         this.coins = netwallet.getCoins();
         this.guardians = netwallet.getGuardians();
-        update(null, data);
+        update(null);
     }
 
     /**
@@ -58,14 +55,10 @@ public class CachedWallet implements IBitgoWallet {
 
     @Override
     public void update(Runnable onChange) {
-        update(onChange, null);
-    }
-
-    public void update(Runnable onChange, MergedWalletsData mergedWalletsData) {
         HashMap<String, String> newBalance = new HashMap<>();
         List<String> coins = new ArrayList<>(getCoins());
         for (String coin : coins)
-            newBalance.put(coin, netwallet.getBalanceWithRefresh(coin, mergedWalletsData));
+            newBalance.put(coin, netwallet.getBalance(coin));
         List<Transfer> newTransfers = netwallet.getTransfers(0);
         List<PendingApproval> newPendingapprovals = netwallet.getPendingApprovals();
         boolean balancesChanged = !newBalance.equals(balances);
@@ -101,11 +94,6 @@ public class CachedWallet implements IBitgoWallet {
     @Override
     public List<BitgoUser> getGuardians() {
         return guardians;
-    }
-
-    @Override
-    public String getBalanceWithRefresh(String coin, Object mergedWalletsData) {
-        throw new NotImplementedError();
     }
 
     @Override

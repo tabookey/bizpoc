@@ -58,10 +58,8 @@ public class CachedEnterprise implements IBitgoEnterprise {
     }
 
     private CachedWallet getCachedWallet() {
-        if (theWallet == null) {
-            MergedWalletsData data = networkEnterprise.getMergedWalletsData();
-            theWallet = new CachedWallet(networkEnterprise.getMergedWallets(data).get(0), data);
-        }
+        if (theWallet == null)
+            theWallet = new CachedWallet(networkEnterprise.getMergedWallets().get(0));
         return theWallet;
     }
 
@@ -118,7 +116,7 @@ public class CachedEnterprise implements IBitgoEnterprise {
         return new ExchangeRate(getAllExchangeRates().get(coin));
     }
 
-    public List<IBitgoWallet> getMergedWallets(Object mergedWalletsData) {
+    public List<IBitgoWallet> getMergedWallets() {
         init();
         return Collections.singletonList(getCachedWallet());
     }

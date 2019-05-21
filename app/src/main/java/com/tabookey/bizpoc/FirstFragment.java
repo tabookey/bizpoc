@@ -218,7 +218,7 @@ public class FirstFragment extends Fragment {
             public void run() {
                 double assetsWorth = 0;
                 try {
-                    List<IBitgoWallet> allw = Global.ent.getMergedWallets(null);
+                    List<IBitgoWallet> allw = Global.ent.getMergedWallets();
                     mBitgoWallet = allw.get(0);
                     List<String> coins = mBitgoWallet.getCoins();
                     balances = new ArrayList<>();

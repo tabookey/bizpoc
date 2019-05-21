@@ -34,7 +34,7 @@ public interface IBitgoEnterprise {
     BitgoUser getUserById(String id, boolean withFullName);
 
     //return a list of wallets - each wallet object for ether and all tokens available on that wallet address
-    List<IBitgoWallet> getMergedWallets(Object data);
+    List<IBitgoWallet> getMergedWallets();
 
     /**
      * get the base coin (eth or teth)

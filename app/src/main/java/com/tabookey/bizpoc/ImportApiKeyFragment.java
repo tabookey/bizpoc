@@ -464,7 +464,7 @@ public class ImportApiKeyFragment extends Fragment {
             Global.setAccessToken(tokenPassword.token);
             setActivationState(ActivationState.CHECKING_BALANCE);
             String name = Global.ent.getMe().name;
-            IBitgoWallet wallet = Global.ent.getMergedWallets(null).get(0);
+            IBitgoWallet wallet = Global.ent.getMergedWallets().get(0);
 
             setActivationState(ActivationState.VALIDATING_ACCOUNT);
             if (!wallet.checkPassphrase(tokenPassword.password))
