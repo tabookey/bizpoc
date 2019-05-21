@@ -36,7 +36,7 @@ public class ApprovalsRecyclerAdapter extends RecyclerView.Adapter<ApprovalViewH
         boolean isDeclined = approval.state == ApprovalState.DECLINED;
         int image = R.drawable.ic_waiting;
         if (isApproved) {
-            image = R.drawable.ic_approved;
+            image = R.drawable.ic_success;
         } else if (isDeclined) {
             image = R.drawable.ic_declined_hist;
         }

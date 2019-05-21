@@ -310,7 +310,6 @@
                 android:padding="0dp"
                 android:text="Try again"
                 android:textAlignment="center"
-                android:textAllCaps="false"
                 android:textColor="@android:color/white"
                 android:textSize="18sp" />
         </LinearLayout>

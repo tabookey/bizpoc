@@ -60,6 +60,7 @@ public class TransactionDetailsFragment extends Fragment {
     TextView senderTitleTextView;
     TextView recipientTitleTextView;
     TextView guardiansTitleTextView;
+    TextView stateTextView;
     RecyclerView guardiansRecyclerView;
 
     Button recipientAddressButton;
@@ -109,6 +110,7 @@ public class TransactionDetailsFragment extends Fragment {
         popupImage = view.findViewById(R.id.popupImage);
         popupTitle = view.findViewById(R.id.popupTitle);
         searchingNetworkWarning = view.findViewById(R.id.searchingNetworkWarning);
+        stateTextView = view.findViewById(R.id.stateTextView);
 
         Utils.makeButtonCopyable(recipientAddressButton, mActivity);
         Utils.makeButtonCopyable(senderAddressButton, mActivity);
@@ -362,11 +364,26 @@ public class TransactionDetailsFragment extends Fragment {
             transactionCommentLabel.setVisibility(View.GONE);
             transactionCommentTextView.setVisibility(View.GONE);
         }
-        boolean isOutgoingTx = transfer.valueString.contains("-");
+        boolean isOutgoingTx = transfer.valueString.contains("-")
+                || transfer.state == ApprovalState.CANCELLED
+                || transfer.state == ApprovalState.DECLINED;
         if (isOutgoingTx) {
             senderTitleTextView.setVisibility(View.GONE);
             senderAddressButton.setVisibility(View.GONE);
             recipientAddressButton.setText(transfer.remoteAddress);
+            String stateText = "Details";
+            switch (transfer.state){
+                case APPROVED:
+                    stateText = "Approved";
+                    break;
+                case CANCELLED:
+                    stateText = "Cancelled";
+                    break;
+                case DECLINED:
+                    stateText = "Declined";
+                    break;
+            }
+            stateTextView.setText(stateText);
         } else {
 
             guardiansTitleTextView.setVisibility(View.GONE);
