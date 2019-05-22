@@ -1,7 +1,6 @@
 package com.tabookey.bizpoc.utils;
 
 import android.app.Activity;
-import com.tabookey.logs.Log;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -11,9 +10,10 @@ import com.google.android.gms.safetynet.SafetyNetClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.tabookey.bizpoc.BuildConfig;
+import com.tabookey.bizpoc.api.Global;
+import com.tabookey.bizpoc.impl.HttpReq;
+import com.tabookey.logs.Log;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +28,7 @@ public class SafetyNetHelper implements SafetynetHelperInterface {
 
 
     @Override
-    public void sendSafetyNetRequest(Activity activity, byte[] nonce, OnSuccessParsedListener successListener, OnFailureListener failureListener) {
+    public void sendSafetyNetRequest(Activity activity, final byte[] nonceGiven, OnSuccessParsedListener successListener, OnFailureListener failureListener) {
         Log.i(TAG, "Sending SafetyNet API request.");
 
          /*
@@ -44,16 +44,25 @@ public class SafetyNetHelper implements SafetynetHelperInterface {
         very secure. Follow the tips on the Security Tips page for more information:
         https://developer.android.com/training/articles/security-tips.html#Crypto
          */
-        // TODO(developer): Change the nonce generation to include your own, used once value,
-        // ideally from your remote server.
-        if (nonce == null) {
-            Log.w(TAG, "Will create a local SafetyNet nonce");
-            String nonceData = "Safety Net Sample: " + System.currentTimeMillis();
-            nonce = getRequestNonce(nonceData);
-        }
-        if (nonce == null) {
-            throw new RuntimeException("How is this even possible? Lint wont stop complaining.");
-        }
+        new Thread(() -> {
+            byte[] nonce = nonceGiven;
+            for (int i = 0; i < 3; i++) {
+                try {
+                    if (nonce == null) {
+                        nonce = getRequestNonce();
+                    }
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (nonce == null) {
+                activity.runOnUiThread(() ->
+                        failureListener.onFailure(new RuntimeException("Could not fetch nonce from provisioning server"))
+                );
+                return;
+            }
+
         /*
          Call the SafetyNet API asynchronously.
          The result is returned through the success or failure listeners.
@@ -61,42 +70,42 @@ public class SafetyNetHelper implements SafetynetHelperInterface {
          Next, make the call to the attestation API. The API key is specified in the gradle build
          configuration and read from the gradle.properties file.
          */
-        SafetyNetClient client = SafetyNet.getClient(activity);
-        Task<SafetyNetApi.AttestationResponse> task = client.attest(nonce, BuildConfig.API_KEY);
+            SafetyNetClient client = SafetyNet.getClient(activity);
+            Task<SafetyNetApi.AttestationResponse> task = client.attest(nonce, BuildConfig.API_KEY);
 
-        task.addOnSuccessListener(activity, attestationResponse -> {
+            task.addOnSuccessListener(activity, attestationResponse -> {
          /*
                      Successfully communicated with SafetyNet API.
                      Use result.getJwsResult() to get the signed result data. See the server
                      component of this sample for details on how to verify and parse this result.
                      */
-            mResult = attestationResponse.getJwsResult();
-            Log.d(TAG, "Success! SafetyNet result:\n" + mResult + "\n");
+                mResult = attestationResponse.getJwsResult();
+                Log.d(TAG, "Success! SafetyNet result:\n" + mResult + "\n");
 
-            SafetyNetResponse response = SafetyNetResponse.parseJsonWebSignature(mResult);
-            successListener.onSuccess(response);
+                SafetyNetResponse response = SafetyNetResponse.parseJsonWebSignature(mResult);
+                successListener.onSuccess(response);
             /*
              TODO(developer): Forward this result to your server
             */
-        });
+            });
 
-        task.addOnFailureListener(activity, e -> {
-            // An error occurred while communicating with the service.
-            mResult = null;
+            task.addOnFailureListener(activity, e -> {
+                // An error occurred while communicating with the service.
+                mResult = null;
 
-            if (e instanceof ApiException) {
-                // An error with the Google Play Services API contains some additional details.
-                ApiException apiException = (ApiException) e;
-                Log.d(TAG, "Error: " +
-                        CommonStatusCodes.getStatusCodeString(apiException.getStatusCode()) + ": " +
-                        apiException.getMessage());
-            } else {
-                // A different, unknown type of error occurred.
-                Log.d(TAG, "ERROR! " + e.getMessage());
-            }
-            failureListener.onFailure(e);
-        });
-
+                if (e instanceof ApiException) {
+                    // An error with the Google Play Services API contains some additional details.
+                    ApiException apiException = (ApiException) e;
+                    Log.d(TAG, "Error: " +
+                            CommonStatusCodes.getStatusCodeString(apiException.getStatusCode()) + ": " +
+                            apiException.getMessage());
+                } else {
+                    // A different, unknown type of error occurred.
+                    Log.d(TAG, "ERROR! " + e.getMessage());
+                }
+                failureListener.onFailure(e);
+            });
+        }).start();
     }
 
     /**
@@ -111,26 +120,37 @@ public class SafetyNetHelper implements SafetynetHelperInterface {
                 && isTimestampSane;
     }
 
-    /**
+
+    private byte[] getRequestNonce() {
+
+        String host = Global.isTest() ? HttpReq.TEST_PROVISION_URL : HttpReq.PROD_PROVISION_URL;
+        String newNonce = HttpReq.sendRequestNotBitgo(host + "/newnonce/", null, "GET", null);
+        return Crypto.fromBase64(newNonce);
+
+    }
+
+
+
+    /*
      * Generates a 16-byte nonce with additional data.
      * The nonce should also include additional information, such as a user id or any other details
      * you wish to bind to this attestation. Here you can provide a String that is included in the
      * nonce after 24 random bytes. During verification, extract this data again and check it
      * against the request that was made with this nonce.
      */
-    private byte[] getRequestNonce(String data) {
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        byte[] bytes = new byte[24];
-        mRandom.nextBytes(bytes);
-        try {
-            byteStream.write(bytes);
-            byteStream.write(data.getBytes());
-        } catch (IOException e) {
-            return null;
-        }
-
-        return byteStream.toByteArray();
-    }
+//    private byte[] getRequestNonce(String data) {
+//        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+//        byte[] bytes = new byte[24];
+//        mRandom.nextBytes(bytes);
+//        try {
+//            byteStream.write(bytes);
+//            byteStream.write(data.getBytes());
+//        } catch (IOException e) {
+//            return null;
+//        }
+//
+//        return byteStream.toByteArray();
+//    }
 
 
 }

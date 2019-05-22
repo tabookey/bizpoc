@@ -24,9 +24,9 @@ public class HttpReq {
 
     //note that we have one proxy, but it can determine actual server based on "x-origin" header.
 
-    static String testUrl = "https://bizpoc.ddns.tabookey.com:8090";
-//    static String testUrl = "https://test.bitgo.com";
-    static String prodUrl = "https://bizpoc.ddns.tabookey.com";
+    public static final String TEST_PROVISION_URL = "https://bizpoc.ddns.tabookey.com:8090";
+//    static String TEST_PROVISION_URL = "https://test.bitgo.com";
+    public static final String PROD_PROVISION_URL = "https://bizpoc.ddns.tabookey.com";
 
     private final String accessKey;
     String host;
@@ -36,7 +36,7 @@ public class HttpReq {
 
     public HttpReq( String accessKey, boolean test) {
         this.accessKey = accessKey;
-        this.host = test ? testUrl : prodUrl;
+        this.host = test ? TEST_PROVISION_URL : PROD_PROVISION_URL;
     }
 
     public String getHost() {

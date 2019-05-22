@@ -56,6 +56,9 @@ function validateSafetynet(req,res,next) {
     //bitgo requests that require "x-safetynet" header 
     let requestsWithSafetyNet= '/api/v2/\\w+/(key|wallet/)'
 
+    // Currently, only '/key/' proxied request will require fresh attestation (also provisioning)
+    let requestsWithSafetyNetFreshOnly= '/api/v2/\\w+/key/'
+
     if (!req.originalUrl.match(requestsWithSafetyNet) ){
 	console.log( "req: "+req.originalUrl +" - pass-throug");
         //other requests are passed-through.
@@ -64,13 +67,15 @@ function validateSafetynet(req,res,next) {
     }
 
     header = req.headers["x-safetynet"]
+    let hmac = req.headers.hmac
     if ( !header )  {
 	console.log( "req: "+req.originalUrl +" - missing header" )
-	next(); //TEMPORARY: silently ACCEPT requests without this header
-        //res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
+//	next(); //TEMPORARY: silently ACCEPT requests without this header
+        res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
 	return
     }
-    jwtverify.validateJwt(header).then(res=>{
+    let requireFreshAttestation = req.originalUrl.match(requestsWithSafetyNetFreshOnly)
+    jwtverify.validateJwt(header, requireFreshAttestation, hmac).then(res=>{
 	console.log( "after validateJwt: err="+res.error )
         if ( res.error ) { 
             throw new Error(res.error)
@@ -84,13 +89,23 @@ function validateSafetynet(req,res,next) {
 
 //wrapper for safetynet check. used by the provisioning server.
 server.get( "/safetynet/:jwt", (req,res) => {
-    jwtverify.validateJwt(req.params.jwt)
+    jwtverify.validateJwt(req.params.jwt, true, null)
         .then(ret=>{
             res.send(ret)
         })
         .catch(err=>{
             res.send(err.toString(),400)
         })
+})
+
+//used by the client directly to get a nonce verifiably created by server
+server.get( "/newnonce/", (req,res) => {
+    try {
+        let ret = jwtverify.createNonce()
+        res.send(ret)
+    } catch (err) {
+            res.send(err.toString(),400)
+    }
 })
 
 // server.use( '/api/v2/teth/key/', validateSafetynet, myProxy )
