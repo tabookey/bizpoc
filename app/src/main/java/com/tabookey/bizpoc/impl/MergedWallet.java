@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * merged wallet - represent all tokens supported by this wallet.
@@ -267,7 +268,9 @@ class MergedWallet implements IBitgoWallet {
             if (r.resolvers != null) {
                 ArrayList<BitgoUser> approvedBy = new ArrayList<BitgoUser>();
                 for (Wallet.PendingApprovalResp.Resolver rs : r.resolvers) {
-                    approvedBy.add(getUserById(rs.user));
+                    BitgoUser userById = getUserById(rs.user);
+                    if ( userById!=null )
+                        approvedBy.add(userById);
                 }
                 p.approvedByUsers = approvedBy;
             }

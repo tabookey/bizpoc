@@ -1,16 +1,15 @@
 package com.tabookey.bizpoc.api;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.tabookey.bizpoc.Approval;
 import com.tabookey.bizpoc.ApprovalState;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class PendingApproval {
     public String id, recipientAddr, comment, coin, amount;
@@ -47,11 +46,11 @@ public class PendingApproval {
     }
 
     public List<Approval> getApprovals(List<BitgoUser> guardians) {
-        return guardians.stream().map(b -> {
+        return guardians.stream().filter(b -> b != null).map(b -> {
             boolean isApproved = false;
 
             for (BitgoUser user : approvedByUsers) {
-                if (user.email.equals(b.email))
+                if (user!=null && user.email.equals(b.email))
                     isApproved = true;
             }
             if (b.email.equals("did@approve")) {
