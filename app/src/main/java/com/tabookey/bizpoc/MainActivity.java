@@ -71,7 +71,11 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     @Override
     protected void onResume() {
         super.onResume();
-        promptFingerprint();
+        // hotfix - re-ask fingerprint in case left the import window (not
+        int size = getSupportFragmentManager().getFragments().size();
+        if (size == 0 || size == 1) {
+            promptFingerprint();
+        }
     }
 
     @Override
