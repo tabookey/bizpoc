@@ -123,7 +123,7 @@ public class SafetyNetHelper implements SafetynetHelperInterface {
 
     private byte[] getRequestNonce() {
 
-        String host = Global.isTest() ? HttpReq.TEST_PROVISION_URL : HttpReq.PROD_PROVISION_URL;
+        String host = Global.isTest() ? HttpReq.TEST_PROXY_URL : HttpReq.PROD_PROXY_URL;
         String newNonce = HttpReq.sendRequestNotBitgo(host + "/newnonce/", null, "GET", null);
         return Crypto.fromBase64(newNonce);
 

@@ -52,7 +52,7 @@ def getEncryptedCredentials(otp,checksum):
     verify(otp, "user") #verify only after validating checksum: avoid "POP" if checksum doesn't match
 
     safetyres=requests.get( app.VERIFY_SAFETYNET+str(request.headers.get('x-safetynet')) )
-    assert safetyres.status_code == 200 and safetyres.content.nonce, "failed to verify safetynet: "+str(safetyres.content)
+    assert safetyres.status_code == 200 and safetyres.json()["nonce"], "failed to verify safetynet: "+str(safetyres.content)
     return jsonify( encryptedCredentials=app.data.pop(id).creds )
 
 @app.route("/putEncryptedCredentials/<masterotp>/<otpid>/<checksum>", methods=['POST'])
