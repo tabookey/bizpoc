@@ -123,6 +123,12 @@ class MergedWallet implements IBitgoWallet {
     }
 
     static class AuditResp {
+
+        public AuditResp() {}
+        public AuditResp(Log[] logs) {
+            this.logs=logs;
+        }
+
         public Log[] logs;
 
         static class Log {
@@ -161,8 +167,22 @@ class MergedWallet implements IBitgoWallet {
                 getCoins()) {
             coinParams.append("coin=").append(coin).append("&");
         }
-        AuditResp resp = getAuditWithParams(limit, coinParams, "rejectTransaction");
-        AuditResp appr = getAuditWithParams(limit, coinParams, "approveTransaction");
+        AuditResp all = getAuditWithParams(limit, coinParams, "rejectTransaction&type=approveTransaction");
+        AuditResp resp = new AuditResp(
+                Arrays.stream(all.logs).filter(l->l.type.equals("rejectTransaction")).toArray(AuditResp.Log[]::new)
+        );
+        AuditResp appr = new AuditResp(
+                Arrays.stream(all.logs).filter(l->l.type.equals("approveTransaction")).toArray(AuditResp.Log[]::new)
+        );
+
+        //uncomment following (old) code, to verify that the above new code (single request) generates the same
+        // lists as the old code (below)
+//        AuditResp resp1 = getAuditWithParams(limit, coinParams, "rejectTransaction");
+//        AuditResp appr1 = getAuditWithParams(limit, coinParams, "approveTransaction");
+//        if ( !toJson(resp1).equals(toJson(resp)) ||
+//             !toJson(appr1).equals(toJson(appr)))
+//            throw new RuntimeException("unmatched");
+
         return Arrays.stream(resp.logs).map(log -> {
             ArrayList<String> approvals = new ArrayList<>();
             for (AuditResp.Log apprLog : appr.logs) {
