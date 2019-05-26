@@ -9,7 +9,9 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
+
 import com.tabookey.logs.Log;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -124,6 +126,9 @@ public class Utils {
                         callback.run();
                     }
                 });
+        if (((Activity) context).isFinishing()) {
+            return;
+        }
         dialog.show();
 
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);

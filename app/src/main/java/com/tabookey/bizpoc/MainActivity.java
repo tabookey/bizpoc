@@ -3,11 +3,13 @@ package com.tabookey.bizpoc;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
+import com.tabookey.bizpoc.utils.SafetyNetResponse;
 import com.tabookey.logs.Log;
 
 import android.widget.Toast;
@@ -30,9 +32,11 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener {
 
-    public static String TAG = "MainActivity";
-    public static String DETAILS_FRAGMENT = "details_frag";
-    public static String SEND_FRAGMENT = "send_frag";
+    public static final String TAG = "MainActivity";
+    public static final String DETAILS_FRAGMENT = "details_frag";
+    public static final String SEND_FRAGMENT = "send_frag";
+    public static final int millisPerDay = 24 * 60 * 60 * 1000;
+
     private FirstFragment mFirstFragment;
     private static boolean active = false;
 
@@ -112,15 +116,6 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             return;
         }
 
-        mSafetyNetHelper.sendSafetyNetRequest(this, null, response -> {
-            // TODO: if attestation takes long time, it may arrive too late
-            // this may lead to crashes (activity gone, etc.)
-            if (!SafetyNetHelper.isAttestationLookingGood(response)) {
-                onSafetynetFailure();
-                return;
-            }
-            Global.setSafetynetResponseJwt(response.getJwsResult());
-        }, exception -> onSafetynetFailure());
         byte[] array = SecretStorage.getEncryptedBytes(encryptedApiKey);
         FingerprintAuthenticationDialogFragment fragment
                 = new FingerprintAuthenticationDialogFragment();
@@ -160,7 +155,29 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         if (fragmentManager == null) {
             return;
         }
-        fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
+        SafetyNetResponse savedResponse = SafetyNetResponse
+                .parseJsonWebSignature(Global.getSafetynetResponseJwt());
+        boolean isTokenStillValid = System.currentTimeMillis() - savedResponse.getTimestampMs() > millisPerDay;
+
+        if (isTokenStillValid) {
+            fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.frame_layout, new ProgressFragment()).commit();
+        }
+        mSafetyNetHelper.sendSafetyNetRequest(this, null, response -> {
+            // TODO: if attestation takes long time, it may arrive too late
+            // this may lead to crashes (activity gone, etc.)
+            if (!SafetyNetHelper.isAttestationLookingGood(response)) {
+                onSafetynetFailure();
+                return;
+            }
+
+            if (!isTokenStillValid) {
+                fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
+            }
+            Global.setSafetynetResponseJwt(response.getJwsResult());
+        }, exception -> onSafetynetFailure());
     }
 
     OtpDialogFragment otpDialogfragment;
