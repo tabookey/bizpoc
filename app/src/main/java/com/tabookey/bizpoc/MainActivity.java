@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     private static boolean active = false;
 
     SafetynetHelperInterface mSafetyNetHelper;
+    FingerprintAuthenticationDialogFragment authenticationDialogFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,16 +121,16 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         }
 
         byte[] array = SecretStorage.getEncryptedBytes(encryptedApiKey);
-        FingerprintAuthenticationDialogFragment fragment
+        authenticationDialogFragment
                 = new FingerprintAuthenticationDialogFragment();
-        fragment.mCryptoObject = SecretStorage.getCryptoObject(this);
-        if (fragment.mCryptoObject == null) {
+        authenticationDialogFragment.mCryptoObject = SecretStorage.getCryptoObject(this);
+        if (authenticationDialogFragment.mCryptoObject == null) {
             return;
         }
-        fragment.input = array;
-        fragment.title = getString(R.string.sign_in);
-        fragment.cancelled = this::finish;
-        fragment.callback = new FingerprintAuthenticationDialogFragment.Callback() {
+        authenticationDialogFragment.input = array;
+        authenticationDialogFragment.title = getString(R.string.sign_in);
+        authenticationDialogFragment.cancelled = this::finish;
+        authenticationDialogFragment.callback = new FingerprintAuthenticationDialogFragment.Callback() {
             @Override
             public void done(byte[] apiKeyBytes) {
                 if (!active) {
@@ -149,9 +150,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
             @Override
             public void failed(Throwable e) {
-                e.printStackTrace();
-                Utils.showErrorDialog(MainActivity.this, "Error", "Failed to decrypt the credentials. " +
-                        "Reinstall the application if the problem does not resolve.", null);
+                if (e != null) {
+                    e.printStackTrace();
+                    Utils.showErrorDialog(MainActivity.this, "Login error", "Your login attempt was not successful, try again.", null);
+                }
             }
         };
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -164,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         boolean isTokenStillValid = attestationAge < millisPerDay && attestationAge > 0;
 
         if (isTokenStillValid) {
-            fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
+            authenticationDialogFragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
         } else {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame_layout, new ProgressFragment()).commit();
@@ -178,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             }
 
             if (!isTokenStillValid) {
-                fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
+                authenticationDialogFragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
             }
             Global.setSafetynetResponseJwt(response.getJwsResult());
         }, exception -> onSafetynetFailure());
@@ -295,6 +297,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
     public void onSafetynetFailure() {
+        if (authenticationDialogFragment != null){
+            authenticationDialogFragment.dismissAllowingStateLoss();
+        }
         showSomethingWrongLogsDialog(true);
     }
 
@@ -314,8 +319,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
             @Override
             public void failed(Throwable e) {
-                e.printStackTrace();
-                Log.e(TAG, "promptFingerprint failed");
+                if (e != null) {
+                    e.printStackTrace();
+                    Log.e(TAG, "promptFingerprint failed");
+                }
             }
         };
         FragmentManager fragmentManager = getSupportFragmentManager();

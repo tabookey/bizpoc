@@ -138,7 +138,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
 
     @Override
     public void onError() {
-        callback.failed(new RuntimeException("Weird error!"));
+        callback.failed(null); // Errors will be shown on the prompt dialog, no need to propagate
     }
 
 }
