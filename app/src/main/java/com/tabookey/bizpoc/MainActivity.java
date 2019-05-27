@@ -35,7 +35,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public static final String TAG = "MainActivity";
     public static final String DETAILS_FRAGMENT = "details_frag";
     public static final String SEND_FRAGMENT = "send_frag";
-    public static final int millisPerDay = 24 * 60 * 60 * 1000;
+    // server has a timeout of 24 hours. We provide 1 hour of 'grace period'
+    public static final int millisPerDay = 23 * 60 * 60 * 1000;
 
     private FirstFragment mFirstFragment;
     private static boolean active = false;

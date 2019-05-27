@@ -6,38 +6,13 @@ const fs = require('fs')
 verify_url = "https://www.googleapis.com/androidcheck/v1/attestations/verify?key="
 api_key = "AIzaSyCz-RqbUmqaKhWqU12-38mTwXMNsV3rlfE"
 //secret used by server to create/validate nonces
-var verySecretString;
+var verySecretString = fs.readFileSync("secretString.txt", 'utf8');
 //app signers we trust:
-var allowedSigs;
+var allowedSigs = JSON.parse(fs.readFileSync("allowedSigs.json", 'utf8'));
 allowedPackageNames=[
     'com.tabookey.bizpoc',
     'com.example.android.safetynetsample',
 ]
-
-function getAllowedSigs(){
-     if (allowedSigs){
-         return allowedSigs
-     }
-     try {
-         var allowedSigsStr  = fs.readFileSync("allowedSigs.json", 'utf8');
-         allowedSigs = JSON.parse(allowedSigsStr)
-     } catch(err) {
-        console.log(err)
-      }
-     return allowedSigs
- }
-
-function getSecretString(){
-    if (verySecretString){
-        return verySecretString
-    }
-    try {
-        verySecretString  = fs.readFileSync("secretString.txt", 'utf8');
-    } catch(err) {
-       console.log(err)
-     }
-    return verySecretString
-}
 
 function parseJwt(orig) {
     arr = orig.split('.')
@@ -55,7 +30,7 @@ async function validateJwt(orig, requireFreshAttestation, hmac) {
     if ( allowedPackageNames.indexOf(data.apkPackageName) == -1 ) {
         return {error: "invalid pkg: "+data.apkPackageName, data}
     }
-    if ( getAllowedSigs().indexOf(data.apkCertificateDigestSha256[0]) == -1 ) {
+    if ( allowedSigs.indexOf(data.apkCertificateDigestSha256[0]) == -1 ) {
         return {error: "invalid sig: "+data.apkCertificateDigestSha256[0], data}
     }
     if ( !data.ctsProfileMatch  || ! data.basicIntegrity ) {
@@ -88,12 +63,11 @@ function createNonce(time) {
     if (time === undefined) {
         time = Date.now();
     }
-    let secretString = getSecretString()
-    console.log("createNonce called at time:", time, secretString)
-    if (!secretString){
+    console.log("createNonce called at time:", time, verySecretString)
+    if (!verySecretString){
         return {error: "Server has no secret"}
     }
-    return Buffer.from(time + separator + sjcl.codec.hex.fromBits(sjcl.hash.sha256.hash(time + getSecretString()))).toString('base64');
+    return Buffer.from(time + separator + sjcl.codec.hex.fromBits(sjcl.hash.sha256.hash(time + verySecretString))).toString('base64');
 }
 
 function validateNonce(data, requireFreshAttestation, hmac) {
