@@ -6,12 +6,21 @@ ALIAS=upload
 UNSIGNED_APK=./app/build/outputs/apk/release/app-release-unsigned.apk 
 APK_JSON=./app/build/outputs/apk/release/output.json
 
+test -n "$ANDROID_HOME" || export ANDROID_HOME=~/Library/Android/sdk/
+
+ZIPALIGN=$ANDROID_HOME/build-tools/28.0.3/zipalign
+APKSIGNER=$ANDROID_HOME/build-tools/28.0.3/apksigner
+
+
+
 function fatal() {
 	echo "FATAL: $*"
 	exit 1
 }
 
-test -r $KEYSTORE || fatal "Keystore file $KEYSTORE not found"
+test -x $ZIPALIGN || fatal "unable to find zipalign check ANDROID_HOME ($ANDROID_HOME)"
+test -x $APKSIGNER || fatal "unable to find apksigner check ANDROID_HOME ($ANDROID_HOME)"
+test -r $KEYSTORE || fatal "Keystore file KEYSTORE=$KEYSTORE not found"
 
 GIT_TAG=`git describe --tags  --dirty`
 echo $GIT_TAG|grep -- - && fatal "git is not clean, or not on a tag"
@@ -28,8 +37,8 @@ test -r $outapk && fatal output $outapk already exist.
 zip -d ./app/build/outputs/apk/release/app-release-unsigned.apk *.version */services/*
 jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $KEYSTORE $UNSIGNED_APK $ALIAS
 
-$ANDROID_HOME/build-tools/28.0.3/zipalign -v 4 $UNSIGNED_APK $outapk
-$ANDROID_HOME/build-tools/28.0.3/apksigner verify -verbose $outapk
+$ZIPALIGN -v 4 $UNSIGNED_APK $outapk
+$APKSIGNER verify -verbose $outapk
 
 echo
 echo "=========================="
