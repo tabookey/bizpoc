@@ -64,7 +64,7 @@ function createNonce(time) {
     if (time === undefined) {
         time = Date.now();
     }
-    console.log("createNonce called at time:", time, verySecretString)
+    console.log("createNonce called at time:", time)
     if (!verySecretString){
         return {error: "Server has no secret"}
     }
