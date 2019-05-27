@@ -24,8 +24,10 @@ public class HttpReq {
 
     //note that we have one proxy, but it can determine actual server based on "x-origin" header.
 
-    public static final String TEST_PROXY_URL = "https://bizpoc.ddns.tabookey.com:8090";
-    public static final String PROD_PROXY_URL = "https://bizpoc.ddns.tabookey.com";
+    static String PROXY_HOST = debug ? "bizpoc2.ddns.tabookey.com" : "bizpoc.ddns.tabookey.com";
+    
+    public static final String TEST_PROXY_URL = "https://"+PROXY_HOST+":8090";
+    public static final String PROD_PROXY_URL = "https://"+PROXY_HOST;
 
     public static final String TEST_PROVISION_URL = "https://dprov-bizpoc.ddns.tabookey.com";
     public static final String PROD_PROVISION_URL = "https://prov-bizpoc.ddns.tabookey.com";
