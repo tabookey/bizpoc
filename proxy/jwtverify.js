@@ -2,17 +2,24 @@
 const axios = require('axios')
 const sjcl = require('sjcl')
 const fs = require('fs')
-const serverConfiguration = require('./serverConfiguration.js')
+const { verySecretString, allowedSigs } = require('./proxyConfig.js')
+
+
+if ( !verySecretString ) {
+    console.log( "FATAL: server has no secret")
+    process.exit(1)
+}
+
+if ( ! allowedSigs || !allowedSigs.length ) {
+    console.log( "FATAL: server has no allowed sigs")
+    process.exit(1)
+}
 
 verify_url = "https://www.googleapis.com/androidcheck/v1/attestations/verify?key="
 api_key = "AIzaSyCz-RqbUmqaKhWqU12-38mTwXMNsV3rlfE"
-//secret used by server to create/validate nonces
-var verySecretString = serverConfiguration.secretString
-//app signers we trust:
-var allowedSigs = serverConfiguration.allowedSigs
+
 allowedPackageNames=[
     'com.tabookey.bizpoc',
-    'com.example.android.safetynetsample',
 ]
 
 function parseJwt(orig) {
@@ -32,7 +39,7 @@ async function validateJwt(orig, requireFreshAttestation, hmac) {
         return {error: "invalid pkg: "+data.apkPackageName, data}
     }
     if ( allowedSigs.indexOf(data.apkCertificateDigestSha256[0]) == -1 ) {
-        return {error: "invalid sig: "+data.apkCertificateDigestSha256[0], data}
+        return {error: "invalid sig: "+data.apkCertificateDigestSha256[0]+": not in "+allowedSigs, data}
     }
     if ( !data.ctsProfileMatch  || ! data.basicIntegrity ) {
         return { error: "Failed integrity check", data }

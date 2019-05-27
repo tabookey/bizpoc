@@ -2,6 +2,8 @@
 const express = require('express')
 const proxy = require('http-proxy-middleware')
 const  cors = require('cors')
+const axios = require('axios')
+const { test_yubikey_url } = require('./proxyConfig.js')
 
 const https = require('https')
 const agent = new https.Agent({keepAlive:true})
@@ -69,10 +71,30 @@ function validateSafetynet(req,res,next) {
     header = req.headers["x-safetynet"]
     let hmac = req.headers.hmac
     if ( !header )  {
-	console.log( "req: "+req.originalUrl +" - missing header" )
-//	next(); //TEMPORARY: silently ACCEPT requests without this header
-        res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
-	return
+        //during provisioning, we're using "yubikey" header (which is an admin Yubikey) instead
+        yubikey=req.headers.yubikey
+        if ( yubikey ) {
+
+            axios.get( test_yubikey_url+yubikey )
+                .then(response=>{
+                    if( response.status==200 ) {
+                        //successful authentication with master's yubikey.
+                        next();
+                    } else {
+                        res.send( "yubikey header: failed" ).status(400)
+                    }
+                })
+                .catch(err=>{
+                    res.send( "yubikey header: failed: "+err).status(400)
+                })
+            return
+
+        } else {
+            console.log( "req: "+req.originalUrl +" - missing header" )
+            // next(); //TEMPORARY: silently ACCEPT requests without this header
+            res.send("X-Safetynet header is missing for "+req.originalUrl+"\n").status(400)
+            return
+        }
     }
     let requireFreshAttestation = req.originalUrl.match(requestsWithSafetyNetFreshOnly)
     jwtverify.validateJwt(header, requireFreshAttestation, hmac).then(res=>{

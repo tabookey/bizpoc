@@ -1,9 +1,19 @@
 module.exports = {
+
+test_yubikey_url
+
+    //app signers we trust:
 	allowedSigs: [
 		'+/+9FD3CNykOqfhN0rFLk5AuZyIgx3e/MeWbsXUc2GU=', // Google Play version certificate
 
 		"TwsoRSoLU3adBbfTtNAqv8eARKTj4dsxMxxCsyabv8A=", // Dror dev key - REMOVE FROM PRODUCTION
 		"dvwkoaPmOYep2kn/mW+7CC883kWkcj4RySEs6lJZECU=", // Alex dev key - REMOVE FROM PRODUCTION
 	],
-	secretString: "hello!"
+
+    //secret used by server to create/validate nonces
+	secretString: "hello!",
+
+
+    //validate master yubikey, during provisioning.
+    test_yubikey_url : 'https://dprov-bizpoc.ddns.tabookey.com/isMaster/',
 }
