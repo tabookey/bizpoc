@@ -1,12 +1,14 @@
 package com.tabookey.bizpoc;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
 import com.tabookey.bizpoc.utils.SafetyNetResponse;
@@ -293,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
     public void onSafetynetFailure() {
-        Utils.showErrorDialog(this, "Safetynet", "Error", this::finish);
+        showSomethingWrongLogsDialog(true);
     }
 
     //TODO: duplicate code for fingerprint. Optimize!!!
@@ -322,6 +324,25 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         }
         fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");
     }
+
+    void showSomethingWrongLogsDialog(boolean isSafetynet) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("Something went wrong");
+        alertDialog.setMessage("Your action could not be completed");
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Send logs",
+                (d, w) -> {
+                    String subject = "Logs report - TabooKey Safe" + (isSafetynet ? " - failed SafetyNet" : "");
+                    String emailText = "Hi awesome support team,\nSomething went wrong - please see attached logs report.\nThank you,\n\nName: ";
+                    Intent emailIntent = Utils.getLogsEmailIntent(this, emailText, subject);
+                    startActivity(Intent.createChooser(emailIntent, "Send email..."));
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Go back", (d, w) -> d.dismiss());
+        if (isFinishing()) {
+            return;
+        }
+        alertDialog.show();
+    }
+
 
     public boolean isActive() {
         return active;

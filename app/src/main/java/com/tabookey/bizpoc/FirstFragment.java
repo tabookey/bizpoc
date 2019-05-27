@@ -97,18 +97,7 @@ public class FirstFragment extends Fragment {
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         if (BuildConfig.DEBUG) {
             balanceInDollarsText.setOnLongClickListener(a -> {
-                AlertDialog alertDialog = new AlertDialog.Builder(mActivity).create();
-                alertDialog.setTitle("Something went wrong");
-                alertDialog.setMessage("Your action could not be completed");
-                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Send logs",
-                        (d, w) -> {
-                            String subject = "Logs report - TabooKey Safe";
-                            String emailText = "Hi awesome support team,\nSomething went wrong - please see attached logs report.\nThank you,\n\nName: ";
-                            Intent emailIntent = Utils.getLogsEmailIntent(mActivity, emailText, subject);
-                            startActivity(Intent.createChooser(emailIntent, "Send email..."));
-                        });
-                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Go back", (d, w) -> d.dismiss());
-                alertDialog.show();
+                mActivity.showSomethingWrongLogsDialog(false);
                 if (true) return true;
                 String[] values = {"0", "1", "3", "5", "7", "9"};
                 int currentItem = Arrays.asList(values).indexOf(String.valueOf(Wallet.balanceExtraDigits));
