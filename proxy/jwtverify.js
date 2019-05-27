@@ -2,13 +2,14 @@
 const axios = require('axios')
 const sjcl = require('sjcl')
 const fs = require('fs')
+const serverConfiguration = require('./serverConfiguration.js')
 
 verify_url = "https://www.googleapis.com/androidcheck/v1/attestations/verify?key="
 api_key = "AIzaSyCz-RqbUmqaKhWqU12-38mTwXMNsV3rlfE"
 //secret used by server to create/validate nonces
-var verySecretString = fs.readFileSync("secretString.txt", 'utf8');
+var verySecretString = serverConfiguration.secretString
 //app signers we trust:
-var allowedSigs = JSON.parse(fs.readFileSync("allowedSigs.json", 'utf8'));
+var allowedSigs = serverConfiguration.allowedSigs
 allowedPackageNames=[
     'com.tabookey.bizpoc',
     'com.example.android.safetynetsample',
