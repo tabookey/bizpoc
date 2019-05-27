@@ -5,8 +5,11 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 
@@ -31,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.tabookey.bizpoc.R;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -265,5 +269,18 @@ public class Utils {
             Log.w("yourtag", "Error Package name not found ", e);
         }
         return s;
+    }
+
+    public static Intent getLogsEmailIntent(Context context, String text, String subject) {
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setType("vnd.android.cursor.dir/email"); // Normal SENDTO intents don't seem to pick up files. We will attach log files soon.
+        String[] to = {"support@tabookey.com"};
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, to);
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        emailIntent.putExtra(Intent.EXTRA_TEXT, text);
+        File file = Log.getZipLogsToSend(Log.getAppInfo(), 30 * 60);
+        Uri uriForFile = FileProvider.getUriForFile(context, "com.tabookey.bizpoc.fileprovider", file);
+        emailIntent.putExtra(Intent.EXTRA_STREAM, uriForFile);
+        return emailIntent;
     }
 }

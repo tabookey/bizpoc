@@ -158,7 +158,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         }
         SafetyNetResponse savedResponse = SafetyNetResponse
                 .parseJsonWebSignature(Global.getSafetynetResponseJwt());
-        boolean isTokenStillValid = System.currentTimeMillis() - savedResponse.getTimestampMs() > millisPerDay;
+        long attestationAge = System.currentTimeMillis() - savedResponse.getTimestampMs();
+        boolean isTokenStillValid = attestationAge < millisPerDay && attestationAge > 0;
 
         if (isTokenStillValid) {
             fragment.show(fragmentManager, "DIALOG_FRAGMENT_TAG");

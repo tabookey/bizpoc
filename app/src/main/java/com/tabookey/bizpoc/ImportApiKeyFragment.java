@@ -258,15 +258,9 @@ public class ImportApiKeyFragment extends Fragment {
 
         sendReportButton.setOnClickListener(v ->
         {
-            Intent emailIntent = new Intent(Intent.ACTION_SEND);
-            emailIntent.setType("vnd.android.cursor.dir/email"); // Normal SENDTO intents don't seem to pick up files. We will attach log files soon.
-            String[] to = {"support@tabookey.com"};
-            emailIntent.putExtra(Intent.EXTRA_EMAIL, to);
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Activation error - TabooKey Safe");
-            emailIntent.putExtra(Intent.EXTRA_TEXT, "Hi there,\n\nActivation failed during step:\n" + getFailedStep() + "\n\nThank you,\nName: ");
-            File file = Log.getZipLogsToSend(Log.getAppInfo(), 30 * 60);
-            Uri uriForFile = FileProvider.getUriForFile(mActivity, "com.tabookey.bizpoc.fileprovider", file);
-            emailIntent.putExtra(Intent.EXTRA_STREAM, uriForFile);
+            String emailText = "Hi there,\n\nActivation failed during step:\n" + getFailedStep() + "\n\nThank you,\nName: ";
+            String subject = "Activation error - TabooKey Safe";
+            Intent emailIntent = Utils.getLogsEmailIntent(mActivity, emailText, subject);
             startActivity(Intent.createChooser(emailIntent, "Send email..."));
         });
         scanApiKeyButton.setOnClickListener(v -> {

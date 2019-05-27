@@ -1,6 +1,5 @@
 package com.tabookey.bizpoc;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -12,6 +11,7 @@ import android.support.v4.app.Fragment;
 
 import com.tabookey.logs.Log;
 
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -97,6 +97,19 @@ public class FirstFragment extends Fragment {
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
         if (BuildConfig.DEBUG) {
             balanceInDollarsText.setOnLongClickListener(a -> {
+                AlertDialog alertDialog = new AlertDialog.Builder(mActivity).create();
+                alertDialog.setTitle("Something went wrong");
+                alertDialog.setMessage("Your action could not be completed");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Send logs",
+                        (d, w) -> {
+                            String subject = "Logs report - TabooKey Safe";
+                            String emailText = "Hi awesome support team,\nSomething went wrong - please see attached logs report.\nThank you,\n\nName: ";
+                            Intent emailIntent = Utils.getLogsEmailIntent(mActivity, emailText, subject);
+                            startActivity(Intent.createChooser(emailIntent, "Send email..."));
+                        });
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Go back", (d, w) -> d.dismiss());
+                alertDialog.show();
+                if (true) return true;
                 String[] values = {"0", "1", "3", "5", "7", "9"};
                 int currentItem = Arrays.asList(values).indexOf(String.valueOf(Wallet.balanceExtraDigits));
                 new AlertDialog.Builder(getActivity())
@@ -235,7 +248,7 @@ public class FirstFragment extends Fragment {
                     }
                     mGuardians = mBitgoWallet.getGuardians();
 
-                    if ( !didShowWarningOnGuardians && (mGuardians == null || mGuardians.size() == 0)) {
+                    if (!didShowWarningOnGuardians && (mGuardians == null || mGuardians.size() == 0)) {
                         mActivity.runOnUiThread(() -> {
                             didShowWarningOnGuardians = true;
                             Utils.showErrorDialog(mActivity, "Warning!", "There seems to be no guardians added to this wallet", null);
