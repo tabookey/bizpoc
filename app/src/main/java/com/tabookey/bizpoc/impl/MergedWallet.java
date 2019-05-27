@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -213,7 +214,10 @@ class MergedWallet implements IBitgoWallet {
         if (limit != 0) {
             request += "&limit=" + limit;
         }
-        Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("x-safetynet", Global.getSafetynetResponseJwt());
+        Wallet.TransferResp resp = ent.http.get(request, Wallet.TransferResp.class, headers);
         ArrayList<Transfer> xfers = new ArrayList<>();
         for (Wallet.TransferResp.Trans t : resp.transfers) {
             if (t.state != null && t.state.equals("failed") && t.type != null && t.type.equals("receive")) {

@@ -94,7 +94,7 @@ class TransactionHistoryAdapter extends BaseAdapter {
         if (exchangeRate != null) {
             average24h = exchangeRate.average24h;
         }
-        valueFormat += String.format(Locale.US, " | %s"+NBSP+"USD", Utils.toMoneyFormat(value * average24h));
+        valueFormat += String.format(Locale.US, " | %s"+NBSP+"USD", Utils.toMoneyFormat(value * average24h).replace("$", ""));
         viewHolder.valueTextView.setText(valueFormat);
         viewHolder.remoteTextView.setText(pending.recipientAddr);
         viewHolder.transactionComment.setText(String.format("%s", pending.comment));

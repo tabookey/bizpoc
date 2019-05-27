@@ -17,7 +17,9 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.widget.CardView;
 import android.text.Editable;
 import android.text.TextWatcher;
+
 import com.tabookey.logs.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,9 +71,6 @@ public class ImportApiKeyFragment extends Fragment {
     private View progressBar;
     private Button sendReportButton;
 
-    private static final String DEBUG_PROVISION_SERVER_URL = "https://dprov-bizpoc.ddns.tabookey.com";
-    private static final String PROD_PROVISION_SERVER_URL = "https://prov-bizpoc.ddns.tabookey.com";
-
     static String provisionServerUrl;
 
     private String mOtp;
@@ -122,7 +121,7 @@ public class ImportApiKeyFragment extends Fragment {
         mActivationError = error;
         mActivationException = exception;
 
-        Log.e(TAG,"Activation failed: "+error, exception);
+        Log.e(TAG, "Activation failed: " + error, exception);
         Log.restartLogs();
 
         mActivity.runOnUiThread(() -> {
@@ -171,11 +170,11 @@ public class ImportApiKeyFragment extends Fragment {
                 provisionServerUrl = Global.getTestProvisionServer();
                 break;
             case 1:
-                provisionServerUrl = DEBUG_PROVISION_SERVER_URL;
+                provisionServerUrl = HttpReq.TEST_PROVISION_URL;
                 break;
             case 0:
             default:
-                provisionServerUrl = PROD_PROVISION_SERVER_URL;
+                provisionServerUrl = HttpReq.PROD_PROVISION_URL;
                 break;
         }
     }
@@ -265,7 +264,7 @@ public class ImportApiKeyFragment extends Fragment {
             emailIntent.putExtra(Intent.EXTRA_EMAIL, to);
             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Activation error - TabooKey Safe");
             emailIntent.putExtra(Intent.EXTRA_TEXT, "Hi there,\n\nActivation failed during step:\n" + getFailedStep() + "\n\nThank you,\nName: ");
-            File file = Log.getZipLogsToSend(Log.getAppInfo(), 30*60);
+            File file = Log.getZipLogsToSend(Log.getAppInfo(), 30 * 60);
             Uri uriForFile = FileProvider.getUriForFile(mActivity, "com.tabookey.bizpoc.fileprovider", file);
             emailIntent.putExtra(Intent.EXTRA_STREAM, uriForFile);
             startActivity(Intent.createChooser(emailIntent, "Send email..."));
@@ -369,7 +368,15 @@ public class ImportApiKeyFragment extends Fragment {
                     setActivationState(ActivationState.VALIDATING_ACCOUNT);
                     ConfirmFragment.PasswordCallback decryptionCallback = result -> {
                         TokenPassword tokenPassword = Utils.fromJson(result, TokenPassword.class);
-                        new Thread(() -> saveTokenDataAndWoohoo(Utils.toJson(tokenPassword))).start();
+
+                        mSafetyNetHelper.sendSafetyNetRequest(mActivity,
+                                null,
+                                response -> {
+                                    Global.setSafetynetResponseJwt(response.getJwsResult());
+                                    new Thread(() -> saveTokenDataAndWoohoo(Utils.toJson(tokenPassword))).start();
+                                },
+                                exception -> setActivationFailureReason("SafetyNet attestation request failed", exception))
+                        ;
                     };
                     mActivity.promptFingerprint(decryptionCallback, SecretStorage.getEncryptedBytes(encryptedCredentialsBefore), "Resume activation");
                     return;
@@ -447,7 +454,14 @@ public class ImportApiKeyFragment extends Fragment {
             progressStepsDescriptionView.setVisibility(View.VISIBLE);
             setActivationState(ActivationState.VALIDATING_ACCOUNT);
             hideKeyboard(mActivity);
-            new Thread(() -> saveTokenDataAndWoohoo(tokenPwdString)).start();
+
+            mSafetyNetHelper.sendSafetyNetRequest(mActivity,
+                    null,
+                    response -> {
+                        Global.setSafetynetResponseJwt(response.getJwsResult());
+                        new Thread(() -> saveTokenDataAndWoohoo(tokenPwdString)).start();
+                    },
+                    exception -> setActivationFailureReason("SafetyNet attestation request failed", exception));
         }
     }
 
