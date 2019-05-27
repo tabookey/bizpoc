@@ -137,9 +137,18 @@ public class WebViewExecutor {
             Request.Builder reqbuilder = new Request.Builder().url(url);
 
             Log.d(TAG, ">> " + request.getMethod() + " " + request.getUrl());
-            if (request.getUrl().getPath().contains("/key/")) {
+            String path = request.getUrl().getPath();
+            if (path == null){
+                throw new RuntimeException("Path cannot be null");
+            }
+            if (path.contains("/key/")) {
                 String hmac = request.getRequestHeaders().get("HMAC");
                 addFreshSafetynetHeader(reqbuilder, hmac);
+            } else if (path.contains("/wallet/")){
+                String key = "x-safetynet";
+                String value = Global.getSafetynetResponseJwt();
+                Log.d(TAG, ">> " + key + ": " + value);
+                reqbuilder.addHeader(key, value);
             }
             request.getRequestHeaders().forEach((key, value) -> {
                 if ("Authorization, HMAC, Auth-Timestamp, BitGo-Auth-Version".toLowerCase().contains(key.toLowerCase())) {
