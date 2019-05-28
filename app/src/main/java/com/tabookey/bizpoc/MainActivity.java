@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v(TAG, "onCreate");
         setContentView(R.layout.activity_main);
         getSupportFragmentManager().addOnBackStackChangedListener(this);
         //Handle when activity is recreated like on orientation Change
@@ -73,12 +74,14 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     @Override
     protected void onStart() {
         super.onStart();
+        Log.v(TAG, "onStart");
         active = true;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.v(TAG, "onResume");
         // hotfix - re-ask fingerprint in case left the import window (not
         int size = getSupportFragmentManager().getFragments().size();
         if (size == 0 || size == 1) {
@@ -89,12 +92,14 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.v(TAG, "onDestroy");
         Global.forgetAccessToken();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Log.v(TAG, "onPause");
         active = false;
         //TODO: temporarily, save logs on each suspend.
         // use "./logs.sh getzip" to get this logfile
@@ -202,6 +207,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     private static final Pattern otpPattern = Pattern.compile("^.*?([cbdefghijklnrtuv]{32,64})$");
 
     public void onNewIntent(Intent intent) {
+        Log.v(TAG, "onNewIntent");
         String data = intent.getDataString();
         if (data == null) {
             return;
@@ -248,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     @Override
     public void onBackPressed() {
+        Log.v(TAG, "onPause");
         if (check_skip_send_flow()) {
             return;
         }

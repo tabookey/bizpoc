@@ -120,8 +120,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     @Override
     public void onAuthenticated(FingerprintManager.AuthenticationResult result) {
         if (!mActivity.isActive()){
-            Log.e(TAG, "Activity is not in foreground, quitting!");
-            return;
+            Log.e(TAG, "Activity is not in foreground");
         }
         Cipher cipher = result.getCryptoObject().getCipher();
         byte[] output;

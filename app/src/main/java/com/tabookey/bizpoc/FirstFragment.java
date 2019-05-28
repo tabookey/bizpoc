@@ -95,10 +95,9 @@ public class FirstFragment extends Fragment {
         searchingNetworkWarning = view.findViewById(R.id.searchingNetworkWarning);
         retryButton.setOnClickListener(v -> fillWindow(true));
         balanceInDollarsText = view.findViewById(R.id.balanceInDollarsText);
-        if (BuildConfig.DEBUG) {
-            balanceInDollarsText.setOnLongClickListener(a -> {
-                mActivity.showSomethingWrongLogsDialog(false);
-                if (true) return true;
+        balanceInDollarsText.setOnLongClickListener(a -> {
+            mActivity.showSomethingWrongLogsDialog(false);
+                /*
                 String[] values = {"0", "1", "3", "5", "7", "9"};
                 int currentItem = Arrays.asList(values).indexOf(String.valueOf(Wallet.balanceExtraDigits));
                 new AlertDialog.Builder(getActivity())
@@ -109,9 +108,9 @@ public class FirstFragment extends Fragment {
                             dialog.dismiss();
                         })
                         .show();
-                return true;
-            });
-        }
+                */
+            return true;
+        });
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
             sf.mExchangeRates = mExchangeRates;

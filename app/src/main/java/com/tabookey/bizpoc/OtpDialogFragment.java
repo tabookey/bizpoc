@@ -32,10 +32,6 @@ import android.widget.Toast;
 import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.Global;
 
-/**
- * A dialog which uses fingerprint APIs to authenticate the user, and falls back to password
- * authentication if fingerprint is not available.
- */
 public class OtpDialogFragment extends DialogFragment {
 
     ConfirmFragment.PasswordCallback callback;
