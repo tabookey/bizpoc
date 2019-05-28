@@ -237,11 +237,11 @@
 <H1>BizPOC New Customer Provisioning Flow</H1>
 
 <h3>Prerequisites:</h3> 
-<ul>
+<ol>
 <li> Run this script on a TRUSTED host, and only from a local file (NOT form the network)
 <li> Must have AUDITOR present.
 <li> Must have Bitgo accounts for all guardians, each with his own Yubikey.
-</ul>
+</ol>
 <p>
 
 <h3>Flow</h3>
@@ -275,24 +275,25 @@
     }
 </script>
 <ol>
-<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> - 
-     <font size=1><input size=5 id=pwd readonly> </font> <input type=submit value="Copy" onclick="selectAndCopy('pwd')">
-<font size=1><ul>
-    <li> password used by customer's web user, during provisioning only.
-    <li> not saved anywhere, since we're generating "Access key" for the app.
-    <li> can't be used later (by admin), since login requires Yubikey.
-</ul></font>
 
 <li> In <b>incognito</b> window, open <a id="signup" href="https://www.bitgo.com/info/signup", target="_incognito">https://www.bitgo.com/info/signup</a>
 
+<li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> - 
+     <font size=1><input size=5 id=pwd readonly> </font> <input type=submit value="Copy" onclick="selectAndCopy('pwd')">
+     <ol>
+    <li> password used by customer's web user, during provisioning only.
+    <li> not saved anywhere, since we're generating "Access key" for the app.
+    <li> can't be used later (by admin), since login requires Yubikey.
+</ol>
+
 <li> Register customer:
 
-    <ul>
-    <li> use email with auto-forward to admin's email.<br>
-        - e.g: dror+custname@tabookey.com (Google's auto-forward to dror@tabookey.com) 
+    <ol>
+    <li> use email with auto-forward to admin's email<br>
+        - e.g: if administrator has an email admin@tabookey.com, use admin<b>+customer_name</b>@tabookey.com; e-mails will be sent to admin@tabookey.com
     <li> (Enter full name of customer)
     <li> paste password from clipboard
-    </ul>
+    </ol>
 
 <li> Close window.
 <li> Open mail, <b>"Bitgo Email Verification"</b>. Right-click on <b>"Click to Verify"</b> and open in <b>incognito window</b> again.
@@ -301,30 +302,28 @@
 <li> Add a Yubikey device to user.
 
 <li> Create Customer's Access-Token:
-    <ul>
+    <ol>
     <li> in customer's window, top-right menu, User-Settings
     <li> Select, "Developer Options" and then "+ Add Access Token"
     <li> Give it a Label
     <li> scroll to the end of the page (very long..)
     <li> Enter "<b>IP Address Allowed</b>": <input readonly id=serverIP value="35.177.187.77, 3.8.171.48" size=25 > <input type=submit value="Copy" onclick="selectAndCopy('serverIP')">
     <li> Check View, Spend, Full-Administrative-Access and "agree"
-    <ul>
+    <ol>
         <li> (that is, all checkboxes except "create wallets")
-    </ul>
+    </ol>
     <li> Click <b>"+Add Token"</b>, enter Yubikey
     <li> copy the on-screen access token
     <li> Paste access-token here: <input id=accesstoken placeholder="{paste}"> <input type=submit value="Verify" onclick="verifyUserInfo(accesstoken.value.trim(), 'userinfo')"> <span id=userinfo></span>
-    </ul>
+    </ol>
 
 <li> Open <a id=mainlogin href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
 <li> Invite customer's email to organization.
-    <font size=1>
-        <ul><li> Top/left menu, select "Manage Organization" and <b>Invite Users</b>, as role "Member"</ul>
-    </font>
-<li> On Customer's incognito window: select organization from top/right menu.
+        <ol><li> Top-right menu, select "Manage Organization" and <b>Invite Users</b>, as role "Member"</ol>
+<li> On <b>Customer's</b> incognito window: refresh page and select organization from top/right menu.
 <li> In <b>Admin</b> window: Create new wallet:
 
-    <ul>
+    <ol>
     <li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><input size=4 id=wpwd readonly> </font><input type=submit value="Copy" onclick="selectAndCopy('wpwd')">
     <li> Select "Wallets", click "Create Wallet"
     <li> Select coin: <b>Ethereum</b>, click "Create"
@@ -333,47 +332,51 @@
     <li> Click: <b>Secondary Password</b>. 
     <li> Paste from clipboard <i>wallet password</i> (twice), click "Next"
     <li> Select "For Small Balances", "Next" to create wallet.
-    <li> Print the generated <b>Bitgo Keycard PDF</b>
-    <li> Click activation checkboxes, and enter activation code (from PDF) to activate wallet
-    <li> Click <input type=submit value="Print Wallet Password page" onclick="printWalletPassword()">
-    </ul>
+    <li> Save the generated <b>Bitgo Keycard PDF</b> on a secure Flash drive
+    <li> Follow BitGo instructions to enter activation code (from PDF) to activate wallet. Check all checkboxes and click activate.
+    <li> Save wallet password on a <b>different</b> secure Flash drive by clicking this button: <input type=submit value="Print Wallet Password page" onclick="printWalletPassword()">
+    </ol>
 
-<li> Invite user to wallet with role "Spender"
-    <ul>
+<li> In <b>Admin</b> window: Invite user to wallet with role "Spender"
+    <ol>
+    <li> Click "Add User" button
     <li> Tap "select people from your organization"
     <li> Choose customer's email from dropdown.
     <li> Select role "Spender"   
     <li> Switch to the customer's incognito window, to accept invitation to join wallet.
-    </ul>
+    </ol>
 
-<li> Invite guardians to wallet with role "Admin"
-    <ul>
-    <li> From <b>Admin</b> window: Tap "select people from your organization"
+<li> In <b>Admin</b> window: Invite guardians to wallet with role "Admin"
+    <ol>
+    <li> Click "Add User" button
+    <li> Tap "select people from your organization"
     <li> Choose guardians emails from dropdown.
-    <li> Select role "Spender"   
+    <li> Select role "Admin"   
     <li> Requires <i>wallet password</i>. from step 12.
-    </ul>
+    </ol>
 <li> Contact guardians and make sure they accept invitation to join wallet.
         <br>
         You can only proceed <b>after</b> guardians (and customer) accepted the invitations.
+        <br>
+        <i>Note: Guardian should refresh page, select organisation from top/right menu, on top of the page click "Activity" and approve joining the wallet.</i>
 
 <li> Change wallet <b>Policy</b> 
-    <ul>
+    <ol>
     <li> Check: Approve All Outgoing Transactions
     <li> Check: Require Multiple (2) Admin Approvals
     <li> Must use 2nd guardian to approve these changes.
-    </ul>
+    </ol>
     
 <li> Upload to server:
-    <ul>
+    <ol>
         <li> Put in <b>ADMINISTRATOR's</b> Yubikey OTP #1: <input id=adminotp1>
         <li> Put in <b>ADMINISTRATOR's</b> Yubikey OTP #2: <input id=adminotp>
         <li> Put in <i>Customer's</i> Yubikey OTP-ID: <input id=otp>
 
-    <font size=1><ul>
+    <ol>
           <li> Script below uses above <i>wallet password</i>
           <li>Customer's Yubikey not verified here: can put id (12chars) or entire key
-    </ul></font>
+    </ol>
 
     <li> Click <input type=submit value="Upload User Info"
         onclick="genActivationKey('genstatus', 'activationKey',
@@ -384,7 +387,7 @@
         >
      <b><div id=genstatus></div></b>
     <li> Save above activation key (until user receives Yubikey) 
-    </ul>
+    </ol>
 <li>Put initial deposit $4.99 in ETH into wallet.
    
 <li> Send Yubikey to user.
@@ -396,17 +399,17 @@
 <li> Customer must enable fingerprint on device.
 <li> Let customer install App (from Google Play)
 <li> Cutomer launches application: 
-    <ul>
+    <ol>
     <li> App requires user to enter Yubikey
     <li> Guardian gives <b>activation key</b> to customer on the phone
     <li> Customer enters <b>activation key</b>
     <li> Customer click <b>VERIFY</b> (enabled only if activation key is valid for yubikey)
-    <ul><font size=1>
+    <ol>
     <li> ~30 seconds waiting:
     <li> Pull encryped data from server, decrypt, configure app.
-    </font></ul>
+    </ol>
     <li> App says "<b>Woohoo!</b>"
-    </ul>
+    </ol>
 </ol>
 <h3>Perform first transaction with client</h3>
 
