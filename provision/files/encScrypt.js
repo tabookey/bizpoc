@@ -33,27 +33,36 @@ function scryptWrapper(pwd, options, cb) {
   )
 }
 
-//wrap password with scrypt, then encode the string with it.
-// @param pwd - string password
-// @param cb - callback function(error, encodedString)
-//     NOTE: encodedString is: {enc, scryptOptions}, but should be treated as verbatim string.
-function encryptWithScrypt( pwd, plaintext, cb) {
-  salt=randomString(8)
-  let scryptOptions = {
-     salt,
-     N: 16384,   // CPU/memory cost parameter, must be power of two
-                // (alternatively, you can specify logN)
-     r: 64,     // block size
-     p: 4,      // parallelization parameter
+let scryptOptions = {
+     //salt,
+     N: 2<<17,   // CPU/memory cost parameter, must be power of two
+                 // (alternatively, you can specify logN)
+     r: 8,     // block size
+     p: 1,       // parallelization parameter
      dkLen: 32,   // length of derived key, default = 32
      // encoding:  "base64" //- standard Base64 encoding
                      // "hex" — hex encoding,
                      // "binary" — Uint8Array,
                      // undefined/null - Array of bytes
      interruptStep: 1024// optional, steps to split calculations (default is 0)
+}
 
-  }
+function setScryptOptions(opt) {
+try {
+    console.log( "new scrypt options: ",opt)
+    scryptOptions = opt
+    } catch(e) {console.log(e)}
+}
 
+//wrap password with scrypt, then encode the string with it.
+// @param pwd - string password
+// @param cb - callback function(error, encodedString)
+//     NOTE: encodedString is: {enc, scryptOptions}, but should be treated as verbatim string.
+function encryptWithScrypt( pwd, plaintext, cb) {
+  salt=randomString(8)
+  scryptOptions.salt = salt
+
+  console.log( "using scyprt Options", scryptOptions)
   scryptWrapper(pwd, scryptOptions, encBlock=> {
     try {
       result = JSON.parse(sjcl.encrypt(encBlock.enc, plaintext, {iter:1000}, {}))

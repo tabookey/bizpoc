@@ -133,6 +133,7 @@ public class ImportApiKeyFragment extends Fragment {
     }
 
     private void setActivationState(ActivationState activationState) {
+        Log.i(TAG, "Activation state: "+activationState);
         mActivationState = activationState;
         mActivity.runOnUiThread(() -> {
             for (int i = 0; i < mAnimationViews.size(); i++) {
