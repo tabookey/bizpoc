@@ -14,13 +14,17 @@
       .yesPrint{ display: block !important; }
     </style>
 </head>
-<body>
+<body onbeforeunload="return confirmExit()">
     <script src="files/axios.min.js"></script>
     <script src="files/scrypt-async.js"></script>
     <script src="files/sjcl.js"></script>
     <script src="files/encScrypt.js"></script>
     <script src="files/bitgojs_min.js"></script>
     <script>
+
+    function confirmExit() {
+        return "Changes you made ase not be saved."
+    }
 
         //proxy server (to allow API access from html)
     bitgoTestServer = "https://bizpoc2.ddns.tabookey.com:8090"
