@@ -5,14 +5,25 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.tabookey.bizpoc.Balance;
 import com.tabookey.bizpoc.MainActivity;
 import com.tabookey.bizpoc.impl.BitgoEnterprise;
 import com.tabookey.bizpoc.impl.CachedEnterprise;
 import com.tabookey.bizpoc.impl.HttpReq;
 
+import java.util.HashMap;
+import java.util.List;
+
 public class Global {
     public static MainActivity mainActivity;
     public static IBitgoEnterprise ent;
+
+    public static List<Balance> sBalances;
+    public static HashMap<String, ExchangeRate> sExchangeRates = new HashMap<>();
+    public static List<BitgoUser> sGuardians;
+    public static IBitgoWallet sBitgoWallet;
+
+
     public static HttpReq http;
     private static final String PREFS_IS_TEST = "istest";
     private static final String PREFS_SAFETYNET = "safetynet";

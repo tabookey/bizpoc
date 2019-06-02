@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tabookey.bizpoc.Approval;
 import com.tabookey.bizpoc.ApprovalState;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -13,7 +15,7 @@ import androidx.annotation.Nullable;
 /**
  * represent past (completed) transfer operation
  */
-public class Transfer {
+public class Transfer  implements Serializable {
     public String id, txid, valueString, coin, usd, remoteAddress, comment, pendingApproval;
     public Date date;
 
@@ -27,9 +29,9 @@ public class Transfer {
     public String cancelledBy;
 
     @JsonIgnore
-    public List<String> approvals;
+    public ArrayList<String> approvals;
 
-    public Transfer(String id, String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, String pendingApproval, TokenInfo token, ApprovalState state, String cancelledBy, List<String> approvals) {
+    public Transfer(String id, String txid, String valueString, String coin, String usd, Date date, String remoteAddress, String comment, String pendingApproval, TokenInfo token, ApprovalState state, String cancelledBy, ArrayList<String> approvals) {
         this.id = id;
         this.txid = txid;
         this.state = state;

@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -28,17 +29,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
-import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -47,13 +45,9 @@ import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
 
 public class SendFragment extends Fragment {
 
-    public List<BalancesAdapter.Balance> balances;
     EditText tokenSendAmountEditText;
     EditText dollarEquivalent;
-    HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     EditText destinationEditText;
-    List<BitgoUser> guardians;
-    IBitgoWallet mBitgoWallet;
     private AppCompatActivity mActivity;
 
     TextView amountRequiredNote;
@@ -86,7 +80,7 @@ public class SendFragment extends Fragment {
         Button selectCoinButton = view.findViewById(R.id.selectCoinButton);
         selectCoinButton.setText(selectedToken.getTokenCode().toUpperCase());
         selectCoinButton.setOnClickListener(v -> {
-            List<TokenInfo> collect = balances.stream().map(b -> b.tokenInfo).collect(Collectors.toList());
+            List<TokenInfo> collect = Global.sBalances.stream().map(b -> b.tokenInfo).collect(Collectors.toList());
             CryptoCurrencySpinnerAdapter cryptoCurrencySpinnerAdapter = new CryptoCurrencySpinnerAdapter(mActivity, collect);
             new AlertDialog.Builder(mActivity)
                     .setTitle("Select asset")
@@ -236,8 +230,7 @@ public class SendFragment extends Fragment {
     }
 
     private void updateTokenBalance() {
-        for (BalancesAdapter.Balance b :
-                balances) {
+        for (Balance b : Global.sBalances) {
             if (b.coinName.toLowerCase().equals(selectedToken.getTokenCode())) {
                 maximumTransferValue = b.getValue();
                 maximumAmountButton.setOnClickListener(v ->
@@ -260,21 +253,18 @@ public class SendFragment extends Fragment {
         BigInteger amountBigInt = Utils.doubleStringToBigInteger(amountInput, selectedToken.decimalPlaces);
         SendRequest sendRequest = new SendRequest(selectedToken, amountBigInt.toString(), destination, null, null, null);
         cf.setRequest(sendRequest);
-        cf.mExchangeRates = mExchangeRates;
-        cf.guardians = guardians;
-        cf.mBitgoWallet = mBitgoWallet;
         mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, cf).addToBackStack(null).commit();
     }
 
     private boolean isEnteredValueValid(boolean showDialog) {
-        amountRequiredNote.setText("Please enter amount");
-        destinationRequiredNote.setText("Please enter address");
+        amountRequiredNote.setText(R.string.please_enter_amount);
+        destinationRequiredNote.setText(R.string.please_enter_address);
         String amountString = tokenSendAmountEditText.getText().toString();
         boolean isAmountValid = amountString.length() != 0;
         try {
             double v = Double.parseDouble(amountString);
             if (v > maximumTransferValue) {
-                amountRequiredNote.setText("Larger than balance");
+                amountRequiredNote.setText(R.string.larger_than_balance);
                 isAmountValid = false;
             }
         } catch (Exception e) {
@@ -290,15 +280,15 @@ public class SendFragment extends Fragment {
         if (!isDestinationEntered) {
             highlightEditText(destinationEditText, true);
             destinationRequiredNote.setVisibility(View.VISIBLE);
-            destinationRequiredNote.setText("Please enter address");
+            destinationRequiredNote.setText(R.string.please_enter_address);
             return false;
         }
         boolean isDestinationValid = AddressChecker.isValidAddress(destination);
         // Ban sending to self
-        isDestinationValid &= !destination.toLowerCase().equals(mBitgoWallet.getAddress());
+        isDestinationValid &= !destination.toLowerCase().equals(Global.sBitgoWallet.getAddress());
         boolean isDestinationChecksummed = AddressChecker.isCheckedAddress(destination);
         if (!isDestinationValid) {
-            destinationRequiredNote.setText("Not a valid address");
+            destinationRequiredNote.setText(R.string.not_valid_address);
         } else if (!isDestinationChecksummed && showDialog && isAmountValid) {
             AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
             dialog.setTitle("Please verify the address");
@@ -307,11 +297,8 @@ public class SendFragment extends Fragment {
                     "- Incorrect address copy\n\n" +
                     "Please double check to make sure that this address is correct or proceed at " +
                     "your own discretion\n\n");
-            boolean finalIsAmountValid = isAmountValid;
             dialog.setButton(DialogInterface.BUTTON_POSITIVE, "   It's OK   ", (d, w) -> {
-                if (finalIsAmountValid) {
-                    moveToContinue();
-                }
+                moveToContinue();
                 d.dismiss();
             });
             dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "   Go back   ", (d, w) -> d.dismiss());
@@ -351,13 +338,13 @@ public class SendFragment extends Fragment {
 
     private void setDollarEquivalent() {
         View view = getView();
-        ExchangeRate exchangeRate = mExchangeRates.get(selectedToken.type);
+        ExchangeRate exchangeRate = Global.sExchangeRates.get(selectedToken.type);
         if (view == null || exchangeRate == null) {
             return;
         }
         String tokenAmount = tokenSendAmountEditText.getText().toString();
         if (tokenAmount.length() == 0) {
-            dollarEquivalent.setText("0.00");
+            dollarEquivalent.setText(R.string.zero_zero_zero);
             return;
         }
         double tokenDouble = Double.parseDouble(tokenAmount);
@@ -366,7 +353,7 @@ public class SendFragment extends Fragment {
 
     private void setCoinEquivalent() {
         View view = getView();
-        ExchangeRate exchangeRate = mExchangeRates.get(selectedToken.type);
+        ExchangeRate exchangeRate = Global.sExchangeRates.get(selectedToken.type);
         if (view == null || exchangeRate == null) {
             return;
         }
@@ -384,7 +371,11 @@ public class SendFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Activity) {
             mActivity = (AppCompatActivity) context;
-            mActivity.getSupportActionBar().setTitle("Send");
+            ActionBar supportActionBar = mActivity.getSupportActionBar();
+            if (supportActionBar == null) {
+                return;
+            }
+            supportActionBar.setTitle("Send");
         }
     }
 
@@ -400,9 +391,8 @@ public class SendFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                mActivity.onBackPressed();
+        if (item.getItemId() == android.R.id.home) {
+            mActivity.onBackPressed();
         }
         return super.onOptionsItemSelected(item);
     }

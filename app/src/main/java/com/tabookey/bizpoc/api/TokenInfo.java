@@ -1,6 +1,8 @@
 package com.tabookey.bizpoc.api;
 
-public class TokenInfo {
+import java.io.Serializable;
+
+public class TokenInfo implements Serializable {
     public String type; //the token TLA
     public String coin; //always "eth" (or teth
     public String network; //mainnet or Kovan

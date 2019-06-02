@@ -8,40 +8,15 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.impl.Utils;
 
 import java.util.List;
 import java.util.Locale;
 
-import com.tabookey.bizpoc.BalancesAdapter.Balance;
-
 public class BalancesAdapter extends ArrayAdapter<Balance> {
 
     private Context context;
     private List<Balance> data;
-
-    static class Balance {
-        String coinName;
-        String coinBalance;
-        double exchangeRate;
-        TokenInfo tokenInfo;
-
-        Balance(String coinName, String coinBalance, double exchangeRate, TokenInfo tokenInfo) {
-            this.coinName = coinName;
-            this.coinBalance = coinBalance;
-            this.exchangeRate = exchangeRate;
-            this.tokenInfo = tokenInfo;
-        }
-
-        double getValue() {
-            return Utils.integerStringToCoinDouble(coinBalance, tokenInfo.decimalPlaces);
-        }
-
-        double getDollarValue() {
-            return exchangeRate * getValue();
-        }
-    }
 
     BalancesAdapter(Context context, int resource, List<Balance> data) {
         super(context, resource);

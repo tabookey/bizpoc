@@ -8,10 +8,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-
-import com.tabookey.logs.Log;
-
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,11 +26,9 @@ import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.TokenInfo;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
-import com.tabookey.bizpoc.impl.Wallet;
+import com.tabookey.logs.Log;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -52,15 +46,11 @@ public class FirstFragment extends Fragment {
     private View progressView;
     private SpinKitView progressBar;
     private View retryView;
-    HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     private ListView balancesListView;
     BalancesAdapter adapter;
     private TextView balanceInDollarsText;
     private TextView emptyPendingTextView;
     private MainActivity mActivity;
-    List<BitgoUser> mGuardians;
-    List<BalancesAdapter.Balance> balances;
-    private IBitgoWallet mBitgoWallet;
     private View mainContentsLayout;
     private View overlayInfoCardView;
     private ScrollView mainContentsScrollView;
@@ -113,10 +103,6 @@ public class FirstFragment extends Fragment {
         });
         sendButton.setOnClickListener(v -> {
             SendFragment sf = new SendFragment();
-            sf.mExchangeRates = mExchangeRates;
-            sf.guardians = mGuardians;
-            sf.balances = balances;
-            sf.mBitgoWallet = mBitgoWallet;
             mActivity.getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.frame_layout, sf, MainActivity.SEND_FRAGMENT)
@@ -126,8 +112,6 @@ public class FirstFragment extends Fragment {
         Button transactionsButton = view.findViewById(R.id.viewAllTransactionsButton);
         transactionsButton.setOnClickListener(v -> {
             TransactionsFragment tf = new TransactionsFragment();
-            tf.mExchangeRates = mExchangeRates;
-            tf.mGuardians = mGuardians;
             mActivity.getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout, tf).addToBackStack(null).commit();
         });
         if (whiteBackground) {
@@ -148,8 +132,9 @@ public class FirstFragment extends Fragment {
     Thread refresher;
 
     //trigger refresher thread to update now..
+    @SuppressWarnings("unused") // used in temporary commented-out code
     public void triggerRefresh() {
-        synchronized (refresher) {
+        synchronized (this) {
             refresher.notify();
         }
     }
@@ -170,10 +155,10 @@ public class FirstFragment extends Fragment {
                         //TODO: can't be really used, since it TERC/TBST areupdated on EACH call (with random data, probably...)
                         Log.d("TAG", "========= ENTERPRISE CHANGE");
                     });
-                    if (mBitgoWallet == null) {
+                    if (Global.sBitgoWallet == null) {
                         return;
                     }
-                    mBitgoWallet.update(() ->
+                    Global.sBitgoWallet.update(() ->
                             mActivity.runOnUiThread(() -> fillWindow(false))
                     );
                 } catch (InterruptedException e) {
@@ -182,9 +167,7 @@ public class FirstFragment extends Fragment {
                 } catch (Exception e) {
                     e.printStackTrace();
                     mActivity.runOnUiThread(() ->
-                    {
-                        expand(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), (int) Utils.convertDpToPixel(20, mActivity));
-                    });
+                            expand(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), (int) Utils.convertDpToPixel(20, mActivity)));
 
                 }
             }
@@ -219,24 +202,23 @@ public class FirstFragment extends Fragment {
                 double assetsWorth = 0;
                 try {
                     List<IBitgoWallet> allw = Global.ent.getMergedWallets();
-                    mBitgoWallet = allw.get(0);
-                    List<String> coins = mBitgoWallet.getCoins();
-                    balances = new ArrayList<>();
+                    Global.sBitgoWallet = allw.get(0);
+                    List<String> coins = Global.sBitgoWallet.getCoins();
+                    Global.sBalances = new ArrayList<>();
                     for (String coin : coins) {
-                        String coinBalance = mBitgoWallet.getBalance(coin);
+                        String coinBalance = Global.sBitgoWallet.getBalance(coin);
                         ExchangeRate exchangeRate = Global.ent.getMarketData(coin);
-                        mExchangeRates.put(coin, exchangeRate);
+                        Global.sExchangeRates.put(coin, exchangeRate);
                         TokenInfo token = Global.ent.getTokens().get(coin);
                         if (token == null) {
                             throw new RuntimeException("Unknown token balance!");
                         }
-                        BalancesAdapter.Balance balance = new BalancesAdapter.Balance(coin, coinBalance, exchangeRate.average24h, token);
-                        balances.add(balance);
+                        Balance balance = new Balance(coin, coinBalance, exchangeRate.average24h, token);
+                        Global.sBalances.add(balance);
                         assetsWorth += balance.getDollarValue();
                     }
-                    mGuardians = mBitgoWallet.getGuardians();
-
-                    if (!didShowWarningOnGuardians && (mGuardians == null || mGuardians.size() == 0)) {
+                    Global.sGuardians = Global.sBitgoWallet.getGuardians();
+                    if (!didShowWarningOnGuardians && (Global.sGuardians == null || Global.sGuardians.size() == 0)) {
                         mActivity.runOnUiThread(() -> {
                             didShowWarningOnGuardians = true;
                             Utils.showErrorDialog(mActivity, "Warning!", "There seems to be no guardians added to this wallet", null);
@@ -247,9 +229,9 @@ public class FirstFragment extends Fragment {
                     List<PendingApproval> pendingApprovals;
                     List<Transfer> transfers;
                     try {
-                        pendingApprovals = mBitgoWallet.getPendingApprovals();
+                        pendingApprovals = Global.sBitgoWallet.getPendingApprovals();
                         pendingApprovals.sort((a, b) -> b.createDate.compareTo(a.createDate));
-                        transfers = mBitgoWallet.getTransfers(3);
+                        transfers = Global.sBitgoWallet.getTransfers(3);
                     } catch (Exception e) {
                         e.printStackTrace();
                         mActivity.runOnUiThread(() -> {
@@ -260,17 +242,17 @@ public class FirstFragment extends Fragment {
                     }
                     mActivity.runOnUiThread(() -> {
                         progressView.setVisibility(View.GONE);
-                        TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRates, null);
+                        TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, Global.sExchangeRates, null);
                         if (pendingApprovals.size() > 0) {
                             pendingListView.setVisibility(View.VISIBLE);
                             emptyPendingTextView.setVisibility(View.GONE);
-                            TransactionHistoryAdapter pendingAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRates, mGuardians);
+                            TransactionHistoryAdapter pendingAdapter = new TransactionHistoryAdapter(mActivity, Global.sExchangeRates, Global.sGuardians);
                             pendingAdapter.addItems(pendingApprovals);
                             pendingListView.setAdapter(pendingAdapter);
                             Utils.setListViewHeightBasedOnChildren(pendingListView);
                             pendingListView.setOnItemClickListener((adapterView, view1, position, id) -> {
                                 Object item = pendingListView.getItemAtPosition(position);
-                                mActivity.openPendingDetails(item, mExchangeRates, mGuardians, mBitgoWallet);
+                                mActivity.openPendingDetails(item);
                             });
                         } else {
                             pendingListView.setVisibility(View.GONE);
@@ -280,7 +262,7 @@ public class FirstFragment extends Fragment {
                         historyListView.setAdapter(historyAdapter);
                         historyListView.setOnItemClickListener((adapterView, view1, position, id) -> {
                             Object item = historyListView.getItemAtPosition(position);
-                            mActivity.openPendingDetails(item, mExchangeRates, mGuardians, mBitgoWallet);
+                            mActivity.openPendingDetails(item);
                         });
                         Utils.setListViewHeightBasedOnChildren(historyListView);
                         if (showProgress) {
@@ -309,14 +291,14 @@ public class FirstFragment extends Fragment {
                     Utils.makeButtonCopyable(address, mActivity);
                     TextView owner = view.findViewById(R.id.ownerText);
                     balanceInDollarsText.setText(String.format(Locale.US, "%s" + NBSP + "USD", Utils.toMoneyFormat(finalAssetsWorth)));
-                    address.setText(mBitgoWallet.getAddress());
+                    address.setText(Global.sBitgoWallet.getAddress());
                     owner.setText(String.format("%s's safe%s", entMe.name, Global.isTest() ? " (testnet)" : ""));
-                    adapter = new BalancesAdapter(mActivity, 0, balances);
+                    adapter = new BalancesAdapter(mActivity, 0, Global.sBalances);
                     balancesListView.setAdapter(adapter);
                     Utils.setListViewHeightBasedOnChildren(balancesListView);
                     ImageButton shareButton = view.findViewById(R.id.shareButton);
                     shareButton.setOnClickListener(v -> {
-                        String shareBody = AddressChecker.checkedAddress(mBitgoWallet.getAddress());
+                        String shareBody = AddressChecker.checkedAddress(Global.sBitgoWallet.getAddress());
 //                        String shareBody = String.format("This is %s’s Ethereum wallet address: %s", Global.ent.getMe().name, AddressChecker.checkedAddress(mBitgoWallet.getAddress()));
                         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                         sharingIntent.setType("text/plain");

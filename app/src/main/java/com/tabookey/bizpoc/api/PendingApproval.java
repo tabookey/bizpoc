@@ -6,15 +6,17 @@ import androidx.annotation.Nullable;
 import com.tabookey.bizpoc.Approval;
 import com.tabookey.bizpoc.ApprovalState;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class PendingApproval {
+public class PendingApproval implements Serializable {
     public String id, recipientAddr, comment, coin, amount;
     public Date createDate;
-    public List<BitgoUser> approvedByUsers;    //users who already approved (e.g sender himself)
+    public ArrayList<BitgoUser> approvedByUsers;    //users who already approved (e.g sender himself)
     public BitgoUser creator;
     public TokenInfo token;
 
@@ -33,7 +35,7 @@ public class PendingApproval {
 
     }
 
-    public PendingApproval(String id, Date createDate, String recipientAddr, String comment, String coin, String amount, List<BitgoUser> approvedByUsers, BitgoUser creator, TokenInfo token) {
+    public PendingApproval(String id, Date createDate, String recipientAddr, String comment, String coin, String amount, ArrayList<BitgoUser> approvedByUsers, BitgoUser creator, TokenInfo token) {
         this.id = id;
         this.createDate = createDate;
         this.recipientAddr = recipientAddr;
@@ -50,7 +52,7 @@ public class PendingApproval {
             boolean isApproved = false;
 
             for (BitgoUser user : approvedByUsers) {
-                if (user!=null && user.email.equals(b.email))
+                if (user != null && user.email.equals(b.email))
                     isApproved = true;
             }
             if (b.email.equals("did@approve")) {

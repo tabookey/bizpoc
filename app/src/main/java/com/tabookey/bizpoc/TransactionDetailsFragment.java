@@ -15,9 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
-
-import com.tabookey.logs.Log;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,17 +22,15 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tabookey.bizpoc.api.BitgoUser;
 import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
-import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.PendingApproval;
 import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.bizpoc.impl.Utils;
+import com.tabookey.logs.Log;
 
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -48,12 +43,11 @@ import static com.tabookey.bizpoc.impl.Utils.expand;
 public class TransactionDetailsFragment extends Fragment {
     private static final String TAG = "DetailsFragment";
 
+    private static final String TRANSFER_KEY = "transfer";
+    private static final String PENDING_KEY = "pending";
+
     public PendingApproval pendingApproval;
     Transfer transfer;
-    HashMap<String, ExchangeRate> mExchangeRates;
-
-    List<BitgoUser> guardians;
-    IBitgoWallet mBitgoWallet;
 
     View progressBarView;
     Button senderAddressButton;
@@ -120,6 +114,16 @@ public class TransactionDetailsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (savedInstanceState != null) {
+            transfer = (Transfer) savedInstanceState.getSerializable(TRANSFER_KEY);
+            pendingApproval = (PendingApproval) savedInstanceState.getSerializable(PENDING_KEY);
+            if (transfer != null && pendingApproval != null){
+                throw new RuntimeException("Should never save both objects, maybe check 'refresher' thread once again!");
+            }
+            if (transfer == null && pendingApproval == null){
+                throw new RuntimeException("Should save at least one object, what happened here?");
+            }
+        }
         if (transfer != null) {
             fillTransfer();
         } else if (pendingApproval != null) {
@@ -149,13 +153,20 @@ public class TransactionDetailsFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putSerializable(TRANSFER_KEY, transfer);
+        outState.putSerializable(PENDING_KEY, pendingApproval);
+        super.onSaveInstanceState(outState);
+    }
+
     private void cancelTransaction() {
         progressBarView.setVisibility(View.VISIBLE);
         mActionBar.hide();
         new Thread(() -> {
             try {
                 Global.ent.getMergedWallets().get(0).rejectPending(pendingApproval);
-                mBitgoWallet.update(null);
+                Global.sBitgoWallet.update(null);
                 mActivity.runOnUiThread(() -> {
                     mActionBar.show();
                     progressBarView.setVisibility(View.GONE);
@@ -191,10 +202,10 @@ public class TransactionDetailsFragment extends Fragment {
             return;
         }
         String approvalId = pendingApproval.id;
-        Optional<PendingApproval> optionalApproval = mBitgoWallet.getPendingApprovals().stream().filter((a) -> a.id.equals(approvalId)).findAny();
+        Optional<PendingApproval> optionalApproval = Global.sBitgoWallet.getPendingApprovals().stream().filter((a) -> a.id.equals(approvalId)).findAny();
         if (!optionalApproval.isPresent()) {
             // two possible reasons: transaction approved or declined.
-            List<Transfer> transfers = mBitgoWallet.getTransfers(0);
+            List<Transfer> transfers = Global.sBitgoWallet.getTransfers(0);
             Optional<Transfer> optionalTransfer = transfers.stream().filter(a -> a.pendingApproval != null && a.pendingApproval.equals(approvalId)).findAny();
             if (optionalTransfer.isPresent()) {
                 transfer = optionalTransfer.get();
@@ -247,7 +258,7 @@ public class TransactionDetailsFragment extends Fragment {
 
         double etherDouble = Utils.integerStringToCoinDouble(pendingApproval.amount, pendingApproval.token.decimalPlaces);
 
-        List<Approval> approvalList = pendingApproval.getApprovals(guardians);
+        List<Approval> approvalList = pendingApproval.getApprovals(Global.sGuardians);
         guardiansRecyclerView.setHasFixedSize(true);
         guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
         StringBuilder appr = new StringBuilder();
@@ -256,7 +267,7 @@ public class TransactionDetailsFragment extends Fragment {
         }
         Log.e(TAG, "Approvers: " + appr);
         guardiansRecyclerView.setAdapter(new ApprovalsRecyclerAdapter(mActivity, approvalList, ApprovalState.WAITING));
-        ExchangeRate exchangeRate = mExchangeRates.get(pendingApproval.token.type);
+        ExchangeRate exchangeRate = Global.sExchangeRates.get(pendingApproval.token.type);
         double average24h = 0;
         if (exchangeRate != null) {
             average24h = exchangeRate.average24h;
@@ -266,7 +277,7 @@ public class TransactionDetailsFragment extends Fragment {
         transactionCommentTextView.setText(pendingApproval.comment);
         senderTitleTextView.setVisibility(View.GONE);
         senderAddressButton.setVisibility(View.GONE);
-        senderAddressButton.setText(mBitgoWallet.getAddress());
+        senderAddressButton.setText(Global.sBitgoWallet.getAddress());
     }
 
     private void newRefresher() {
@@ -275,7 +286,7 @@ public class TransactionDetailsFragment extends Fragment {
             while (!Thread.interrupted()) {
                 try {
                     Thread.sleep(20000);
-                    mBitgoWallet.update(() ->
+                    Global.sBitgoWallet.update(() ->
                             mActivity.runOnUiThread(() -> new Handler().post(this::fillPending))
                     );
                 } catch (InterruptedException e) {
@@ -285,9 +296,7 @@ public class TransactionDetailsFragment extends Fragment {
                     e.printStackTrace();
                     if (pendingApproval != null) {
                         mActivity.runOnUiThread(() ->
-                        {
-                            expand(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), (int) Utils.convertDpToPixel(20, mActivity));
-                        });
+                                expand(searchingNetworkWarning, 1500, searchingNetworkWarning.getHeight(), (int) Utils.convertDpToPixel(20, mActivity)));
                     }
 
                 }
@@ -332,7 +341,7 @@ public class TransactionDetailsFragment extends Fragment {
         guardiansRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, 2));
         validatorsTitle.setVisibility(View.GONE);
         // TODO: Not known if approved or rejected here
-        List<Approval> collect = guardians.stream().map(g -> {
+        List<Approval> collect = Global.sGuardians.stream().map(g -> {
             ApprovalState state = ApprovalState.WAITING;
             if (transfer.cancelledBy != null && transfer.cancelledBy.equals(g.id)) {
                 state = ApprovalState.DECLINED;
@@ -352,7 +361,7 @@ public class TransactionDetailsFragment extends Fragment {
             double dollarVal = Double.parseDouble(usd);
             valueFormat += String.format(Locale.US, " | %s" + NBSP + "USD", Utils.toMoneyFormat(dollarVal));
         } else {
-            ExchangeRate exchangeRate = mExchangeRates.get(transfer.token.type);
+            ExchangeRate exchangeRate = Global.sExchangeRates.get(transfer.token.type);
             if (exchangeRate != null) {
                 valueFormat += String.format(Locale.US, " | %s" + NBSP + "USD", Utils.toMoneyFormat(value * exchangeRate.average24h));
             }
@@ -372,7 +381,7 @@ public class TransactionDetailsFragment extends Fragment {
             senderAddressButton.setVisibility(View.GONE);
             recipientAddressButton.setText(transfer.remoteAddress);
             String stateText = "Details";
-            switch (transfer.state){
+            switch (transfer.state) {
                 case APPROVED:
                     stateText = "Approved";
                     break;

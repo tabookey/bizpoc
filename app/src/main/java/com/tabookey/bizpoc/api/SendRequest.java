@@ -1,6 +1,8 @@
 package com.tabookey.bizpoc.api;
 
-public class SendRequest {
+import java.io.Serializable;
+
+public class SendRequest implements Serializable {
     public TokenInfo tokenInfo;
     public String amount;
     public String recipientAddress;

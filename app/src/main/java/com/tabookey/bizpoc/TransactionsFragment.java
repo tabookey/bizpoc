@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +13,10 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-import com.tabookey.bizpoc.api.BitgoUser;
-import com.tabookey.bizpoc.api.ExchangeRate;
 import com.tabookey.bizpoc.api.Global;
 import com.tabookey.bizpoc.api.IBitgoWallet;
 import com.tabookey.bizpoc.api.Transfer;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class TransactionsFragment extends Fragment {
@@ -26,9 +24,7 @@ public class TransactionsFragment extends Fragment {
     private ProgressBar progressBar;
     private View progressView;
     private Button retryButton;
-    HashMap<String, ExchangeRate> mExchangeRates = new HashMap<>();
     private MainActivity mActivity;
-    List<BitgoUser> mGuardians;
     private IBitgoWallet ethWallet;
 
     @Nullable
@@ -42,7 +38,11 @@ public class TransactionsFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof MainActivity) {
             mActivity = (MainActivity) context;
-            mActivity.getSupportActionBar().setTitle("History");
+            ActionBar supportActionBar = mActivity.getSupportActionBar();
+            if (supportActionBar == null) {
+                return;
+            }
+            supportActionBar.setTitle("History");
         }
     }
 
@@ -53,7 +53,7 @@ public class TransactionsFragment extends Fragment {
         transactionsListView = view.findViewById(R.id.list_view_transactions);
         transactionsListView.setOnItemClickListener((adapterView, view1, position, id) -> {
             Object item = transactionsListView.getItemAtPosition(position);
-            mActivity.openPendingDetails(item, mExchangeRates, mGuardians, ethWallet);
+            mActivity.openPendingDetails(item);
         });
 
         progressBar = view.findViewById(R.id.progressBar);
@@ -81,7 +81,7 @@ public class TransactionsFragment extends Fragment {
             }
             mActivity.runOnUiThread(() -> {
                 progressView.setVisibility(View.GONE);
-                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, mExchangeRates, null);
+                TransactionHistoryAdapter historyAdapter = new TransactionHistoryAdapter(mActivity, Global.sExchangeRates, null);
                 historyAdapter.addItems(transfers);
                 transactionsListView.setAdapter(historyAdapter);
             });

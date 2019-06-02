@@ -284,14 +284,11 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public void onPointerCaptureChanged(boolean hasCapture) {
     }
 
-    public void openPendingDetails(Object item, HashMap<String, ExchangeRate> exchangeRates, List<BitgoUser> guardians, IBitgoWallet ethWallet) {
+    public void openPendingDetails(Object item) {
         if (item instanceof String) {
             return;
         }
         TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-        tdf.mExchangeRates = exchangeRates;
-        tdf.guardians = guardians;
-        tdf.mBitgoWallet = ethWallet;
         if (item instanceof PendingApproval) {
             tdf.pendingApproval = (PendingApproval) item;
         } else if (item instanceof Transfer) {

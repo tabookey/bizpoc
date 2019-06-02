@@ -1,12 +1,14 @@
 package com.tabookey.bizpoc.api;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.Nullable;
 
-public class BitgoUser {
+public class BitgoUser implements Serializable {
 
     public enum Perm {view, spend, admin }
     public enum OtpType { yubikey, totp }
@@ -14,9 +16,9 @@ public class BitgoUser {
     final public String id;
     final public String email;
     public String name;
-    final public List<Perm> permissions;
+    final public ArrayList<Perm> permissions;
 
-    public List<OtpType> otpTypes;
+    public ArrayList<OtpType> otpTypes;
 
     public boolean hasPerm(Perm perm) {
         return permissions!=null && permissions.contains(perm);
@@ -33,14 +35,14 @@ public class BitgoUser {
         this.id = from.id;
         this.email = from.email;
         this.name = from.name;
-        this.permissions = Collections.unmodifiableList(permissions);
+        this.permissions = new ArrayList<>(permissions);
     }
 
     public BitgoUser(String id, String email, String name, List<Perm> permissions) {
         this.id = id;
         this.email = email;
         this.name = name;
-        this.permissions = Collections.unmodifiableList(permissions==null ? Collections.emptyList() : permissions);
+        this.permissions = new ArrayList<>(permissions==null ? new ArrayList<>() : permissions);
     }
 
     @Override

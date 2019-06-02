@@ -9,7 +9,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
+
+import com.tabookey.bizpoc.api.Transfer;
 import com.tabookey.logs.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +29,7 @@ import com.tabookey.bizpoc.api.SendRequest;
 import com.tabookey.bizpoc.impl.HttpReq;
 import com.tabookey.bizpoc.impl.Utils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,11 +44,9 @@ public class ConfirmFragment extends Fragment {
     TextView dollarEquivalent;
     TextView etherSendAmount;
     private SendRequest sendRequest;
-    HashMap<String, ExchangeRate> mExchangeRates;
     View progressBarView;
-    List<BitgoUser> guardians;
-    IBitgoWallet mBitgoWallet;
     private ActionBar mActionBar;
+    private static final String REQUEST_KEY = "request";
 
     @Nullable
     @Override
@@ -67,6 +69,9 @@ public class ConfirmFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (savedInstanceState != null) {
+            sendRequest = (SendRequest) savedInstanceState.getSerializable(REQUEST_KEY);
+        }
         Button submit = view.findViewById(R.id.submitButton);
         Button fakeSubmitButton = view.findViewById(R.id.fakeSubmitButton);
         recipientAddress = view.findViewById(R.id.recipientAddressTextView);
@@ -80,7 +85,7 @@ public class ConfirmFragment extends Fragment {
         fakeSubmitButton.setOnClickListener(v ->
         {
             TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-            tdf.pendingApproval = new PendingApproval("", new Date(), "", "", "", "", Collections.emptyList(),
+            tdf.pendingApproval = new PendingApproval("", new Date(), "", "", "", "", new ArrayList<>(),
                     new BitgoUser("", "", ""), Global.ent.getTokens().get("teth"));
             goToDetails(tdf);
         });
@@ -94,7 +99,7 @@ public class ConfirmFragment extends Fragment {
         submit.setOnClickListener(v -> mActivity.promptFingerprint(this::promptOtp, bytes, "Authorize transaction"));
 
         double etherDouble = Utils.integerStringToCoinDouble(sendRequest.amount, sendRequest.tokenInfo.decimalPlaces);
-        ExchangeRate exchangeRate = mExchangeRates.get(sendRequest.tokenInfo.type);
+        ExchangeRate exchangeRate = Global.sExchangeRates.get(sendRequest.tokenInfo.type);
         double average24h = 0;
         if (exchangeRate != null) {
             average24h = exchangeRate.average24h;
@@ -102,6 +107,12 @@ public class ConfirmFragment extends Fragment {
         dollarEquivalent.setText(String.format(Locale.US, "%s USD", Utils.toMoneyFormat(etherDouble * average24h)));
         etherSendAmount.setText(String.format(Locale.US, "%.3f %s", etherDouble, sendRequest.tokenInfo.getTokenCode().toUpperCase()));
         recipientAddress.setText(sendRequest.recipientAddress);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putSerializable(REQUEST_KEY, sendRequest);
+        super.onSaveInstanceState(outState);
     }
 
     interface PasswordCallback {
@@ -124,15 +135,15 @@ public class ConfirmFragment extends Fragment {
                     sendRequest.otp = otp;
                     sendRequest.walletPassphrase = password;
                     sendRequest.comment = getNewMemoID();
-                    String pendingTxId = mBitgoWallet.sendCoins(sendRequest, null);
-                    mBitgoWallet.update(null);
+                    String pendingTxId = Global.sBitgoWallet.sendCoins(sendRequest, null);
+                    Global.sBitgoWallet.update(null);
                     dollarEquivalent.post(() -> {
                         mActionBar.show();
                         progressBarView.setVisibility(View.GONE);
                     });
 
                     TransactionDetailsFragment tdf = new TransactionDetailsFragment();
-                    List<PendingApproval> pendingApprovals = mBitgoWallet.getPendingApprovals();
+                    List<PendingApproval> pendingApprovals = Global.sBitgoWallet.getPendingApprovals();
                     for (PendingApproval pa :
                             pendingApprovals) {
                         if (pa.id.equals(pendingTxId)) {
@@ -214,9 +225,6 @@ public class ConfirmFragment extends Fragment {
 
     private void goToDetails(TransactionDetailsFragment tdf) {
         tdf.showSuccessPopup = 0;
-        tdf.mExchangeRates = mExchangeRates;
-        tdf.guardians = guardians;
-        tdf.mBitgoWallet = mBitgoWallet;
         mActivity.runOnUiThread(() -> {
             FragmentManager fragmentManager = getFragmentManager();
             if (fragmentManager == null) {
