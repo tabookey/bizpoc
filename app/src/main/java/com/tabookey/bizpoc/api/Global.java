@@ -79,13 +79,17 @@ public class Global {
         return getPrefs().getBoolean(PREFS_FAKE_SAFETYNET, false);
     }
 
-
+    /**
+     * 0 = Production
+     * 1 = Debug
+     * 2 = Custom
+     */
     public static void setEnvironment(int environment) {
         getPrefs().edit().putInt(PREFS_ENVIRONMENT, environment).apply();
     }
 
     public static int getEnvironment() {
-        return getPrefs().getInt(PREFS_ENVIRONMENT, 0);
+        return getPrefs().getInt(PREFS_ENVIRONMENT, -1);
     }
 
     //    static String accessToken = "v2x7fa63b4f6b6b17c821f9b95a6313efa04fb29ecc7705f9dce774d4d6fd94109d";

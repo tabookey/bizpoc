@@ -28,12 +28,9 @@ public class TestSendActivity extends AppCompatActivity {
     private TextView log;
 
     public void log(String msg) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("LOG", msg );
-                log.append(msg + "\n");
-            }
+        runOnUiThread(() -> {
+            Log.d("LOG", msg );
+            log.append(msg + "\n");
         });
     }
 
@@ -90,6 +87,7 @@ public class TestSendActivity extends AppCompatActivity {
             }
         });
         spin.setAdapter(aa);
+        spin.setSelection(Global.getEnvironment());
 
         EditText provisioningUrlEditText = findViewById(R.id.provisioningUrlEditText);
         Button saveUrlButton = findViewById(R.id.saveUrlButton);

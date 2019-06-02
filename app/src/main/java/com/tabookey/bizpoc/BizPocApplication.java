@@ -10,7 +10,14 @@ public class BizPocApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Global.applicationContext = this;
-
-        Log.initLogger( this.getFileStreamPath("logs").getAbsolutePath(), BuildConfig.DEBUG);
+        if (Global.getEnvironment() == -1) {
+            if (BuildConfig.DEBUG){
+                Global.setEnvironment(1);
+            }
+            else {
+                Global.setEnvironment(0);
+            }
+        }
+        Log.initLogger(this.getFileStreamPath("logs").getAbsolutePath(), BuildConfig.DEBUG);
     }
 }
