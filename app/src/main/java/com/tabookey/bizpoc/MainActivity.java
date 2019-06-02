@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         }
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
-        actionBar.setLogo(R.drawable.tabookey_safe);
+        actionBar.setLogo(R.mipmap.ic_launcher);
 
         Global.mainActivity = this;
 
