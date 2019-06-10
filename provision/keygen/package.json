@@ -1,0 +1,14 @@
+{
+  "name": "keygen",
+  "version": "1.0.0",
+  "description": "Key Generation tool for provisioning/recovery process",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bitcoinjs-lib": "^5.0.5"
+  }
+}
