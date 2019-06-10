@@ -41,7 +41,7 @@ params = require('../json/params.json');
 //params.c = 10000;
 console.log(params)
 console.log("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888");
-spec = require('../../test/spec.json');
+spec = require('../json/spec.json');
 
 from_utf8 = function(s, i) {
   var b, b2, ret;
