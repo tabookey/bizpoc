@@ -9,6 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bitcoinjs-lib": "^5.0.5"
+    "bip32": "^2.0.3",
+    "bip39": "^2.6.0",
+    "bitcoinjs-lib": "^5.0.5",
+    "triplesec": "^4.0.3"
   }
 }
