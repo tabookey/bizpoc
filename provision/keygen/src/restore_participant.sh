@@ -8,7 +8,7 @@ declare tmppass
 # $1 is participant's name
 # $2 is filename
 function read_from_usb {
-[ $1 ]
+[ "$1" ]
 [ $2 ]
 echo "Please plug in $1's usb device"
 while [ ! -b /dev/sdb1 ] ; do
@@ -16,7 +16,7 @@ while [ ! -b /dev/sdb1 ] ; do
     echo "Waiting for usb device...";
 done
 sleep 2
-echo "Writing file from $1's usb device to $workdir...";
+echo "Writing file from $1's usb device to $workdir";
 srcpath=`mount|grep sdb1|cut -d " " -f3`
 [ -f $srcpath/$2 ]
 [ -d ${workdir} ]
@@ -57,7 +57,7 @@ done
 
 # $1 is participant's name
 function read_password {
-[ $1 ]
+[ "$1" ]
 read -s -p "Enter $1's Password: " tmppass
 echo ""
 read -s -p "Re-enter Password: " tmppass2
