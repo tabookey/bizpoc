@@ -42,9 +42,11 @@ while [ ! -b /dev/sdb1 ] ; do
     sleep 3; 
     echo "Waiting for usb device..."; 
 done
-echo "Writing file to Liraz's usb device..."; 
-dd if=${workdir}/mnemonicA of=/dev/sdb1 && sync
-dd if=${workdir}/salt of=/dev/sdb1 && sync
+sleep 2
+echo "Writing file to Liraz's usb device...";
+targetfile=`mount|grep sdb1|cut -d " " -f3`
+dd if=${workdir}/mnemonicA of=$targetfile/mnemonicA && sync
+dd if=${workdir}/salt of=$targetfile/salt && sync
 echo "Done. Please switch to Yoav's usb device";
 while [ -b /dev/sdb1 ] ; do
     sleep 3; 
@@ -56,9 +58,11 @@ while [ ! -b /dev/sdb1 ] ; do
     sleep 3; 
     echo "Waiting for usb device..."; 
 done
+sleep 2
 echo "Writing file to Yoav's usb device..."; 
-dd if=${workdir}/mnemonicB of=/dev/sdb1 && sync
-dd if=${workdir}/salt of=/dev/sdb1 && sync
+targetfile=`mount|grep sdb1|cut -d " " -f3`
+dd if=${workdir}/mnemonicB of=$targetfile/mnemonicB && sync
+dd if=${workdir}/salt of=$targetfile/salt && sync
 echo "Done. Please switch to Adi's usb device";
 while [ -b /dev/sdb1 ] ; do
     sleep 3;
@@ -69,9 +73,11 @@ while [ ! -b /dev/sdb1 ] ; do
     sleep 3; 
     echo "Waiting for usb device..."; 
 done
+sleep 2
 echo "Writing file to Adi's usb device..."; 
-dd if=${workdir}/mnemonicC of=/dev/sdb1 && sync
-dd if=${workdir}/salt of=/dev/sdb1 && sync
+targetfile=`mount|grep sdb1|cut -d " " -f3`
+dd if=${workdir}/mnemonicC of=$targetfile/mnemonicC && sync
+dd if=${workdir}/salt of=$targetfile/salt && sync
 echo "Done.";
 
 
