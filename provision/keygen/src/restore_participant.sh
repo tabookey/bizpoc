@@ -88,9 +88,12 @@ read_password "second participant"
 secondpass=${tmppass}
 
 read_password $3
-newpass=${tmppass}
+thirdpass=${tmppass}
 
 # Restore participant in node script, saving it to $workdir
-restored_file=`time node src/js/generate_bitcoin_keypair.js -p -d ${workdir} --file1 ${workdir}/$1 --file2 ${workdir}/$2 |grep "Restored file" | cut -d " " -f3`
+export firstpass secondpass thirdpass
+restored_file=`time node src/js/generate_bitcoin_keypair.js -p -d ${workdir} --file1 ${workdir}/$1 --file2 ${workdir}/$2 |tee /dev/stderr |grep "Restored file" | cut -d " " -f3`
 
 write_to_usb $3 ${restored_file}
+
+echo "Finished restoring participant $3 (file ${restored_file})"
