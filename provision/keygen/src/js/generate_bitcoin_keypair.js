@@ -2,15 +2,18 @@ const bip32 = require('bip32');
 const bip39 = require('bip39');
 const bs58 = require('bs58');
 // const bitcoinjs= require('bitcoinjs-lib');
+const BitGoJS = require('bitgo');
+const bitgo = new BitGoJS.BitGo({ env: 'prod' });
 const fs = require('fs');
 
 argv = require('minimist')(process.argv, {
   alias: {
     d: 'workdir',
     r: 'restore-participant',
-    g: 'generate'
+    g: 'generate',
+    t: 'test'
   },
-  string: ["workdir", "update", "foreclose"]
+  string: ["workdir", "update", "file1", "file2"]
 
 });
 _ref = require('triplesec'), scrypt = _ref.scrypt, pbkdf2 = _ref.pbkdf2, HMAC_SHA256 = _ref.HMAC_SHA256, WordArray = _ref.WordArray, util = _ref.util;
@@ -118,49 +121,187 @@ function callback(out) {
 	return out;
 }
 
-function saveMnemonicToFile(filename,mnemonic, start, end) {
-  fs.writeFile(filename, mnemonic.split(" ").slice(start,end).join(" "), function(err) {
+function saveStringToFile(filename,string) {
+  fs.writeFileSync(filename, string/*, function(err) {
     if(err) {
       return console.log(err);
     }
 
     console.log(filename + " saved.");
-  });
+  }*/);
+  console.log(filename + " saved.");
+}
+
+function loadStringFromFile(filename) {
+  return fs.readFileSync(filename/*, function(err,data) {
+    if(err) {
+      return console.log(err);
+    }
+    console.log(filename + " read: ",data);
+    return data.toString();
+  }*/).toString();
+
+}
+
+function getShareA(mnemonic) {
+  return mnemonic.split(" ").slice(0,16).join(" ");
+}
+
+function getShareB(mnemonic) {
+  return mnemonic.split(" ").slice(8,24).join(" ");
+}
+
+function getShareC(mnemonic) {
+  return mnemonic.split(" ").slice(0,8).join(" ") + mnemonic.split(" ").slice(16,24).join(" ");
 
 }
 
 async function generate(workdir="./build/" ) {
   const mnemonic = bip39.generateMnemonic(256);
-  var args = {};
+  let args = {};
   args.salt = "PVeNVxXRRe4=";
   args.passphrase = mnemonic;
   console.log("salt:", args.salt);
 
   let keyPair = await generateBitcoinKeyPair(args,callback);
 
-  console.log("mnemonic :",mnemonic);
-  saveMnemonicToFile(workdir+"mnemonicA" , mnemonic,0,16);
-  saveMnemonicToFile(workdir+"mnemonicB" , mnemonic,8,24);
-  saveMnemonicToFile(workdir+"mnemonicC1" , mnemonic,0,8);
-  saveMnemonicToFile(workdir+"mnemonicC2" , mnemonic,16,24);
-  saveMnemonicToFile(workdir+"salt" , args.salt,0,args.salt.length);
+  if (argv.t) console.log("mnemonic :",mnemonic);
+
+  try {
+    fs.mkdirSync(workdir);
+  } catch (e) {
+    if (e.code !== "EEXIST" )
+      exit(e);
+  }
+
+  let secretShareA = getShareA(mnemonic);
+  let secretShareB = getShareB(mnemonic);
+  let secretShareC = getShareC(mnemonic);
+
+
+  let encryptedShareA = bitgo.encrypt({ input: secretShareA, password:process.env.lirazpass });
+  saveStringToFile(workdir+"mnemonicA" , encryptedShareA);
+  console.log("encrypted share A saved to file:", encryptedShareA);
+  let decryptedShareA = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicA"), password:process.env.lirazpass});
+  if (decryptedShareA !== secretShareA) {
+    exit("FUCK THIS SHIT A");
+  }
+
+  let encryptedShareB = bitgo.encrypt({ input: secretShareB, password:process.env.yoavpass });
+  saveStringToFile(workdir+"mnemonicB" , encryptedShareB);
+  console.log("encrypted share B saved to file:", encryptedShareB);
+  let decryptedShareB = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicB"), password:process.env.yoavpass});
+  if (decryptedShareB !== secretShareB) {
+    exit("FUCK THIS SHIT B");
+  }
+
+  let encryptedShareC = bitgo.encrypt({ input: secretShareC, password:process.env.adipass });
+  saveStringToFile(workdir+"mnemonicC" , encryptedShareC);
+  console.log("encrypted share C saved to file:", encryptedShareC);
+  let decryptedShareC = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicC"), password:process.env.adipass});
+  if (decryptedShareC !== secretShareC) {
+    exit("FUCK THIS SHIT C");
+  }
+
+  saveStringToFile(workdir+"salt" , args.salt,0,args.salt.length);
+
+  // password:process.env.lirazpass = "wtf";
+  // let decrypted = bitgo.decrypt({ input: encrypted, password:process.env.lirazpass });
+  // console.log("decrypted:",decrypted);
+  // console.log("Done");
 
 }
 
-async function restoreParticipant() {
+async function restoreParticipant(file1, file2, workdir="./build/") {
+  let fileA, fileB, fileC;
+
+  if (file1.includes("mnemonicA")) {
+    fileA = file1;
+  } else
+  if (file1.includes("mnemonicB")) {
+    fileB = file1;
+  } else if (file1.includes("mnemonicC")) {
+    fileC = file1;
+  }
+
+  if (file2.includes("mnemonicA")) {
+    fileA = file2;
+  } else if (file2.includes("mnemonicB")) {
+    fileB = file2;
+  } else if (file2.includes("mnemonicC")) {
+    fileC = file2;
+  }
+
+
+  if (!fileC) {
+
+    let encryptedShareA = loadStringFromFile(fileA);
+    let encryptedShareB = loadStringFromFile(fileB);
+    let decryptedA = bitgo.decrypt({ input: encryptedShareA, password:process.env.lirazpass });
+    console.log("decryptedA:",decryptedA);
+    let decryptedB = bitgo.decrypt({ input: encryptedShareB, password:process.env.yoavpass });
+    console.log("decryptedB:",decryptedB);
+    const mnemonic = decryptedA.split(" ").slice(0,12).join(" ") + decryptedB.split(" ").slice(12).join(" ");
+    let secretShareC = getShareC(mnemonic);
+
+    let encryptedShareC = bitgo.encrypt({ input: secretShareC, password:process.env.adipass });
+    saveStringToFile(workdir+"mnemonicC" , encryptedShareC);
+    console.log("encrypted share C saved to file:", encryptedShareC);
+
+  } else if (!fileB) {
+
+    let encryptedShareA = loadStringFromFile(fileA);
+    let encryptedShareC = loadStringFromFile(fileC);
+    let decryptedA = bitgo.decrypt({ input: encryptedShareA, password:process.env.lirazpass });
+    console.log("decryptedA:",decryptedA);
+    let decryptedC = bitgo.decrypt({ input: encryptedShareC, password:process.env.adipass });
+    console.log("decryptedC:",decryptedC);
+    const mnemonic = decryptedA + decryptedC.split(" ").slice(8).join(" ");
+    let secretShareB = getShareB(mnemonic);
+
+    let encryptedShareB = bitgo.encrypt({ input: secretShareB, password:process.env.yoavpass });
+    saveStringToFile(workdir+"mnemonicB" , encryptedShareB);
+    console.log("encrypted share B saved to file:", encryptedShareB);
+
+  } else if (!fileA) {
+
+    let encryptedShareB = loadStringFromFile(fileB);
+    let encryptedShareC = loadStringFromFile(fileC);
+    let decryptedB = bitgo.decrypt({ input: encryptedShareB, password:process.env.yoavpass });
+    console.log("decryptedB:",decryptedB);
+    let decryptedC = bitgo.decrypt({ input: encryptedShareC, password:process.env.adipass });
+    console.log("decryptedC:",decryptedC);
+    const mnemonic = decryptedC.split(" ").slice(0,8).join(" ") + decryptedB;
+    let secretShareA = getShareA(mnemonic);
+
+    let encryptedShareA = bitgo.encrypt({ input: secretShareA, password:process.env.lirazpass });
+    saveStringToFile(workdir+"mnemonicA" , encryptedShareA);
+    console.log("encrypted share A saved to file:", encryptedShareA);
+
+  }
+
+  console.log("Done");
+
 
 }
 
 async function main() {
   console.log("starting main\nargv",argv);
-  console.log("env vars passwd",process.env.lirazpass, process.env.yoavpass, process.env.adipass);
+  if (argv.t) {
+    console.log("TEST MODE - SETTING WEAK DEFAULT PASSWORDS");
+    process.env.lirazpass = process.env.lirazpass ||'a';
+    process.env.yoavpass = process.env.yoavpass || 'b';
+    process.env.adipass = process.env.adipass || 'c';
+    console.log("env vars passwd",process.env.lirazpass, process.env.yoavpass, process.env.adipass);
+  }
+
+  let workdir = argv.workdir;
   if (argv.generate) {
     console.log("Generating Bitcoin master keypair");
-    let workdir = argv.workdir
     await generate(workdir);
   }else if (argv.r) {
-    console.log("Recovering seed of Bitcoin master keypair from 2/3 participants");
-    await restoreParticipant();
+    console.log("Recovering seed of Bitcoin master keypair from 2 out of 3 participants");
+    await restoreParticipant(argv.file1, argv.file2, workdir);
   }
   console.log("ending main");
 }
