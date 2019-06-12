@@ -48,23 +48,25 @@ fi
 
 # Getting Liraz's password
 read_password Liraz
-lirazpass=$tmppass
+firstpass=$tmppass
 
 # Getting Yoav's password
 read_password Yoav
-yoavpass=$tmppass
+secondpass=$tmppass
 
 # Getting Adi's password
 read_password Adi
-adipass=$tmppass
+thirdpass=$tmppass
 
-echo $lirazpass $yoavpass $adipass
+echo $firstpass $secondpass $thirdpass
 
 # Generating bitcoin keypair in node script
-export lirazpass yoavpass adipass
+export firstpass secondpass thirdpass
 time node src/js/generate_bitcoin_keypair.js -g -d ${workdir}
 
 # writing encrypted seed of the bitcoin keypair to participants' usb devices
 write_to_usb Liraz mnemonicA
 write_to_usb Yoav mnemonicB
 write_to_usb Adi mnemonicC
+
+echo "Finished generating keypair for provisioning"

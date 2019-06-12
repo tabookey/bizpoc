@@ -180,34 +180,34 @@ async function generate(workdir="./build/" ) {
   let secretShareC = getShareC(mnemonic);
 
 
-  let encryptedShareA = bitgo.encrypt({ input: secretShareA, password:process.env.lirazpass });
+  let encryptedShareA = bitgo.encrypt({ input: secretShareA, password:process.env.firstpass });
   saveStringToFile(workdir+"mnemonicA" , encryptedShareA);
   console.log("encrypted share A saved to file:", encryptedShareA);
-  let decryptedShareA = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicA"), password:process.env.lirazpass});
+  let decryptedShareA = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicA"), password:process.env.firstpass});
   if (decryptedShareA !== secretShareA) {
     exit("FUCK THIS SHIT A");
   }
 
-  let encryptedShareB = bitgo.encrypt({ input: secretShareB, password:process.env.yoavpass });
+  let encryptedShareB = bitgo.encrypt({ input: secretShareB, password:process.env.secondpass });
   saveStringToFile(workdir+"mnemonicB" , encryptedShareB);
   console.log("encrypted share B saved to file:", encryptedShareB);
-  let decryptedShareB = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicB"), password:process.env.yoavpass});
+  let decryptedShareB = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicB"), password:process.env.secondpass});
   if (decryptedShareB !== secretShareB) {
     exit("FUCK THIS SHIT B");
   }
 
-  let encryptedShareC = bitgo.encrypt({ input: secretShareC, password:process.env.adipass });
+  let encryptedShareC = bitgo.encrypt({ input: secretShareC, password:process.env.thirdpass });
   saveStringToFile(workdir+"mnemonicC" , encryptedShareC);
   console.log("encrypted share C saved to file:", encryptedShareC);
-  let decryptedShareC = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicC"), password:process.env.adipass});
+  let decryptedShareC = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicC"), password:process.env.thirdpass});
   if (decryptedShareC !== secretShareC) {
     exit("FUCK THIS SHIT C");
   }
 
   saveStringToFile(workdir+"salt" , args.salt,0,args.salt.length);
 
-  // password:process.env.lirazpass = "wtf";
-  // let decrypted = bitgo.decrypt({ input: encrypted, password:process.env.lirazpass });
+  // password:process.env.firstpass = "wtf";
+  // let decrypted = bitgo.decrypt({ input: encrypted, password:process.env.firstpass });
   // console.log("decrypted:",decrypted);
   // console.log("Done");
 
@@ -239,16 +239,16 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
     fileToWrite = "mnemonicC";
     let encryptedShareA = loadStringFromFile(fileA);
     let encryptedShareB = loadStringFromFile(fileB);
-    let decryptedA = bitgo.decrypt({ input: encryptedShareA, password:process.env.lirazpass });
+    let decryptedA = bitgo.decrypt({ input: encryptedShareA, password:process.env.firstpass });
     console.log("decryptedA:",decryptedA);
-    let decryptedB = bitgo.decrypt({ input: encryptedShareB, password:process.env.yoavpass });
+    let decryptedB = bitgo.decrypt({ input: encryptedShareB, password:process.env.secondpass });
     console.log("decryptedB:",decryptedB);
     const mnemonic = decryptedA.split(" ").slice(0,12).join(" ") + " " + decryptedB.split(" ").slice(12).join(" ");
     console.log("Restored mnemonic:", mnemonic);
     let secretShareC = getShareC(mnemonic);
     console.log("Restored shareC:", secretShareC);
 
-    let encryptedShareC = bitgo.encrypt({ input: secretShareC, password:process.env.adipass });
+    let encryptedShareC = bitgo.encrypt({ input: secretShareC, password:process.env.thirdpass });
     saveStringToFile(workdir+ fileToWrite, encryptedShareC);
     console.log("encrypted share C saved to file:", encryptedShareC);
 
@@ -256,9 +256,9 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
     fileToWrite = "mnemonicB";
     let encryptedShareA = loadStringFromFile(fileA);
     let encryptedShareC = loadStringFromFile(fileC);
-    let decryptedA = bitgo.decrypt({ input: encryptedShareA, password:process.env.lirazpass });
+    let decryptedA = bitgo.decrypt({ input: encryptedShareA, password:process.env.firstpass });
     console.log("decryptedA:",decryptedA);
-    let decryptedC = bitgo.decrypt({ input: encryptedShareC, password:process.env.adipass });
+    let decryptedC = bitgo.decrypt({ input: encryptedShareC, password:process.env.thirdpass });
     console.log("decryptedC:",decryptedC);
     const mnemonic = decryptedA + " " + decryptedC.split(" ").slice(8).join(" ");
     console.log("Restored mnemonic:", mnemonic);
@@ -266,7 +266,7 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
     console.log("Restored shareB:", secretShareB);
 
 
-    let encryptedShareB = bitgo.encrypt({ input: secretShareB, password:process.env.yoavpass });
+    let encryptedShareB = bitgo.encrypt({ input: secretShareB, password:process.env.secondpass });
     saveStringToFile(workdir+fileToWrite , encryptedShareB);
     console.log("encrypted share B saved to file:", encryptedShareB);
 
@@ -274,16 +274,16 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
     fileToWrite = "mnemonicA";
     let encryptedShareB = loadStringFromFile(fileB);
     let encryptedShareC = loadStringFromFile(fileC);
-    let decryptedB = bitgo.decrypt({ input: encryptedShareB, password:process.env.yoavpass });
+    let decryptedB = bitgo.decrypt({ input: encryptedShareB, password:process.env.secondpass });
     console.log("decryptedB:",decryptedB);
-    let decryptedC = bitgo.decrypt({ input: encryptedShareC, password:process.env.adipass });
+    let decryptedC = bitgo.decrypt({ input: encryptedShareC, password:process.env.thirdpass });
     console.log("decryptedC:",decryptedC);
     const mnemonic = decryptedC.split(" ").slice(0,8).join(" ") + " " + decryptedB;
     console.log("Restored mnemonic:", mnemonic);
     let secretShareA = getShareA(mnemonic);
     console.log("Restored shareA:", secretShareA);
 
-    let encryptedShareA = bitgo.encrypt({ input: secretShareA, password:process.env.lirazpass });
+    let encryptedShareA = bitgo.encrypt({ input: secretShareA, password:process.env.firstpass });
     saveStringToFile(workdir+fileToWrite , encryptedShareA);
     console.log("encrypted share A saved to file:", encryptedShareA);
 
@@ -303,10 +303,10 @@ async function main() {
   console.log("starting main\nargv",argv);
   if (argv.t) {
     console.log("TEST MODE - SETTING WEAK DEFAULT PASSWORDS");
-    process.env.lirazpass = process.env.lirazpass ||'a';
-    process.env.yoavpass = process.env.yoavpass || 'b';
-    process.env.adipass = process.env.adipass || 'c';
-    console.log("env vars passwd",process.env.lirazpass, process.env.yoavpass, process.env.adipass);
+    process.env.firstpass = process.env.firstpass ||'a';
+    process.env.secondpass = process.env.secondpass || 'b';
+    process.env.thirdpass = process.env.thirdpass || 'c';
+    console.log("env vars passwd",process.env.firstpass, process.env.secondpass, process.env.thirdpass);
   }
 
   let workdir = argv.workdir;
