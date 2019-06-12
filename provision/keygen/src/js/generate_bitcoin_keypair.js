@@ -9,7 +9,8 @@ const fs = require('fs');
 argv = require('minimist')(process.argv, {
   alias: {
     d: 'workdir',
-    r: 'restore-participant',
+    p: 'restore-participant',
+    r: 'recover',
     g: 'generate',
     t: 'test'
   },
@@ -152,7 +153,7 @@ function getShareB(mnemonic) {
 }
 
 function getShareC(mnemonic) {
-  return mnemonic.split(" ").slice(0,8).join(" ") + mnemonic.split(" ").slice(16,24).join(" ");
+  return mnemonic.split(" ").slice(0,8).join(" ") + " " +mnemonic.split(" ").slice(16,24).join(" ");
 
 }
 
@@ -241,8 +242,10 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
     console.log("decryptedA:",decryptedA);
     let decryptedB = bitgo.decrypt({ input: encryptedShareB, password:process.env.yoavpass });
     console.log("decryptedB:",decryptedB);
-    const mnemonic = decryptedA.split(" ").slice(0,12).join(" ") + decryptedB.split(" ").slice(12).join(" ");
+    const mnemonic = decryptedA.split(" ").slice(0,12).join(" ") + " " + decryptedB.split(" ").slice(12).join(" ");
+    console.log("Restored mnemonic:", mnemonic);
     let secretShareC = getShareC(mnemonic);
+    console.log("Restored shareC:", secretShareC);
 
     let encryptedShareC = bitgo.encrypt({ input: secretShareC, password:process.env.adipass });
     saveStringToFile(workdir+"mnemonicC" , encryptedShareC);
@@ -256,8 +259,11 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
     console.log("decryptedA:",decryptedA);
     let decryptedC = bitgo.decrypt({ input: encryptedShareC, password:process.env.adipass });
     console.log("decryptedC:",decryptedC);
-    const mnemonic = decryptedA + decryptedC.split(" ").slice(8).join(" ");
+    const mnemonic = decryptedA + " " + decryptedC.split(" ").slice(8).join(" ");
+    console.log("Restored mnemonic:", mnemonic);
     let secretShareB = getShareB(mnemonic);
+    console.log("Restored shareB:", secretShareB);
+
 
     let encryptedShareB = bitgo.encrypt({ input: secretShareB, password:process.env.yoavpass });
     saveStringToFile(workdir+"mnemonicB" , encryptedShareB);
@@ -271,8 +277,10 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
     console.log("decryptedB:",decryptedB);
     let decryptedC = bitgo.decrypt({ input: encryptedShareC, password:process.env.adipass });
     console.log("decryptedC:",decryptedC);
-    const mnemonic = decryptedC.split(" ").slice(0,8).join(" ") + decryptedB;
+    const mnemonic = decryptedC.split(" ").slice(0,8).join(" ") + " " + decryptedB;
+    console.log("Restored mnemonic:", mnemonic);
     let secretShareA = getShareA(mnemonic);
+    console.log("Restored shareA:", secretShareA);
 
     let encryptedShareA = bitgo.encrypt({ input: secretShareA, password:process.env.lirazpass });
     saveStringToFile(workdir+"mnemonicA" , encryptedShareA);
@@ -283,6 +291,10 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
   console.log("Done");
 
 
+}
+
+async function recover() {
+  //TODO
 }
 
 async function main() {
@@ -299,10 +311,14 @@ async function main() {
   if (argv.generate) {
     console.log("Generating Bitcoin master keypair");
     await generate(workdir);
-  }else if (argv.r) {
-    console.log("Recovering seed of Bitcoin master keypair from 2 out of 3 participants");
+  }else if (argv.p) {
+    console.log("Recovering seed of Bitcoin master keypair from 2 out of 3 participants to restoreParticipant");
     await restoreParticipant(argv.file1, argv.file2, workdir);
-  }
+  }else if (argv.r) {
+  console.log("Recovering seed of Bitcoin master keypair from 2 out of 3 participants to perform wallet recovery");
+  await recover(argv.file1, argv.file2, workdir);
+}
+
   console.log("ending main");
 }
 
