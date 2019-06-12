@@ -19,7 +19,7 @@ argv = require('minimist')(process.argv, {
     g: 'generate',
     t: 'test'
   },
-  string: ["workdir", "update", "file1", "file2"]
+  string: ["workdir", "file1", "file2", "encrypted-userkey", "wallet-address", "encrypted-wallet-pass", "dest-address","key-id"]
 
 });
 _ref = require('triplesec'), scrypt = _ref.scrypt, pbkdf2 = _ref.pbkdf2, HMAC_SHA256 = _ref.HMAC_SHA256, WordArray = _ref.WordArray, util = _ref.util;
@@ -297,7 +297,7 @@ function getBitGoBoxB(xprv, password, keyID) {
   return blob;
 }
 
-async function recover(file1, file2, encryptedBoxA, walletContractAddress, encryptedWalletPassphrase, destinationAddress, keyID, workdir="./build/") {
+async function recover(file1, file2, encryptedUserKey, walletContractAddress, encryptedWalletPassphrase, destinationAddress, keyID, xpub, workdir="./build/") {
   // Getting xprv from participants
   let seed = restoreSeed(file1,file2, process.env.firstpass, process.env.secondpass);
   let args = {};
@@ -306,22 +306,26 @@ async function recover(file1, file2, encryptedBoxA, walletContractAddress, encry
   console.log("salt:", args.salt);
   let keyPair = await generateBitcoinKeyPair(args,callback);
   let xprv = keyPair.private;
-
+  // Validating xpub
+  if (xpub !== keyPair.public) {
+      console.log("Recovered xpub:",keyPair.public,"\ngiven xpub:", xpub);
+      exit("Recovered xpub different from given xpub");
+  }
 
   // Decrypt wallet password
   let walletPassphrase = bitgo.decrypt({input: encryptedWalletPassphrase, password: xprv });
 
-  // Decrypt boxA
-  let boxA = bitgo.decrypt({ input: encryptedBoxA, password: walletPassphrase });
+  // Decrypt "boxA" userkey
+  let userKey = bitgo.decrypt({ input: encryptedUserKey, password: walletPassphrase });
 
   // Generate encrypted blob per bitgo script
-  let boxB = getBitGoBoxB(xprv, walletPassphrase, keyID);
+  let backupKey = getBitGoBoxB(xprv, walletPassphrase, keyID);
 
 
   let baseCoin = bitgo.coin('eth');
   let recoveryParams = {
-    userKey: boxA,
-    backupKey: boxB,
+    userKey: userKey,
+    backupKey: backupKey,
     walletContractAddress: walletContractAddress,
     walletPassphrase: walletPassphrase,
     recoveryDestination: destinationAddress
@@ -359,7 +363,8 @@ async function main() {
     console.log("Restored file", fileRestored);
   }else if (argv.r) {
   console.log("Recovering seed of Bitcoin master keypair from 2 out of 3 participants to perform wallet recovery");
-  await recover(argv.file1, argv.file2, argv.boxa, argv.walletcontractaddress, argv.walletpass, destAddress, seed, workdir);
+  await recover(argv.file1, argv.file2, argv["encrypted-userkey"], argv["wallet-address"], argv["encrypted-wallet-pass"],
+      argv["dest-address"], argv["key-id"], argv.xpub, workdir);
 }
 
   console.log("ending main");
