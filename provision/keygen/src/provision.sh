@@ -65,8 +65,8 @@ export firstpass secondpass thirdpass
 time node src/js/generate_bitcoin_keypair.js -g -d ${workdir}
 
 # writing encrypted seed of the bitcoin keypair to participants' usb devices
-write_to_usb Liraz mnemonicA
-write_to_usb Yoav mnemonicB
-write_to_usb Adi mnemonicC
+write_to_usb Liraz shareA
+write_to_usb Yoav shareB
+write_to_usb Adi shareC
 
 echo "Finished generating keypair for provisioning"

@@ -5,8 +5,11 @@ const bs58 = require('bs58');
 const BitGoJS = require('bitgo');
 const bitgo = new BitGoJS.BitGo({ env: 'prod' });
 const fs = require('fs');
+const randomBytes = require('crypto').randomBytes;
 
 const SALT = "PVeNVxXRRe4=";
+const SEED_BYTE_LENGTH = 66; // should be % 3 == 0
+const SEED_HEX_LENGTH = SEED_BYTE_LENGTH * 2; // length as hex string
 
 argv = require('minimist')(process.argv, {
   alias: {
@@ -146,29 +149,29 @@ function loadStringFromFile(filename) {
 
 }
 
-function getShareA(mnemonic) {
-  return mnemonic.split(" ").slice(0,16).join(" ");
+function getShareA(seed) {
+  return seed.slice(0,2*SEED_HEX_LENGTH/3);
 }
 
-function getShareB(mnemonic) {
-  return mnemonic.split(" ").slice(8,24).join(" ");
+function getShareB(seed) {
+  return seed.slice(SEED_HEX_LENGTH/3);
 }
 
-function getShareC(mnemonic) {
-  return mnemonic.split(" ").slice(0,8).join(" ") + " " +mnemonic.split(" ").slice(16,24).join(" ");
+function getShareC(seed) {
+  return seed.slice(0,SEED_HEX_LENGTH/3) + seed.slice(2*SEED_HEX_LENGTH/3);
 
 }
 
 async function generate(workdir="./build/" ) {
-  const mnemonic = bip39.generateMnemonic(256);
+    const seed = randomBytes(SEED_BYTE_LENGTH).toString("hex");
   let args = {};
   args.salt = SALT;
-  args.passphrase = mnemonic;
+  args.passphrase = seed;
   console.log("salt:", args.salt);
 
   let keyPair = await generateBitcoinKeyPair(args,callback);
 
-  /*if (argv.t) */console.log("mnemonic :",mnemonic);
+  /*if (argv.t) */console.log("seed :",seed);
 
   try {
     fs.mkdirSync(workdir);
@@ -177,45 +180,39 @@ async function generate(workdir="./build/" ) {
       exit(e);
   }
 
-  let secretShareA = getShareA(mnemonic);
-  let secretShareB = getShareB(mnemonic);
-  let secretShareC = getShareC(mnemonic);
+  let secretShareA = getShareA(seed);
+  let secretShareB = getShareB(seed);
+  let secretShareC = getShareC(seed);
 
 
   let encryptedShareA = bitgo.encrypt({ input: secretShareA, password:process.env.firstpass });
-  saveStringToFile(workdir+"mnemonicA" , encryptedShareA);
+  saveStringToFile(workdir+"shareA" , encryptedShareA);
   console.log("encrypted share A saved to file:", encryptedShareA);
-  let decryptedShareA = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicA"), password:process.env.firstpass});
+  let decryptedShareA = bitgo.decrypt({input:loadStringFromFile(workdir+"shareA"), password:process.env.firstpass});
   if (decryptedShareA !== secretShareA) {
     exit("FUCK THIS SHIT A");
   }
 
   let encryptedShareB = bitgo.encrypt({ input: secretShareB, password:process.env.secondpass });
-  saveStringToFile(workdir+"mnemonicB" , encryptedShareB);
+  saveStringToFile(workdir+"shareB" , encryptedShareB);
   console.log("encrypted share B saved to file:", encryptedShareB);
-  let decryptedShareB = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicB"), password:process.env.secondpass});
+  let decryptedShareB = bitgo.decrypt({input:loadStringFromFile(workdir+"shareB"), password:process.env.secondpass});
   if (decryptedShareB !== secretShareB) {
     exit("FUCK THIS SHIT B");
   }
 
   let encryptedShareC = bitgo.encrypt({ input: secretShareC, password:process.env.thirdpass });
-  saveStringToFile(workdir+"mnemonicC" , encryptedShareC);
+  saveStringToFile(workdir+"shareC" , encryptedShareC);
   console.log("encrypted share C saved to file:", encryptedShareC);
-  let decryptedShareC = bitgo.decrypt({input:loadStringFromFile(workdir+"mnemonicC"), password:process.env.thirdpass});
+  let decryptedShareC = bitgo.decrypt({input:loadStringFromFile(workdir+"shareC"), password:process.env.thirdpass});
   if (decryptedShareC !== secretShareC) {
     exit("FUCK THIS SHIT C");
   }
 
   saveStringToFile(workdir+"salt" , args.salt,0,args.salt.length);
-
-  // password:process.env.firstpass = "wtf";
-  // let decrypted = bitgo.decrypt({ input: encrypted, password:process.env.firstpass });
-  // console.log("decrypted:",decrypted);
-  // console.log("Done");
-
 }
 
-function restoreMnemonic(missingShare, file1, file2, firstpass, secondpass ) {
+function restoreSeed(missingShare, file1, file2, firstpass, secondpass ) {
 
     let encryptedShare1 = loadStringFromFile(file1);
     let encryptedShare2 = loadStringFromFile(file2);
@@ -223,57 +220,57 @@ function restoreMnemonic(missingShare, file1, file2, firstpass, secondpass ) {
     console.log("decrypted1:",decrypted1);
     let decrypted2 = bitgo.decrypt({ input: encryptedShare2, password: secondpass });
     console.log("decrypted2:",decrypted2);
-    let mnemonic;
+    let seed;
 
     if ( missingShare == "C") {
-        mnemonic = decrypted1.split(" ").slice(0,12).join(" ") + " " + decrypted2.split(" ").slice(4).join(" ");
+        seed = decrypted1 + decrypted2.slice(decrypted2.length/2);
     } else if (missingShare == "B") {
-        mnemonic = decrypted1 + " " + decrypted2.split(" ").slice(8).join(" ");
+        seed = decrypted1 + decrypted2.slice(decrypted2.length/2);;
     } else if (missingShare == "A") {
-        mnemonic = decrypted2.split(" ").slice(0,8).join(" ") + " " + decrypted1;
+        seed = decrypted2.slice(0,decrypted2.length/2) + decrypted1;
     }
-    console.log("Restored mnemonic:", mnemonic);
-    return mnemonic;
+    console.log("Restored seed:", seed);
+    return seed;
 
 }
 
 async function restoreParticipant(file1, file2, workdir="./build/") {
     let fileA, fileB, fileC;
 
-    if (file1.includes("mnemonicA")) {
+    if (file1.includes("shareA")) {
         fileA = file1;
     } else
-    if (file1.includes("mnemonicB")) {
+    if (file1.includes("shareB")) {
         fileB = file1;
-    } else if (file1.includes("mnemonicC")) {
+    } else if (file1.includes("shareC")) {
         fileC = file1;
     }
 
-    if (file2.includes("mnemonicA")) {
+    if (file2.includes("shareA")) {
         fileA = file2;
-    } else if (file2.includes("mnemonicB")) {
+    } else if (file2.includes("shareB")) {
         fileB = file2;
-    } else if (file2.includes("mnemonicC")) {
+    } else if (file2.includes("shareC")) {
         fileC = file2;
     }
     console.log("PASSWORDS:",process.env.firstpass, process.env.secondpass);
 
-    let mnemonic, newSecretShare, shareToRestore;
-    let filePrefix = "mnemonic";
+    let seed, newSecretShare, shareToRestore;
+    let filePrefix = "share";
     if (!fileC) {
         shareToRestore = "C";
-        mnemonic = restoreMnemonic(shareToRestore, fileA, fileB, process.env.firstpass, process.env.secondpass);
-        newSecretShare = getShareC(mnemonic);
+        seed = restoreSeed(shareToRestore, fileA, fileB, process.env.firstpass, process.env.secondpass);
+        newSecretShare = getShareC(seed);
 
     } else if (!fileB) {
         shareToRestore = "B";
-        mnemonic = restoreMnemonic(shareToRestore, fileA, fileC, process.env.firstpass, process.env.secondpass);
-        newSecretShare = getShareB(mnemonic);
+        seed = restoreSeed(shareToRestore, fileA, fileC, process.env.firstpass, process.env.secondpass);
+        newSecretShare = getShareB(seed);
 
     } else if (!fileA) {
         shareToRestore = "A";
-        mnemonic = restoreMnemonic(shareToRestore, fileB, fileC, process.env.firstpass, process.env.secondpass);
-        newSecretShare = getShareA(mnemonic);
+        seed = restoreSeed(shareToRestore, fileB, fileC, process.env.firstpass, process.env.secondpass);
+        newSecretShare = getShareA(seed);
 
     }
 
@@ -290,22 +287,22 @@ async function restoreParticipant(file1, file2, workdir="./build/") {
 
 }
 
-function getBitGoBoxB(xprv, password, seed) {
+function getBitGoBoxB(xprv, password, keyID) {
   // let xprv = 'xprv9s21ZrQH143K4YNpbiHKKvA5Lhwq8dZemhynHWaiLS8gsTgq1CZem7Kyd3fHeLHiWge1cw49CYfpPEBMCN4osFBX8Ri75myVrxQaHCLpDrg';
   // let password = 'jesuschristthisisannoying';
-  let derivedKey = bitgo.coin('eth').deriveKeyWithSeed({ key: xprv, seed });
+  let derivedKey = bitgo.coin('eth').deriveKeyWithSeed({ key: xprv, seed:keyID });
   let blob = bitgo.encrypt({ input: derivedKey.key, password });
   console.log(blob);
   console.log("Done");
   return blob;
 }
 
-async function recover(file1, file2, encryptedBoxA, walletContractAddress, encryptedWalletPassphrase, destinationAddress, seed, workdir="./build/") {
+async function recover(file1, file2, encryptedBoxA, walletContractAddress, encryptedWalletPassphrase, destinationAddress, keyID, workdir="./build/") {
   // Getting xprv from participants
-  let mnemonic = restoreMnemonic(file1,file2, process.env.firstpass, process.env.secondpass);
+  let seed = restoreSeed(file1,file2, process.env.firstpass, process.env.secondpass);
   let args = {};
   args.salt = SALT;
-  args.passphrase = mnemonic;
+  args.passphrase = seed;
   console.log("salt:", args.salt);
   let keyPair = await generateBitcoinKeyPair(args,callback);
   let xprv = keyPair.private;
@@ -318,7 +315,7 @@ async function recover(file1, file2, encryptedBoxA, walletContractAddress, encry
   let boxA = bitgo.decrypt({ input: encryptedBoxA, password: walletPassphrase });
 
   // Generate encrypted blob per bitgo script
-  let boxB = getBitGoBoxB(xprv, walletPassphrase, seed);
+  let boxB = getBitGoBoxB(xprv, walletPassphrase, keyID);
 
 
   let baseCoin = bitgo.coin('eth');
