@@ -42,12 +42,13 @@ while [ ! -b /dev/sdb1 ] ; do
     echo "Waiting for usb device...";
 done
 sleep 2
-echo "Writing file to $1's usb device...";
+echo "Writing $2 file to $1's usb device...";
 targetpath=`mount|grep sdb1|cut -d " " -f3`
 [ -f ${workdir}/$2 ]
 [ -d $targetpath ]
 dd if=${workdir}/$2 of=$targetpath/$2 && sync
 dd if=${workdir}/salt of=$targetpath/salt && sync
+dd if=${workdir}/params.json of=$targetpath/params.json && sync
 echo "Done.";
 while [ -b /dev/sdb1 ] ; do
     sleep 3;
