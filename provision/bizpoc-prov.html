@@ -45,35 +45,35 @@
     var debugXpub = "xpub-debug"
     var releaseXpub = "xpub-release"
 
-    var debugWpwdPublicKey = "-----BEGIN PUBLIC KEY-----\n" +
-        "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAve7mHWGSUSOUmhSzzmhX\n" +
-        "KZUz+BLozsFSPg3JdaoQkR2v7WzR3zseZp9/b5okdrDkDqZGkFMvkVxMutlQsU8t\n" +
-        "FLbxFzW64ComEpOkEZMb+VYMWhgFQ6TNy8A1iRel7YHlBwumxFjflLyUxiMXLBFC\n" +
-        "7eG8I8VUdUYKTsCbLaI0TtbpFpNEOgzUPnQw7OzIFPZsRD9gYuw7zm45qpjxB88i\n" +
-        "P0ZqyREzKANx3TglvYaS7KNOtpjSF7VmPLCx2+mdKXYmUnp6X3k7NLxgj9IZORKM\n" +
-        "88h7Zsd2xlLUXY/eUp845XJgYiENhhvUsRq25Q7vcwelVNMVeNZh2mwaDXzjFlai\n" +
-        "V31iRQO1WgjxiAl+lARuDl/JaOrInJoBkcrtZtMpek72wlgHkMyUvOJHVQLe0aBR\n" +
-        "+wj+rUp1wT8OnaL9lpNZmjEiz/lffQzvY1jKgnljZYGjfFvJM4iWbH5GMR2L/ym9\n" +
-        "60yOpp5X1M5+k1eBp3W0quVs/CX3cFvFtHUvtAm3id2kus5GzlnpIytL5GCr4NtY\n" +
-        "NR3Tq5zeM/zt6qoblrJvv2aCky7xiaxES/414YoznCrR8tikzg2i1x69icvcppQ+\n" +
-        "8Yq/8TJrLrKEUrzAmZfXG9aKAkJImYkWGPdmThk4O2av/hO4/IaLa0np/ln2wTo/\n" +
-        "CgAhRj0TTklpVRLqPEmaI/kCAwEAAQ==\n" +
+    var debugWpwdPublicKey =  "-----BEGIN PUBLIC KEY-----\n" +
+        "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAzGKV9J8WqsrLfFBxQEaq\n" +
+        "Js/EFdh38M5/ybvr/p6mm/XAfxx/t6tSVaOpRR6iRJlcitvmi569wV/+KjFoJscQ\n" +
+        "iqiYt8zXgWAwLVCwO3Au5izP/dS3oLhtKg5hsGVFcFKYVDSUnvve672sV4xoC+ji\n" +
+        "0ukpSX/fDd2Xie+gMr76//NL9M/Gn5EltPNaUx7o1xIgNcN4TapRbJU1+WD4AAoc\n" +
+        "UsxHDPYqzW8ScgaMCsoaIcaFh1lIm8CWA3WqexSmpLU53lmhhBkmXh9HECCAcaAD\n" +
+        "WAN0P9jLDNLq6hU7g3KlLxEc0+SlDkaiRPDLAAVeH/YC0DdZV4KJaTIONYYThXra\n" +
+        "fk97Hk1MbTL/QleVp3MN1p9SxnEwq9tlcWytduSTPM4WkwOTSKNxEnUWfPeX2x5n\n" +
+        "RPcsUxMsgVFMzWjzuSmTnuiZhwYxVSsWiN6eHvBq3q0C2hmRaLZg4pVHM3GpHfQW\n" +
+        "mYLA7aaAiFCuq6AwLC9KEOfJtcpF+ykX9QhdhrS4GPt03pT3ANgc0N7S/4lchr0l\n" +
+        "HlIdurB4fxm57q+wIa1U/Ijr0mYrPaAnoHC9yVTlTI8EWnv7SEvai5Pc4uWLx03+\n" +
+        "HSuJ7SbgSA+yfK6rWxbuaHHvEcnZad8MiwEBMqguInQ503RwbrBGIMvyUJAZzc3k\n" +
+        "UIPrasmVn3Ql68jByi6QUIMCAwEAAQ==\n" +
         "-----END PUBLIC KEY-----"
 
     var releaseWpwdPublicKey = "-----BEGIN PUBLIC KEY-----\n" +
-        "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAve7mHWGSUSOUmhSzzmhX\n" +
-        "KZUz+BLozsFSPg3JdaoQkR2v7WzR3zseZp9/b5okdrDkDqZGkFMvkVxMutlQsU8t\n" +
-        "FLbxFzW64ComEpOkEZMb+VYMWhgFQ6TNy8A1iRel7YHlBwumxFjflLyUxiMXLBFC\n" +
-        "7eG8I8VUdUYKTsCbLaI0TtbpFpNEOgzUPnQw7OzIFPZsRD9gYuw7zm45qpjxB88i\n" +
-        "P0ZqyREzKANx3TglvYaS7KNOtpjSF7VmPLCx2+mdKXYmUnp6X3k7NLxgj9IZORKM\n" +
-        "88h7Zsd2xlLUXY/eUp845XJgYiENhhvUsRq25Q7vcwelVNMVeNZh2mwaDXzjFlai\n" +
-        "V31iRQO1WgjxiAl+lARuDl/JaOrInJoBkcrtZtMpek72wlgHkMyUvOJHVQLe0aBR\n" +
-        "+wj+rUp1wT8OnaL9lpNZmjEiz/lffQzvY1jKgnljZYGjfFvJM4iWbH5GMR2L/ym9\n" +
-        "60yOpp5X1M5+k1eBp3W0quVs/CX3cFvFtHUvtAm3id2kus5GzlnpIytL5GCr4NtY\n" +
-        "NR3Tq5zeM/zt6qoblrJvv2aCky7xiaxES/414YoznCrR8tikzg2i1x69icvcppQ+\n" +
-        "8Yq/8TJrLrKEUrzAmZfXG9aKAkJImYkWGPdmThk4O2av/hO4/IaLa0np/ln2wTo/\n" +
-        "CgAhRj0TTklpVRLqPEmaI/kCAwEAAQ==\n" +
-        "-----END PUBLIC KEY-----"
+        "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAzGKV9J8WqsrLfFBxQEaq\n" +
+        "Js/EFdh38M5/ybvr/p6mm/XAfxx/t6tSVaOpRR6iRJlcitvmi569wV/+KjFoJscQ\n" +
+        "iqiYt8zXgWAwLVCwO3Au5izP/dS3oLhtKg5hsGVFcFKYVDSUnvve672sV4xoC+ji\n" +
+        "0ukpSX/fDd2Xie+gMr76//NL9M/Gn5EltPNaUx7o1xIgNcN4TapRbJU1+WD4AAoc\n" +
+        "UsxHDPYqzW8ScgaMCsoaIcaFh1lIm8CWA3WqexSmpLU53lmhhBkmXh9HECCAcaAD\n" +
+        "WAN0P9jLDNLq6hU7g3KlLxEc0+SlDkaiRPDLAAVeH/YC0DdZV4KJaTIONYYThXra\n" +
+        "fk97Hk1MbTL/QleVp3MN1p9SxnEwq9tlcWytduSTPM4WkwOTSKNxEnUWfPeX2x5n\n" +
+        "RPcsUxMsgVFMzWjzuSmTnuiZhwYxVSsWiN6eHvBq3q0C2hmRaLZg4pVHM3GpHfQW\n" +
+        "mYLA7aaAiFCuq6AwLC9KEOfJtcpF+ykX9QhdhrS4GPt03pT3ANgc0N7S/4lchr0l\n" +
+        "HlIdurB4fxm57q+wIa1U/Ijr0mYrPaAnoHC9yVTlTI8EWnv7SEvai5Pc4uWLx03+\n" +
+        "HSuJ7SbgSA+yfK6rWxbuaHHvEcnZad8MiwEBMqguInQ503RwbrBGIMvyUJAZzc3k\n" +
+        "UIPrasmVn3Ql68jByi6QUIMCAwEAAQ==\n" +
+       "-----END PUBLIC KEY-----"
 
 
     function selectInputText(element) {
