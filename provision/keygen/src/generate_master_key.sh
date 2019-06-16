@@ -13,8 +13,6 @@ secondpass=$tmppass
 read_password Adi
 thirdpass=$tmppass
 
-echo $firstpass $secondpass $thirdpass
-
 # Generating bitcoin keypair in node script
 export firstpass secondpass thirdpass
 time node src/js/generate_bitcoin_keypair.js -g -d ${workdir}

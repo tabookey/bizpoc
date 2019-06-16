@@ -49,6 +49,8 @@ targetpath=`mount|grep sdb1|cut -d " " -f3`
 dd if=${workdir}/$2 of=$targetpath/$2 && sync
 dd if=${workdir}/salt of=$targetpath/salt && sync
 dd if=${workdir}/params.json of=$targetpath/params.json && sync
+dd if=${workdir}/rsaEncryptedPrivateKey of=$targetpath/rsaEncryptedPrivateKey && sync
+dd if=${workdir}/rsaPublicKey of=$targetpath/rsaPublicKey && sync
 echo "Done.";
 while [ -b /dev/sdb1 ] ; do
     sleep 3;
