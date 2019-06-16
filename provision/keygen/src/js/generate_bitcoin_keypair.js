@@ -3,9 +3,11 @@ const bip39 = require('bip39');
 const bs58 = require('bs58');
 // const bitcoinjs= require('bitcoinjs-lib');
 const BitGoJS = require('bitgo');
-const bitgo = new BitGoJS.BitGo({env: 'prod'});
+var bitgo = new BitGoJS.BitGo({env: 'prod'});
 const fs = require('fs');
+const path = require("path");
 const randomBytes = require('crypto').randomBytes;
+const crypto = require('crypto');
 
 const SALT = "PVeNVxXRRe4=";
 const SEED_BYTE_LENGTH = 66; // should be % 3 == 0
@@ -19,7 +21,7 @@ argv = require('minimist')(process.argv, {
         g: 'generate',
         t: 'test'
     },
-    string: ["workdir", "file1", "file2", "encrypted-userkey", "wallet-address", "encrypted-wallet-pass", "dest-address", "key-id", "xpub", "missingshare"]
+    string: ["workdir", "file1", "file2", "encrypted-userkey", "wallet-address", "encrypted-wallet-pass", "dest-address", "key-id", "xpub", "missingshare", "keyfile"]
 
 });
 
@@ -194,8 +196,6 @@ async function generate(workdir = "./build/") {
 
     let keyPair = await generateBitcoinKeyPair(args, callback);
 
-    console.log("seed:", seed);
-
     try {
         fs.mkdirSync(workdir);
     } catch (e) {
@@ -218,7 +218,7 @@ async function generate(workdir = "./build/") {
         data: loadDataFromFile(workdir + "shareA")
     });
     if (!decryptedShareA.equals(secretShareA)) {
-        exit("FUCK THIS SHIT A");
+        exit("Error in decrypting share A");
     }
 
     let encryptedShareB = await encryptAsync({
@@ -232,7 +232,7 @@ async function generate(workdir = "./build/") {
         data: loadDataFromFile(workdir + "shareB")
     });
     if (!decryptedShareB.equals(secretShareB)) {
-        exit("FUCK THIS SHIT B");
+        exit("Error in decrypting share B");
     }
 
     let encryptedShareC = await encryptAsync({
@@ -246,12 +246,32 @@ async function generate(workdir = "./build/") {
         data: loadDataFromFile(workdir + "shareC")
     });
     if (!decryptedShareC.equals(secretShareC)) {
-        exit("FUCK THIS SHIT C");
+        exit("Error in decrypting share C");
     }
 
     saveDataToFile(workdir + "salt", args.salt);
     saveDataToFile(workdir + "params.json", JSON.stringify(params));
     console.log("Saved salt to file.:", args.salt);
+
+    // generating & saving RSA private key to file - to encrypt the walletpassphrase
+    let hash = crypto.createHash('sha256');
+    let password = hash.update(seed).digest().toString("hex");
+    let rsaKeyPair = crypto.generateKeyPairSync("rsa",
+        {
+            modulusLength:4096,
+            publicKeyEncoding:{
+                type:"spki",format:"pem"
+        },
+        privateKeyEncoding:{
+                type:"pkcs8", format:"pem", cipher: 'aes-256-cbc', passphrase: password, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
+        }});
+
+
+    saveDataToFile(workdir + "rsaEncryptedPrivateKey",rsaKeyPair.privateKey);
+    saveDataToFile(workdir + "rsaPublicKey",rsaKeyPair.publicKey);
+    console.log("Saved rsa keypair to files.\nPublic key:",rsaKeyPair.publicKey);
+    console.log("Encrypted private key:",rsaKeyPair.privateKey);
+
 }
 
 async function restoreSeed(missingShare, file1, file2, firstpass, secondpass) {
@@ -261,9 +281,9 @@ async function restoreSeed(missingShare, file1, file2, firstpass, secondpass) {
     let encryptedShare2 = loadDataFromFile(file2);
     console.log("encryptedShare2:", encryptedShare2);
     let decrypted1 = await decryptAsync({key: Buffer.from(firstpass), data: Buffer.from(encryptedShare1)});
-    console.log("decrypted1:", decrypted1);
+    console.log("decrypted first part.");
     let decrypted2 = await decryptAsync({key: Buffer.from(secondpass), data: Buffer.from(encryptedShare2)});
-    console.log("decrypted2:", decrypted2);
+    console.log("decrypted second part.");
     let seed;
 
     if (missingShare == "C") {
@@ -273,7 +293,7 @@ async function restoreSeed(missingShare, file1, file2, firstpass, secondpass) {
     } else if (missingShare == "A") {
         seed = Buffer.concat([decrypted2.slice(0, decrypted2.length / 2), decrypted1]);
     }
-    console.log("Restored seed:", seed);
+    console.log("Restored seed.");
     return seed;
 
 }
@@ -341,7 +361,17 @@ function getBitGoBoxB(xprv, password, keyID) {
     return blob;
 }
 
-async function recover(missingShare, file1, file2, encryptedUserKey, walletContractAddress, encryptedWalletPassphrase, destinationAddress, keyID, xpub, workdir = "./build/") {
+function decryptStringWithRsaPrivateKey(toDecrypt, relativeOrAbsolutePathtoPrivateKey, passphrase) {
+    let absolutePath = path.resolve(relativeOrAbsolutePathtoPrivateKey);
+    let privateKey = {};
+    privateKey.key = fs.readFileSync(absolutePath, "utf8");
+    privateKey.passphrase = passphrase;//"HI";
+    let buffer = Buffer.from(toDecrypt, "base64");
+    let decrypted = crypto.privateDecrypt(privateKey, buffer);
+    return decrypted.toString("utf8");
+}
+
+async function recover(missingShare, file1, file2, encryptedUserKey, walletContractAddress, encryptedWalletPassphrase, rsaEncryptedPrivateKeyPath, destinationAddress, keyID, xpub, workdir = "./build/") {
     // Getting xprv from participants
     let seed = await restoreSeed(missingShare, file1, file2, process.env.firstpass, process.env.secondpass);
     let args = {};
@@ -357,7 +387,10 @@ async function recover(missingShare, file1, file2, encryptedUserKey, walletContr
     }
 
     // Decrypt wallet password
-    let walletPassphrase = encryptedWalletPassphrase;//bitgo.decrypt({input: encryptedWalletPassphrase, password: xprv});
+    // let walletPassphrase = encryptedWalletPassphrase;//bitgo.decrypt({input: encryptedWalletPassphrase, password: xprv});
+    let hash = crypto.createHash('sha256');
+    let password = hash.update(seed).digest().toString("hex");
+    let walletPassphrase = decryptStringWithRsaPrivateKey(encryptedWalletPassphrase, rsaEncryptedPrivateKeyPath, password);
 
     // Decrypt "boxA" userkey
     let userKey = bitgo.decrypt({input: encryptedUserKey, password: walletPassphrase});
@@ -377,6 +410,7 @@ async function recover(missingShare, file1, file2, encryptedUserKey, walletContr
     };
 
     const recovery = await baseCoin.recover(recoveryParams);
+    console.log("Recovery:", recovery);
 
     const recoveryTx = recovery.transactionHex || recovery.txHex || recovery.tx;
 
@@ -397,6 +431,8 @@ async function main() {
         process.env.secondpass = process.env.secondpass || 'x';
         process.env.thirdpass = process.env.thirdpass || 'x';
         console.log("env vars passwd", process.env.firstpass, process.env.secondpass, process.env.thirdpass);
+        console.log("TEST MODE - USING KOVAN");
+        bitgo = new BitGoJS.BitGo({env: 'test'});
     }
 
     let workdir = argv.workdir;
@@ -432,7 +468,7 @@ async function main() {
             }
         }
         let recoveryTx = await recover(missingShare, argv.file1, argv.file2, argv["encrypted-userkey"], argv["wallet-address"], argv["encrypted-wallet-pass"],
-            argv["dest-address"], argv["key-id"], argv.xpub, workdir);
+            argv["keyfile"],argv["dest-address"], argv["key-id"], argv.xpub, workdir);
         console.log("RecoveryTx:", recoveryTx);
 
     }

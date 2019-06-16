@@ -14,6 +14,8 @@ read -p "Enter destination address: " destaddress
 
 echo ""
 
+keyfile="rsaEncryptedPrivateKey"
+
 read_from_usb "first participant" "$firstfilename"
 read_password "first participant"
 firstpass=${tmppass}
@@ -25,9 +27,9 @@ export firstpass secondpass
 
 # Starting recovery
 # recover(argv.file1, argv.file2, argv["encrypted-userkey"], argv["wallet-address"], argv["encrypted-wallet-pass"], argv["dest-address"], argv["key-id"], workdir);
-time node src/js/generate_bitcoin_keypair.js -r -d ${workdir} --file1 ${workdir}/${firstfilename} --file2 ${workdir}/${secondfilename} \
+time node src/js/generate_bitcoin_keypair.js -r -t -d ${workdir} --file1 ${workdir}/${firstfilename} --file2 ${workdir}/${secondfilename} \
             --encrypted-userkey "$encrypteduserkey" --wallet-address "$walletaddress" --encrypted-wallet-pass "$encryptedwalletpass" \
-            --dest-address "$destaddress" --key-id "$keyid" --xpub "$xpub"
+            --dest-address "$destaddress" --key-id "$keyid" --xpub "$xpub" --keyfile ${workdir}/${keyfile}
 
 
 
