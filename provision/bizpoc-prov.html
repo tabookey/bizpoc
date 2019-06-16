@@ -14,7 +14,13 @@
       .yesPrint{ display: block !important; }
     </style>
 </head>
-<body onbeforeunload="return confirmExit()">
+
+
+<body onbeforeunload="return confirmExit()"
+      onload="toggleDebug(bitgoTestEnv.checked)"  >
+
+	<!--pubEncrypt - built with ./pubencrypt/build.sh -->
+    <script src="pubEncrypt.pack.js"></script>
     <script src="files/axios.min.js"></script>
     <script src="files/scrypt-async.js"></script>
     <script src="files/sjcl.js"></script>
@@ -34,6 +40,41 @@
     //var debugProvisioningUrl = "http://localhost:5000"
     var debugProvisioningUrl = "https://dprov-bizpoc.ddns.tabookey.com"
     var releaseProvisioningUrl = "https://prov-bizpoc.ddns.tabookey.com"
+
+
+    var debugXpub = "xpub-debug"
+    var releaseXpub = "xpub-release"
+
+    var debugWpwdPublicKey = "-----BEGIN PUBLIC KEY-----\n" +
+        "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAve7mHWGSUSOUmhSzzmhX\n" +
+        "KZUz+BLozsFSPg3JdaoQkR2v7WzR3zseZp9/b5okdrDkDqZGkFMvkVxMutlQsU8t\n" +
+        "FLbxFzW64ComEpOkEZMb+VYMWhgFQ6TNy8A1iRel7YHlBwumxFjflLyUxiMXLBFC\n" +
+        "7eG8I8VUdUYKTsCbLaI0TtbpFpNEOgzUPnQw7OzIFPZsRD9gYuw7zm45qpjxB88i\n" +
+        "P0ZqyREzKANx3TglvYaS7KNOtpjSF7VmPLCx2+mdKXYmUnp6X3k7NLxgj9IZORKM\n" +
+        "88h7Zsd2xlLUXY/eUp845XJgYiENhhvUsRq25Q7vcwelVNMVeNZh2mwaDXzjFlai\n" +
+        "V31iRQO1WgjxiAl+lARuDl/JaOrInJoBkcrtZtMpek72wlgHkMyUvOJHVQLe0aBR\n" +
+        "+wj+rUp1wT8OnaL9lpNZmjEiz/lffQzvY1jKgnljZYGjfFvJM4iWbH5GMR2L/ym9\n" +
+        "60yOpp5X1M5+k1eBp3W0quVs/CX3cFvFtHUvtAm3id2kus5GzlnpIytL5GCr4NtY\n" +
+        "NR3Tq5zeM/zt6qoblrJvv2aCky7xiaxES/414YoznCrR8tikzg2i1x69icvcppQ+\n" +
+        "8Yq/8TJrLrKEUrzAmZfXG9aKAkJImYkWGPdmThk4O2av/hO4/IaLa0np/ln2wTo/\n" +
+        "CgAhRj0TTklpVRLqPEmaI/kCAwEAAQ==\n" +
+        "-----END PUBLIC KEY-----"
+
+    var releaseWpwdPublicKey = "-----BEGIN PUBLIC KEY-----\n" +
+        "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAve7mHWGSUSOUmhSzzmhX\n" +
+        "KZUz+BLozsFSPg3JdaoQkR2v7WzR3zseZp9/b5okdrDkDqZGkFMvkVxMutlQsU8t\n" +
+        "FLbxFzW64ComEpOkEZMb+VYMWhgFQ6TNy8A1iRel7YHlBwumxFjflLyUxiMXLBFC\n" +
+        "7eG8I8VUdUYKTsCbLaI0TtbpFpNEOgzUPnQw7OzIFPZsRD9gYuw7zm45qpjxB88i\n" +
+        "P0ZqyREzKANx3TglvYaS7KNOtpjSF7VmPLCx2+mdKXYmUnp6X3k7NLxgj9IZORKM\n" +
+        "88h7Zsd2xlLUXY/eUp845XJgYiENhhvUsRq25Q7vcwelVNMVeNZh2mwaDXzjFlai\n" +
+        "V31iRQO1WgjxiAl+lARuDl/JaOrInJoBkcrtZtMpek72wlgHkMyUvOJHVQLe0aBR\n" +
+        "+wj+rUp1wT8OnaL9lpNZmjEiz/lffQzvY1jKgnljZYGjfFvJM4iWbH5GMR2L/ym9\n" +
+        "60yOpp5X1M5+k1eBp3W0quVs/CX3cFvFtHUvtAm3id2kus5GzlnpIytL5GCr4NtY\n" +
+        "NR3Tq5zeM/zt6qoblrJvv2aCky7xiaxES/414YoznCrR8tikzg2i1x69icvcppQ+\n" +
+        "8Yq/8TJrLrKEUrzAmZfXG9aKAkJImYkWGPdmThk4O2av/hO4/IaLa0np/ln2wTo/\n" +
+        "CgAhRj0TTklpVRLqPEmaI/kCAwEAAQ==\n" +
+        "-----END PUBLIC KEY-----"
+
 
     function selectInputText(element) {
         element.select()
@@ -232,11 +273,27 @@
 
         w.window.print()
     }
+    
+    function downloadPage(filename, text) {
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
 
-    function printWalletPassword() {
-        printPage("Wallet Password",
-            ( username ? "Customer: "+username+"<p>\n":"" )+
-            "Password: " + wpwd.value )
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    }
+
+    async function printWalletPassword() {
+
+        enco = new TextEncoder()
+        data = enco.encode(wpwd.value)
+        pubkey = bitgoTestEnv.checked ? debugWpwdPublicKey : releaseWpwdPublicKey 
+        enc = pubEncrypt(pubkey, wpwd.value)
+        downloadPage( "wallet-password.txt", enc )
     }
 
     function checkProvisioningServer(provcheck) {
@@ -285,6 +342,13 @@
 
         document.getElementById('pwd').readOnly = !on
         document.getElementById('wpwd').readOnly = !on
+
+        if ( on )  {
+            document.getElementById("xpub").value = debugXpub
+        }
+        else {
+            document.getElementById("xpub").value = releaseXpub
+        }
 
         seturl( 'signup', on)
         seturl( 'mainlogin', on )
@@ -363,9 +427,11 @@
     <li> Select "<b>I already have a backup key</b>". use This key: <input id=xpub readonly value=xpub--fill-here><input type=submit value="Copy" onclick="selectAndCopy('xpub')"><br>
         (OR: "<b>Create and store my own key</b>")<br>
          "Next" to create wallet.
-    <li> Save the generated <b>Bitgo Keycard PDF</b> on a secure Flash drive
+    <li> In Chrome/Settings/Downloads, change default location to the customer's flash drive<br>
+        (otherwise, you'll need to copy the files manually after download)
+    <li> Save the generated <b>Bitgo Keycard PDF</b> on the secure flash drive
     <li> Follow BitGo instructions to enter activation code (from PDF) to activate wallet. Check all checkboxes and click activate.
-    <li> Save wallet password on a <b>different</b> secure Flash drive by clicking this button: <input type=submit value="Print Wallet Password page" onclick="printWalletPassword()">
+    <li> Save the (encrypted) wallet password on the same secure drive <input type=submit value="Save Wallet Password File" onclick="printWalletPassword()">
     </ol>
 
 <li> In <b>Admin</b> window: Invite user to wallet with role "Spender"
