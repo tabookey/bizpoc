@@ -1,7 +1,5 @@
 const bip32 = require('bip32');
-const bip39 = require('bip39');
-const bs58 = require('bs58');
-// const bitcoinjs= require('bitcoinjs-lib');
+// const bip39 = require('bip39');
 const BitGoJS = require('bitgo');
 var bitgo = new BitGoJS.BitGo({env: 'prod'});
 const fs = require('fs');
@@ -117,19 +115,6 @@ async function generateBitcoinKeyPair(_arg, cb) {
     return cb(out);
 
 }
-
-// const mnemonic = 'praise you muffin lion enable neck grocery crumble super myself license ghost';
-// console.log("mnemonic :",mnemonic);
-// const seed = bip39.mnemonicToSeed(mnemonic);
-// const node = bip32.fromSeed(seed);
-// const string = node.toBase58();
-// const string2 = node.neutered().toBase58();
-// const restored = bip32.fromBase58(string);
-// console.log("node:",node);
-// console.log("seed:",seed);
-// console.log("xpriv node.toBase58():", string);
-// console.log("xpub node.neutered().toBase58():", string2);
-// console.log("bip32:",bip32);
 
 function callback(out) {
     console.log("xpub is:", out.public);
@@ -255,7 +240,7 @@ async function generate(workdir = "./build/") {
 
     // generating & saving RSA private key to file - to encrypt the walletpassphrase
     let hash = crypto.createHash('sha256');
-    let password = hash.update(seed).digest().toString("hex");
+    let password = hash.update(keyPair.private).digest().toString("hex");
     let rsaKeyPair = crypto.generateKeyPairSync("rsa",
         {
             modulusLength:4096,
@@ -266,7 +251,8 @@ async function generate(workdir = "./build/") {
                 type:"pkcs8", format:"pem", cipher: 'aes-256-cbc', passphrase: password, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
         }});
 
-
+    saveDataToFile(workdir + "xpub",keyPair.public);
+    console.log("Saved xpub to file:",rsaKeyPair.publicKey);
     saveDataToFile(workdir + "rsaEncryptedPrivateKey",rsaKeyPair.privateKey);
     saveDataToFile(workdir + "rsaPublicKey",rsaKeyPair.publicKey);
     console.log("Saved rsa keypair to files.\nPublic key:",rsaKeyPair.publicKey);
@@ -298,7 +284,7 @@ async function restoreSeed(missingShare, file1, file2, firstpass, secondpass) {
 
 }
 
-async function restoreParticipant(file1, file2, workdir = "./build/") {
+async function restoreParticipant(file1, file2, xpub, workdir = "./build/") {
     let fileA, fileB, fileC;
 
     if (file1.includes("shareA")) {
@@ -316,7 +302,6 @@ async function restoreParticipant(file1, file2, workdir = "./build/") {
     } else if (file2.includes("shareC")) {
         fileC = file2;
     }
-    console.log("PASSWORDS:", process.env.firstpass, process.env.secondpass);
 
     let seed, newSecretShare, shareToRestore;
     let filePrefix = "share";
@@ -336,12 +321,25 @@ async function restoreParticipant(file1, file2, workdir = "./build/") {
         newSecretShare = getShareA(seed);
 
     }
-    console.log("Restored share" + shareToRestore + ":", newSecretShare);
+    console.log("Restored share" + shareToRestore + ".");
+
+    // validating xpub
+    console.log("Validating xpub:",xpub);
+    let args = {};
+    args.salt = SALT;
+    args.passphrase = seed;
+    console.log("salt:", args.salt);
+    let keyPair = await generateBitcoinKeyPair(args, callback);
+    if (xpub !== keyPair.public) {
+        console.log("Recovered xpub:", keyPair.public, "\ngiven xpub:", xpub);
+        process.exit("Recovered xpub different from given xpub");
+    }
+    console.log("xpub validated.");
 
     let newEncryptedShare = await encryptAsync({
         key: Buffer.from(process.env.thirdpass),
         data: Buffer.from(newSecretShare)
-    })
+    });
     let fileToWrite = filePrefix + shareToRestore;
     saveDataToFile(workdir + fileToWrite, newEncryptedShare);
     console.log("encrypted share " + shareToRestore + " saved to file:", newEncryptedShare);
@@ -383,13 +381,13 @@ async function recover(missingShare, file1, file2, encryptedUserKey, walletContr
     // Validating xpub
     if (xpub !== keyPair.public) {
         console.log("Recovered xpub:", keyPair.public, "\ngiven xpub:", xpub);
-        exit("Recovered xpub different from given xpub");
+        process.exit("Recovered xpub different from given xpub");
     }
 
     // Decrypt wallet password
     // let walletPassphrase = encryptedWalletPassphrase;//bitgo.decrypt({input: encryptedWalletPassphrase, password: xprv});
     let hash = crypto.createHash('sha256');
-    let password = hash.update(seed).digest().toString("hex");
+    let password = hash.update(xprv).digest().toString("hex");
     let walletPassphrase = decryptStringWithRsaPrivateKey(encryptedWalletPassphrase, rsaEncryptedPrivateKeyPath, password);
 
     // Decrypt "boxA" userkey
@@ -419,8 +417,6 @@ async function recover(missingShare, file1, file2, encryptedUserKey, walletContr
     }
     return recoveryTx;
 
-    //TODO
-
 }
 
 async function main() {
@@ -441,7 +437,7 @@ async function main() {
         await generate(workdir);
     } else if (argv.p) {
         console.log("Recovering seed of Bitcoin master keypair from 2 out of 3 participants to restoreParticipant");
-        let fileRestored = await restoreParticipant(argv.file1, argv.file2, workdir);
+        let fileRestored = await restoreParticipant(argv.file1, argv.file2, argv.xpub, workdir);
         console.log("Restored file", fileRestored);
     } else if (argv.r) {
         console.log("Recovering seed of Bitcoin master keypair from 2 out of 3 participants to perform wallet recovery");
