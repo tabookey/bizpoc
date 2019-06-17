@@ -125,7 +125,7 @@
             statusObj.innerHTML = msg
         }
         function error(msg) {
-            status("<font color=red>"+msg+"</font>")
+            status(statusObj.innerHTML+"<br><font color=red>"+msg+"</font>")
         }
         status("")
 
@@ -152,8 +152,12 @@
     }
 
 
-    async function verifyAccount( accessToken, otp, walletpwd, adminotp1 ) {
+    async function verifyAccount( accessToken, otp, walletpwd, adminotp1, statusfunc ) {
 
+        function status(msg) {
+            if ( statusfunc )
+                statusfunc(msg)
+        }
         istest = bitgoTestEnv.checked
 
         env = istest ? "test": "prod" ;
@@ -184,13 +188,17 @@
             username = user.name.full
             return user.name.full 
         }
+        status( ".bitgo")
 
         wallets = await bitgo.coin(coin).wallets().list()
+        status( "..wallets")
         wallet = wallets.wallets[0]
 
         walletAddr = wallet._wallet.coinSpecific.baseAddress
         await bitgo.unlock({otp})
+        status( "...unlock")
         await wallet.getPrv({walletPassphrase:walletpwd})
+        status( "....prv")
         return "ok"
     }
 
@@ -202,7 +210,7 @@
             statusObj.innerHTML = msg
         }
         function error(msg) {
-            status("<font color=red>"+msg+"</font>")
+            status(statusObj.innerHTML+"<br><font color=red>"+msg+"</font>")
         }
         status("")
 
@@ -225,10 +233,10 @@
             if ( !userotp ) userotp = "userotp"
         }
         key = randomString(12,10)
-        status( "verify account info..")
+        status( "verifying account info..")
 
         try {
-            await verifyAccount( accesstoken, userotp, walletpwd, adminotp1 )
+            await verifyAccount( accesstoken, userotp, walletpwd, adminotp1 , status)
         } catch(e) {
             console.log(e)
             return error("Verification failed: "+e)
@@ -308,7 +316,7 @@
             })
             .catch(err=>{
                 if ( JSON.stringify(err.response||"").indexOf("Invalid master")>=0 ) {
-                    status ( "Provisioning server OK")
+                    status ( "<font color=green'>Provisioning server OK</font>")
                     return
                 } else {
                     status( "<font color=red>Provision server failed: "+err+"</font>")
@@ -333,7 +341,6 @@
 <input type="checkbox" id=debugProvServer >  DEBUG: Use debug provisioning/proxy servers (dprov, bizpoc2).<br>
 <input type="checkbox" id=bitgoTestEnv onclick='toggleDebug(this.checked)'>  DEBUG: Use Bitgo TESTNET<br>
 
-<input type=submit value="Check Provisioning Server" onclick="checkProvisioningServer(provcheck)" /><div id=provcheck ></div><br>
 
 <script>
     bitgoTestEnv.checked = window.location.href.indexOf('debug')>0
@@ -342,6 +349,7 @@
 
         document.getElementById('pwd').readOnly = !on
         document.getElementById('wpwd').readOnly = !on
+        document.getElementById('keyid').value = new Date().getTime() % 10000000
 
         if ( on )  {
             document.getElementById("xpub").value = debugXpub
@@ -368,6 +376,8 @@
     }
 </script>
 <ol>
+
+<li> Before starting: <input type=submit value="Check Provisioning Server" onclick="checkProvisioningServer(provcheck)" /><div id=provcheck ></div>
 
 <li> In <b>incognito</b> window, open <a id="signup" href="https://www.bitgo.com/info/signup", target="_incognito">https://www.bitgo.com/info/signup</a>
 
@@ -407,7 +417,7 @@
     </ol>
     <li> Click <b>"+Add Token"</b>, enter Yubikey
     <li> copy the on-screen access token
-    <li> Paste access-token here: <input id=accesstoken placeholder="{paste}"> <input type=submit value="Verify" onclick="verifyUserInfo(accesstoken.value.trim(), 'userinfo')"> <span id=userinfo></span>
+    <li> Paste access-token here (must start with <b>v2x...</b>): <input id=accesstoken placeholder="{paste}"> <input type=submit value="Verify" onclick="verifyUserInfo(accesstoken.value.trim(), 'userinfo')"> <span id=userinfo></span>
     </ol>
 
 <li> Open <a id=mainlogin href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
@@ -417,18 +427,19 @@
 <li> In <b>Admin</b> window: Create new wallet:
 
     <ol>
-    <li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><input size=4 id=wpwd readonly> </font><input type=submit value="Copy" onclick="selectAndCopy('wpwd')">
+    <li> In <b>Chrome/Settings/Advanced/Downloads</b>: change default location to the customer's flash drive<br>
+        (otherwise, you'll need to copy the files manually after download)
     <li> Select "Wallets", click "Create Wallet"
     <li> Select coin: <b>Ethereum</b>, click "Create"
     <li> <b>Quick Setup</b>, click "Next"
     <li> Wallet name: (customer name), click "Next"
     <li> Click: <b>Secondary Password</b>. 
+    <li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><input size=4 id=wpwd readonly> </font><input type=submit value="Copy" onclick="selectAndCopy('wpwd')">
     <li> Paste from clipboard <i>wallet password</i> (twice), click "Next"
     <li> Select "<b>I already have a backup key</b>". use This key: <input id=xpub readonly value=xpub--fill-here><input type=submit value="Copy" onclick="selectAndCopy('xpub')"><br>
-        (OR: "<b>Create and store my own key</b>")<br>
          "Next" to create wallet.
-    <li> In Chrome/Settings/Downloads, change default location to the customer's flash drive<br>
-        (otherwise, you'll need to copy the files manually after download)
+    <li> Put the following Key-ID: <input id=keyid readonly value=keyid-fill-here size=10><input type=submit value="Copy" onclick="selectAndCopy('keyid')"><br>
+    <li> "Next" to create wallet. 
     <li> Save the generated <b>Bitgo Keycard PDF</b> on the secure flash drive
     <li> Follow BitGo instructions to enter activation code (from PDF) to activate wallet. Check all checkboxes and click activate.
     <li> Save the (encrypted) wallet password on the same secure drive <input type=submit value="Save Wallet Password File" onclick="printWalletPassword()">
