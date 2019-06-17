@@ -64,7 +64,6 @@ function from_utf8(s, i) {
 // Taken & adjusted from warpwallet's run()
 async function generateBitcoinKeyPair(_arg, cb) {
     var d, d2, k, obj, out, passphrase, progress_hook, s1, s2, salt, seed_final, seeds, v;
-    // console.log("arguments",arguments)
     passphrase = _arg.passphrase, salt = _arg.salt, progress_hook = _arg.progress_hook;
     d = {};
     seeds = [];
@@ -75,7 +74,6 @@ async function generateBitcoinKeyPair(_arg, cb) {
     d.key = from_utf8(passphrase, 1);
     d.salt = from_utf8(salt, 1);
     d.progress_hook = progress_hook;
-    // console.log("d:",d);
     await new Promise(resolve => {
         scrypt(d, response => {
             s1 = response;
@@ -91,7 +89,6 @@ async function generateBitcoinKeyPair(_arg, cb) {
         progress_hook: progress_hook,
         klass: HMAC_SHA256
     };
-    // console.log("d2:",d2);
 
     await new Promise(resolve => {
         pbkdf2(d2, response => {
@@ -197,7 +194,7 @@ async function generate(workdir = "./build/") {
         data: Buffer.from(secretShareA)
     });
     saveDataToFile(workdir + "shareA", encryptedShareA);
-    console.log("encrypted share A saved to file:", encryptedShareA);
+    console.log("encrypted share A saved to file.");
     let decryptedShareA = await decryptAsync({
         key: Buffer.from(process.env.firstpass),
         data: loadDataFromFile(workdir + "shareA")
@@ -211,7 +208,7 @@ async function generate(workdir = "./build/") {
         data: Buffer.from(secretShareB)
     });
     saveDataToFile(workdir + "shareB", encryptedShareB);
-    console.log("encrypted share B saved to file:", encryptedShareB);
+    console.log("encrypted share B saved to file.");
     let decryptedShareB = await decryptAsync({
         key: Buffer.from(process.env.secondpass),
         data: loadDataFromFile(workdir + "shareB")
@@ -225,7 +222,7 @@ async function generate(workdir = "./build/") {
         data: Buffer.from(secretShareC)
     });
     saveDataToFile(workdir + "shareC", encryptedShareC);
-    console.log("encrypted share C saved to file:", encryptedShareC);
+    console.log("encrypted share C saved to file.");
     let decryptedShareC = await decryptAsync({
         key: Buffer.from(process.env.thirdpass),
         data: loadDataFromFile(workdir + "shareC")
@@ -252,20 +249,20 @@ async function generate(workdir = "./build/") {
         }});
 
     saveDataToFile(workdir + "xpub",keyPair.public);
-    console.log("Saved xpub to file:",rsaKeyPair.publicKey);
+    console.log("Saved xpub to file:",keyPair.public);
     saveDataToFile(workdir + "rsaEncryptedPrivateKey",rsaKeyPair.privateKey);
     saveDataToFile(workdir + "rsaPublicKey",rsaKeyPair.publicKey);
     console.log("Saved rsa keypair to files.\nPublic key:",rsaKeyPair.publicKey);
-    console.log("Encrypted private key:",rsaKeyPair.privateKey);
+    // console.log("Encrypted private key:",rsaKeyPair.privateKey);
 
 }
 
 async function restoreSeed(missingShare, file1, file2, firstpass, secondpass) {
 
     let encryptedShare1 = loadDataFromFile(file1);
-    console.log("encryptedShare1:", encryptedShare1);
+    console.log("first encryptedShare loaded.");
     let encryptedShare2 = loadDataFromFile(file2);
-    console.log("encryptedShare2:", encryptedShare2);
+    console.log("second encryptedShare loaded.");
     let decrypted1 = await decryptAsync({key: Buffer.from(firstpass), data: Buffer.from(encryptedShare1)});
     console.log("decrypted first part.");
     let decrypted2 = await decryptAsync({key: Buffer.from(secondpass), data: Buffer.from(encryptedShare2)});
@@ -342,7 +339,7 @@ async function restoreParticipant(file1, file2, xpub, workdir = "./build/") {
     });
     let fileToWrite = filePrefix + shareToRestore;
     saveDataToFile(workdir + fileToWrite, newEncryptedShare);
-    console.log("encrypted share " + shareToRestore + " saved to file:", newEncryptedShare);
+    console.log("encrypted share " + shareToRestore + " saved to file.");
 
     console.log("Done");
     return fileToWrite;
@@ -441,8 +438,8 @@ async function main() {
         console.log("Restored file", fileRestored);
     } else if (argv.r) {
         console.log("Recovering seed of Bitcoin master keypair from 2 out of 3 participants to perform wallet recovery");
-        console.log(argv.file1, argv.file2, argv["encrypted-userkey"], argv["wallet-address"], argv["encrypted-wallet-pass"],
-            argv["dest-address"], argv["key-id"], argv.xpub, workdir);
+        // console.log(argv.file1, argv.file2, argv["encrypted-userkey"], argv["wallet-address"], argv["encrypted-wallet-pass"],
+        //     argv["dest-address"], argv["key-id"], argv.xpub, workdir);
         let missingShare;
         if (argv.file1.includes("A")) {
             if (argv.file2.includes("B")) {
