@@ -16,9 +16,59 @@
 </head>
 
 
-<body onbeforeunload="return confirmExit()"
+<body XX-onbeforeunload="return confirmExit()"
       onload="toggleDebug(bitgoTestEnv.checked)"  >
 
+<table border=0 width=100%><tr>
+    
+
+<script>
+
+//keyboard shortcuts, from: https://stackoverflow.com/questions/47991645/creating-a-shortcut-keys-for-a-specific-buttons-on-the-webpage-chrome
+let keysDown = {};
+window.onkeydown = function(e) {
+  keysDown[e.key] = true;
+
+  if (keysDown["Control"] && keysDown["n"]) { nextScreen(1) }
+  if (keysDown["Control"] && keysDown["p"]) { nextScreen(-1) }
+}
+
+window.onkeyup = function(e) { 
+  keysDown[e.key] = false;
+}
+
+    function nextScreen(dir) {
+        let pageNum = document.getElementById('pageNum')
+        if ( !pageNum ) alert( "no current pageNum")
+        let nextPageNum = parseInt(pageNum.innerText)+dir
+
+        let prevPage = document.getElementById('page'+pageNum.innerText)
+        if ( !prevPage ) alert( "no prevPage elem")
+
+        let nextPage = document.getElementById('page'+nextPageNum)
+
+        console.log( "from page ",pageNum.innerText, "to",nextPageNum, "hasnext=",!!nextPage)
+        if ( !nextPage )
+            return
+        prevPage.style.display = "none"
+        nextPage.style.display = "block"
+        pageNum.innerText = nextPageNum
+        console.log( "moved to page ",pageNum.innerText )
+
+    }
+
+</script>
+
+<td><input type=submit value="<<<<<<< Prev Screen (Ctrl-P)" onclick=nextScreen(-1)></td>
+<td align="right"><input type=submit value="Next Screen (Ctrl-N) >>>>>>>" onclick=nextScreen(1)></td>
+</tr></table>
+<p>
+<input type=submit value="Copy Client Password" onclick="selectAndCopy('pwd')">
+<font size=1><input size=3 id=pwd readonly> </font>
+&nbsp&nbsp
+<input type=submit value="Copy Wallet Password" onclick="selectAndCopy('wpwd')">
+<font size=1><input size=4 id=wpwd readonly> </font>
+&nbsp<span id=provcheck ></span>
 	<!--pubEncrypt - built with ./pubencrypt/build.sh -->
     <script src="pubEncrypt.pack.js"></script>
     <script src="files/axios.min.js"></script>
@@ -106,6 +156,8 @@
 
     function selectAndCopy(elementid) {
         element=document.getElementById(elementid)
+        if ( !element.value.length )
+            alert( "no value set for "+elementid)
         selectText(element)
         document.execCommand('copy')
     }
@@ -310,25 +362,27 @@
             provcheck.innerHTML=msg
         }
         status( "checking "+getProvisioningServer() )
+        svr = debugProvServer.checked ? "DEBUG" : "Production"
         axios.get( getProvisioningServer()+ "/list/asd", {timeout: 5000} )
             .then(res=>{
                 //should not reach here... above URL always has "invalid master otp"
-                status("server ok?")
+                status("server ok? (alive, but unexpected answer..)")
             })
             .catch(err=>{
                 if ( JSON.stringify(err.response||"").indexOf("Invalid master")>=0 ) {
-                    status ( "<font color=green'>Provisioning server OK</font>")
+                    status ( `<font color=green'>${svr} Prov. Server OK</font>` )
                     return
                 } else {
-                    status( "<font color=red>Provision server failed: "+err+"</font>")
+                    status( `<font color=red>${svr} Prov. server failed: ${err}</font>` )
                 }
             })
     }
 </script>
 
 <title>BizPOC New Customer Provisioning Flow</title>
-<H1>BizPOC New Customer Provisioning Flow</H1>
+<H2>BizPOC New Customer Provisioning Flow Page #<div style="display:inline;" id=pageNum>1</div></H2>
 
+<div id=page1>
 <h3>Prerequisites:</h3> 
 <ol>
 <li> Run this script on a TRUSTED host, and only from a local file (NOT form the network)
@@ -337,7 +391,7 @@
 </ol>
 <p>
 
-<h3>Flow</h3>
+<h3>Environment setup</h3>
 
 <input type="checkbox" id=debugProvServer >  DEBUG: Use debug provisioning/proxy servers (dprov, bizpoc2).<br>
 <input type="checkbox" id=bitgoTestEnv onclick='toggleDebug(this.checked)'>  DEBUG: Use Bitgo TESTNET<br>
@@ -350,7 +404,6 @@
 
         document.getElementById('pwd').readOnly = !on
         document.getElementById('wpwd').readOnly = !on
-        document.getElementById('keyid').value = new Date().getTime() % 10000000
 
         if ( on )  {
             document.getElementById("xpub").value = debugXpub
@@ -378,12 +431,16 @@
 </script>
 <ol>
 
-<li> Before starting: <input type=submit value="Check Provisioning Server" onclick="checkProvisioningServer(provcheck)" /><div id=provcheck ></div>
+<li> Before starting: <input type=submit value="Check Provisioning Server" onclick="checkProvisioningServer(provcheck)" />
+
+</div><div id=page2 style="display:none">
+<h3>Create Client Account</h3>
+<ol>
 
 <li> In <b>incognito</b> window, open <a id="signup" href="https://www.bitgo.com/info/signup", target="_incognito">https://www.bitgo.com/info/signup</a>
 
 <li> <input class=".btn" type=submit value="Generate client password (to clipboard)"  onclick="genpwd('pwd')"> - 
-     <font size=1><input size=5 id=pwd readonly> </font> <input type=submit value="Copy" onclick="selectAndCopy('pwd')">
+     
      <ol>
     <li> password used by customer's web user, during provisioning only.
     <li> not saved anywhere, since we're generating "Access key" for the app.
@@ -394,7 +451,7 @@
 
     <ol>
     <li> use email with auto-forward to admin's email<br>
-        - e.g: if administrator has an email admin@tabookey.com, use admin<b>+customer_name</b>@tabookey.com; e-mails will be sent to admin@tabookey.com
+        - e.g: if administrator has an email yoav@proguard.network, use yoav<b>+customer_name</b>@proguard.network; e-mails will be sent to yoav@proguard.network
     <li> (Enter full name of customer)
     <li> paste password from clipboard
     </ol>
@@ -403,8 +460,11 @@
 <li> Open mail, <b>"Bitgo Email Verification"</b>. Right-click on <b>"Click to Verify"</b> and open in <b>incognito window</b> again.
 <li> Paste password again to login<br>
 
-<li> Add a Yubikey device to user.
+</div><div id=page3 style="display:none">
+<h3>Configure client Account</h3>
+<ol>
 
+<li>Add a Yubikey device to user (label unimportant)
 <li> Create Customer's Access-Token:
     <ol>
     <li> in customer's window, top-right menu, User-Settings
@@ -416,7 +476,7 @@
     <ol>
         <li> (that is, all checkboxes except "create wallets")
     </ol>
-    <li> Click <b>"+Add Token"</b>, enter Yubikey
+    <li> Click <b>"+Add Token"</b>, enter <input type=submit value="Copy Client Password" onclick="selectAndCopy('pwd')"> and Yubikey
     <li> copy the on-screen access token
     <li> Paste access-token here (must start with <b>v2x...</b>): <input id=accesstoken placeholder="{paste}"> <input type=submit value="Verify" onclick="verifyUserInfo(accesstoken.value.trim(), 'userinfo')"> <span id=userinfo></span>
     </ol>
@@ -424,8 +484,11 @@
 <li> Open <a id=mainlogin href="https://www.bitgo.com/login" target="admin">https://www.bitgo.com/login</a> as <b>ADMINISTRATOR</b>
 <li> Invite customer's email to organization.
         <ol><li> Top-right menu, select "Manage Organization" and <b>Invite Users</b>, as role "Member"</ol>
-<li> On <b>Customer's</b> incognito window: refresh page and select organization from top/right menu.
-<li> In <b>Admin</b> window: Create new wallet:
+<li> On <b>Customer's</b> incognito window: <b>refresh page</b> and select organization ("Tabookey") from top/right menu.
+
+</div><div id=page4 style="display:none">
+<h3>Create Wallet</h3>
+In <b>Admin</b> window
 
     <ol>
     <li> In <b>Chrome/Settings/Advanced/Downloads</b>: change default location to the customer's flash drive<br>
@@ -435,33 +498,38 @@
     <li> <b>Quick Setup</b>, click "Next"
     <li> Wallet name: (customer name), click "Next"
     <li> Click: <b>Secondary Password</b>. 
-    <li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> - <font size=1><input size=4 id=wpwd readonly> </font><input type=submit value="Copy" onclick="selectAndCopy('wpwd')">
+    <li> <input type=submit value="Generate wallet password (to clipboard)"  onclick="genpwd('wpwd')"> 
     <li> Paste from clipboard <i>wallet password</i> (twice), click "Next"
     <li> Select "<b>I already have a backup key</b>". use This key: <input id=xpub readonly value=xpub--fill-here><input type=submit value="Copy" onclick="selectAndCopy('xpub')"><br>
-         "Next" to create wallet.
-    <li> Put the following Key-ID: <input id=keyid readonly value=keyid-fill-here size=10><input type=submit value="Copy" onclick="selectAndCopy('keyid')"><br>
-    <li> "Next" to create wallet. 
-    <li> Save the generated <b>Bitgo Keycard PDF</b> on the secure flash drive
+         Click "Next".
+    <li> For the Key-ID: put the customer's ID number (תעודת זהות)
+    <li> Click "Next" : The <b>Bitgo Keycard PDF</b> is downloaded.
     <li> Follow BitGo instructions to enter activation code (from PDF) to activate wallet. Check all checkboxes and click activate.
     <li> Save the (encrypted) wallet password on the same secure drive <input type=submit value="Save Wallet Password File" onclick="printWalletPassword()">
     </ol>
 
-<li> In <b>Admin</b> window: Invite user to wallet with role "Spender"
+</div><div id=page5 style="display:none">
+<h3>Add Wallet Users</h3>
+
+<li> In <b>Admin</b> window:
     <ol>
-    <li> Click "Add User" button
+    <li> Click "<b>Add Additional User</b>" button
     <li> Tap "select people from your organization"
     <li> Choose customer's email from dropdown.
-    <li> Select role "Spender"   
+    <li> Select role "<b>Spender</b>", click "Next"
+    <li> Use <input type=submit value="Copy Wallet Password" onclick="selectAndCopy('wpwd')">   
     <li> Switch to the customer's incognito window, to accept invitation to join wallet.
+    <li> Click "Activities" and then "Join"
+    <li> Use <input type=submit value="Copy Client Password" onclick="selectAndCopy('pwd')">
     </ol>
 
-<li> In <b>Admin</b> window: Invite guardians to wallet with role "Admin"
+<li> In <b>Admin</b> window: add guardians:
     <ol>
-    <li> Click "Add User" button
+    <li> Click "<b>Add Additional User</b>" button
     <li> Tap "select people from your organization"
     <li> Choose guardians emails from dropdown.
-    <li> Select role "Admin"   
-    <li> Requires <i>wallet password</i>. from step 13, above.
+    <li> Select role "Admin", click "Next"
+    <li> Use <input type=submit value="Copy Wallet Password" onclick="selectAndCopy('wpwd')">   
     </ol>
 <li> Contact guardians and make sure they accept invitation to join wallet.
         <br>
@@ -469,11 +537,14 @@
         <br>
         <i>Note: Guardian should refresh page, select organisation from top/right menu, on top of the page click "Activity" and approve joining the wallet.</i>
 
+</div><div id=page6 style="display:none">
+<h3>Wallet Policy, upload</h3>
+
 <li> Change wallet <b>Policy</b> 
     <ol>
     <li> Check: Approve All Outgoing Transactions
-    <li> Check: Require Multiple (2) Admin Approvals
-    <li> Must use 2nd guardian to approve these changes.
+    <li> Dropdown: Require Multiple (2) Admin Approvals
+    <li> <b>MUST wait</b> for 2nd guardian to approve these changes.
     </ol>
     
 <li> Upload to server:
@@ -482,10 +553,9 @@
         <li> Put in <b>ADMINISTRATOR's</b> Yubikey OTP #2: <input id=adminotp onfocus="select()">
         <li> Put in <i>Customer's</i> Yubikey OTP-ID: <input id=otp onfocus="select()">
 
-    <ol>
+    <ul>
           <li> Script below uses above <i>wallet password</i>
-          <li>Customer's Yubikey not verified here: can put id (12chars) or entire key
-    </ol>
+    </ul>
 
     <li> Click <input type=submit value="Upload User Info"
         onclick="genActivationKey('genstatus', 'activationKey',
