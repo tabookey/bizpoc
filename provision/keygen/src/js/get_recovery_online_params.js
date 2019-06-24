@@ -39,13 +39,6 @@ async function main() {
     console.log("backupKeyAddress:", backupKeyAddress);
     console.log("backupSigningKey:", backupSigningKey);
 
-    // const backupHDNode2 = utxoLib.HDNode.fromBase58(argv["xprv"]);
-    // let backupSigningKey2 = backupHDNode2.getKey().getPrivateKeyBuffer();
-    // let backupKeyAddress2 = `0x${ethUtil.privateToAddress(backupSigningKey2).toString('hex')}`;
-    // let backupKeyPublic2 = `${ethUtil.privateToPublic(backupSigningKey2)}`;
-    // console.log("backupKeyPublic:", backupKeyPublic2);
-    // console.log("backupKeyAddress:", backupKeyAddress2);
-
     const backupKeyNonce = await baseCoin.getAddressNonce(backupKeyAddress);
     console.log("backupKeyNonce:", backupKeyNonce.toString());
 
@@ -53,8 +46,9 @@ async function main() {
     const backupKeyBalance = await baseCoin.queryAddressBalance(backupKeyAddress);
     console.log("backupKeyBalance:", backupKeyBalance.toString());
     console.log("gasPrice.mul(gasLimit)):", gasPrice.mul(gasLimit).toString());
+    console.log("backupKeyBalance, (gasPrice.mul(gasLimit)):", backupKeyBalance, (gasPrice.mul(gasLimit)));
 
-    if (backupKeyBalance < (gasPrice.mul(gasLimit))) {
+    if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
         throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.`);
     }
 
