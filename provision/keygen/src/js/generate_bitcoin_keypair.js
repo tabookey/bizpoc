@@ -351,11 +351,11 @@ async function recover(missingShare, file1, file2, encryptedUserKey, encryptedWa
     let dummy = "dummy";
     //Re-encrypt userkey with a dummpy passphrase to create a new box A
     let reencryptedUserKey = bitgo.encrypt({input: userKey, password: dummy});
-    console.log("userkey (box A):", reencryptedUserKey);
+    // console.log("userkey (box A):", reencryptedUserKey);
 
     // Generate encrypted blob per bitgo script
     let backupKey = getBitGoBoxB(xprv, dummy, keyID);
-    console.log("backupKey (box B):", backupKey);
+    // console.log("backupKey (box B):", backupKey);
 
 
     let baseCoin = bitgo.coin('eth');
@@ -397,7 +397,9 @@ async function recover(missingShare, file1, file2, encryptedUserKey, encryptedWa
 
     const recovery = await baseCoin.recover(recoveryParams);
     console.log("Recovery:", recovery);
-    fs.writeFileSync(workdir + "recoveryTx", JSON.stringify(recovery));
+    let recoveryFileName = workdir + "recoveryTx";
+    fs.writeFileSync(recoveryFileName, JSON.stringify(recovery));
+    console.log("Saved recoveryTx to file:", recoveryFileName);
 
     const recoveryTx = recovery.transactionHex || recovery.txHex || recovery.tx;
 
