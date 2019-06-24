@@ -55,3 +55,5 @@ ${testflag} \
             --key-id "$keyid" \
             --keyfile ${workdir}/${keyfile}
 
+# Cleanup
+rm -vf "${workdir}/{shareA,shareB,shareC,salt,rsaEncryptedPrivateKey,rsaPublicKey,params.json,xpub,recoveryOnlineParams.json,params.json}"
