@@ -9,8 +9,8 @@ firstpass=$tmppass
 read_password Yoav
 secondpass=$tmppass
 
-# Getting Adi's password
-read_password Adi
+# Getting Kfir's password
+read_password Kfir
 thirdpass=$tmppass
 
 # Generating bitcoin keypair in node script
@@ -20,6 +20,6 @@ time node src/js/generate_bitcoin_keypair.js -g -d ${workdir}
 # writing encrypted seed of the bitcoin keypair to participants' usb devices
 write_to_usb Liraz shareA
 write_to_usb Yoav shareB
-write_to_usb Adi shareC
+write_to_usb Kfir shareC
 
 echo "Finished generating keypair for provisioning"

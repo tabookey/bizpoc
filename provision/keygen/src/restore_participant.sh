@@ -3,7 +3,7 @@
 . `dirname $0`/utils.sh
 # $1 is filename of first participant
 # $2 is filename of second participant
-# $3 is name of new restored participant (Liraz, Yoav, Adi etc.)
+# $3 is name of new restored participant (Liraz, Yoav, Kfir etc.)
 [ "$1" ]
 [ "$2" ]
 [ "$3" ]

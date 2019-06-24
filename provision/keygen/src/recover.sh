@@ -2,24 +2,40 @@
 
 . `dirname $0`/utils.sh
 
-if [ ${0} == "$test" ]; then
+if [ ${1} == "test" ]; then
 echo "IN TEST MODE"
 testflag="-t"
 fi
 
+
 mkdir -p ${workdir}
+
+recoveryfilename="recoveryOnlineParams.json"
+read_recovery_params ${recoveryfilename}
+
 read -p "Enter first participant's filename: " firstfilename
 read -p "Enter second participant's filename: " secondfilename
-read -p "Enter xpub: " xpub
-read -p "Enter encrypted user key: " encrypteduserkey
-read -p "Enter key id: " keyid
-read -p "Enter encrypted wallet passphrase: " encryptedwalletpass
-read -p "Enter wallet contract address: " walletaddress
-read -p "Enter destination address: " destaddress
+
+read -p "Enter Bitgo pdf full path: " bitgofile
+while [ ! -f ${bitgofile} ]; do
+echo "${bitgofile} doesn't exist."
+read -p "Enter Bitgo pdf full path: " bitgofile
+exit 1
+done
+
+read -p "Enter encrypted wallet passphrase full path: " walletpassfile
+while [ ! -f ${walletpassfile} ]; do
+echo "${walletpassfile} doesn't exist."
+read -p "Enter encrypted wallet passphrase full path: " walletpassfile
+exit 1
+done
 
 echo ""
 
+encrypteduserkey=$(perl `dirname $0`/boxa.pl ${bitgofile}|head -1)
+keyid=$(perl `dirname $0`/boxa.pl ${bitgofile}|tail -1)
 keyfile="rsaEncryptedPrivateKey"
+encryptedwalletpass=`cat ${walletpassfile}`
 
 read_from_usb "first participant" "$firstfilename"
 read_password "first participant"
@@ -31,11 +47,13 @@ secondpass=${tmppass}
 export firstpass secondpass
 
 # Starting recovery
-# recover(argv.file1, argv.file2, argv["encrypted-userkey"], argv["wallet-address"], argv["encrypted-wallet-pass"], argv["dest-address"], argv["key-id"], workdir);
-time node src/js/generate_bitcoin_keypair.js -r ${testflag} -d ${workdir} --file1 ${workdir}/${firstfilename} --file2 ${workdir}/${secondfilename} \
-            --encrypted-userkey "$encrypteduserkey" --wallet-address "$walletaddress" --encrypted-wallet-pass "$encryptedwalletpass" \
-            --dest-address "$destaddress" --key-id "$keyid" --xpub "$xpub" --keyfile ${workdir}/${keyfile}
-
-
-
+time node src/js/generate_bitcoin_keypair.js -r \
+${testflag} \
+-d ${workdir} \
+--recovery-file ${workdir}/${recoveryfilename} \
+--file1 ${workdir}/${firstfilename} --file2 ${workdir}/${secondfilename} \
+            --encrypted-userkey "$encrypteduserkey" \
+            --encrypted-wallet-pass "$encryptedwalletpass" \
+            --key-id "$keyid" \
+            --keyfile ${workdir}/${keyfile}
 
