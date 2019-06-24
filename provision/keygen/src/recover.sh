@@ -2,7 +2,7 @@
 
 . `dirname $0`/utils.sh
 
-if [ ${1} == "test" ]; then
+if [ ${1} -a ${1} == "test" ]; then
 echo "IN TEST MODE"
 testflag="-t"
 fi
@@ -13,21 +13,16 @@ mkdir -p ${workdir}
 recoveryfilename="recoveryOnlineParams.json"
 read_recovery_params ${recoveryfilename}
 
-read -p "Enter first participant's filename: " firstfilename
-read -p "Enter second participant's filename: " secondfilename
-
 read -p "Enter Bitgo pdf full path: " bitgofile
 while [ ! -f ${bitgofile} ]; do
 echo "${bitgofile} doesn't exist."
 read -p "Enter Bitgo pdf full path: " bitgofile
-exit 1
 done
 
 read -p "Enter encrypted wallet passphrase full path: " walletpassfile
 while [ ! -f ${walletpassfile} ]; do
 echo "${walletpassfile} doesn't exist."
 read -p "Enter encrypted wallet passphrase full path: " walletpassfile
-exit 1
 done
 
 echo ""
@@ -36,6 +31,9 @@ encrypteduserkey=$(perl `dirname $0`/boxa.pl ${bitgofile}|head -1)
 keyid=$(perl `dirname $0`/boxa.pl ${bitgofile}|tail -1)
 keyfile="rsaEncryptedPrivateKey"
 encryptedwalletpass=`cat ${walletpassfile}`
+
+read -p "Enter first participant's filename: " firstfilename
+read -p "Enter second participant's filename: " secondfilename
 
 read_from_usb "first participant" "$firstfilename"
 read_password "first participant"

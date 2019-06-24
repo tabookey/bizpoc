@@ -207,9 +207,9 @@ async function generate(workdir = "./build/") {
 async function restoreSeed(missingShare, file1, file2, firstpass, secondpass) {
 
     let encryptedShare1 = fs.readFileSync(file1);
-    console.log("first encryptedShare loaded.");
+    console.log("first encryptedShare loaded:", file1);
     let encryptedShare2 = fs.readFileSync(file2);
-    console.log("second encryptedShare loaded.");
+    console.log("second encryptedShare loaded:", file2);
     let decrypted1 = await decryptAsync({key: Buffer.from(firstpass), data: Buffer.from(encryptedShare1)});
     console.log("decrypted first part.");
     let decrypted2 = await decryptAsync({key: Buffer.from(secondpass), data: Buffer.from(encryptedShare2)});
@@ -302,8 +302,6 @@ async function restoreParticipant(file1, file2, xpub, workdir = "./build/") {
 }
 
 function getBitGoBoxB(xprv, password, keyID) {
-    // let xprv = 'xprv9s21ZrQH143K4YNpbiHKKvA5Lhwq8dZemhynHWaiLS8gsTgq1CZem7Kyd3fHeLHiWge1cw49CYfpPEBMCN4osFBX8Ri75myVrxQaHCLpDrg';
-    // let password = 'jesuschristthisisannoying';
     let derivedKey = bitgo.coin('eth').deriveKeyWithSeed({key: xprv, seed: keyID});
     let blob = bitgo.encrypt({input: derivedKey.key, password});
     console.log("blob:",blob);
@@ -314,7 +312,7 @@ function decryptStringWithRsaPrivateKey(toDecrypt, relativeOrAbsolutePathtoPriva
     let absolutePath = path.resolve(relativeOrAbsolutePathtoPrivateKey);
     let privateKey = {};
     privateKey.key = fs.readFileSync(absolutePath, "utf8");
-    privateKey.passphrase = passphrase;//"HI";
+    privateKey.passphrase = passphrase;
     let buffer = Buffer.from(toDecrypt, "base64");
     let decrypted = crypto.privateDecrypt(privateKey, buffer);
     return decrypted.toString("utf8");
@@ -399,25 +397,23 @@ async function recover(missingShare, file1, file2, encryptedUserKey, encryptedWa
 
     const recovery = await baseCoin.recover(recoveryParams);
     console.log("Recovery:", recovery);
+    fs.writeFileSync(workdir + "recoveryTx", JSON.stringify(recovery));
 
     const recoveryTx = recovery.transactionHex || recovery.txHex || recovery.tx;
 
     if (!recoveryTx) {
         throw new Error('Fully-signed recovery transaction not detected.');
     }
-
-    fs.writeFileSync(workdir + "recoveryTx", recoveryTx);
     return recoveryTx;
 }
 
 async function main() {
-    console.log("starting main\nargv", argv);
+    console.log("starting main");
     if (argv.t) {
         console.log("TEST MODE - SETTING WEAK DEFAULT PASSWORDS");
         process.env.firstpass = process.env.firstpass || 'a';
         process.env.secondpass = process.env.secondpass || 'b';
         process.env.thirdpass = process.env.thirdpass || 'c';
-        console.log("env vars passwd", process.env.firstpass, process.env.secondpass, process.env.thirdpass);
         console.log("TEST MODE - USING KOVAN");
         bitgo = new BitGoJS.BitGo({env: 'test'});
     }
@@ -456,7 +452,6 @@ async function main() {
             argv["keyfile"], argv["key-id"], argv["recovery-file"], workdir);
         console.log("RecoveryTx:", recoveryTx);
     }
-    console.log("ending main");
 }
 
 main();
