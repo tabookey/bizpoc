@@ -107,10 +107,13 @@ read -s -p "Enter $1's Password: " tmppass
 echo ""
 read -s -p "Re-enter Password: " tmppass2
 echo ""
-if [ "${tmppass}" != "${tmppass2}" ]; then
-    echo "Wrong password. Exiting."
-    exit 1
-fi
+while [ "${tmppass}" != "${tmppass2}" ]; do
+    echo "Wrong password. Try again."
+    read -s -p "Enter $1's Password: " tmppass
+    echo ""
+    read -s -p "Re-enter Password: " tmppass2
+    echo ""
+done
 
 }
 
