@@ -29,6 +29,6 @@ rm -vf "${workdir}/shareC"
 # Cleanup
 rm -vf "${workdir}/rsaEncryptedPrivateKey"
 
-write_to_usb Public xpub
+write_to_usb Public xpub backupKeyAddress rsaPublicKey salt params.json
 
 echo "Finished generating keypair for provisioning"

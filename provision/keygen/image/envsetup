@@ -1,3 +1,5 @@
 
 sudo tar -xvpf node-v10.16.0-linux-x64.tar.xz
+sudo tar -xzvpf node_modules.tar.gz
 export PATH=`pwd`/node-v10.16.0-linux-x64/bin:$PATH 
+node --version
