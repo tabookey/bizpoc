@@ -36,7 +36,3 @@ ${testflag} \
 --xpub "${xpub}" \
 --wallet-address "${walletaddress}" \
 --dest-address "${destaddress}"
-
-
-recoveryfilename="recoveryOnlineParams.json"
-write_to_usb "Public recovery param" ${recoveryfilename}

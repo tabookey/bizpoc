@@ -58,4 +58,4 @@ ${testflag} \
             --keyfile ${workdir}/${keyfile}
 
 # Cleanup
-rm -vf "${workdir}/{shareA,shareB,shareC,rsaEncryptedPrivateKey}"
+rm -vf ${workdir}/{shareA,shareB,shareC,rsaEncryptedPrivateKey}
