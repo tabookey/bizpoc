@@ -29,8 +29,8 @@ let keysDown = {};
 window.onkeydown = function(e) {
   keysDown[e.key] = true;
 
-  if (keysDown["Control"] && keysDown["n"]) { nextScreen(1) }
-  if (keysDown["Control"] && keysDown["p"]) { nextScreen(-1) }
+  if ( keysDown["Alt"] && keysDown["PageDown"] ) { nextScreen(1) }
+  if ( keysDown["Alt"] && keysDown["PageUp"] ) { nextScreen(-1) }
 }
 
 window.onkeyup = function(e) { 
@@ -59,8 +59,8 @@ window.onkeyup = function(e) {
 
 </script>
 
-<td><input type=submit value="<<<<<<< Prev Screen (Ctrl-P)" onclick=nextScreen(-1)></td>
-<td align="right"><input type=submit value="Next Screen (Ctrl-N) >>>>>>>" onclick=nextScreen(1)></td>
+<td><input type=submit value="<<<<<<< Prev Screen (Alt+PageUp)" onclick=nextScreen(-1)></td>
+<td align="right"><input type=submit value="Next Screen (Alt+PageDown) >>>>>>>" onclick=nextScreen(1)></td>
 </tr></table>
 <p>
 <input type=submit value="Copy Client Password" onclick="selectAndCopy('pwd')">
@@ -502,7 +502,7 @@ In <b>Admin</b> window
     <li> Paste from clipboard <i>wallet password</i> (twice), click "Next"
     <li> Select "<b>I already have a backup key</b>". use This key: <input id=xpub readonly value=xpub--fill-here><input type=submit value="Copy" onclick="selectAndCopy('xpub')"><br>
          Click "Next".
-    <li> For the Key-ID: put the customer's ID number (תעודת זהות)
+    <li> For the Key-ID: put the customer's ID number (Teudat Zehut)
     <li> Click "Next" : The <b>Bitgo Keycard PDF</b> is downloaded.
     <li> Follow BitGo instructions to enter activation code (from PDF) to activate wallet. Check all checkboxes and click activate.
     <li> Save the (encrypted) wallet password on the same secure drive <input type=submit value="Save Wallet Password File" onclick="printWalletPassword()">
