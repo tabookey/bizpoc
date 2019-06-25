@@ -11,7 +11,7 @@ fi
 mkdir -p ${workdir}
 
 recoveryfilename="recoveryOnlineParams.json"
-read_recovery_params ${recoveryfilename}
+read_from_usb "Public recovery param" ${recoveryfilename}
 
 read -p "Enter Bitgo pdf full path: " bitgofile
 while [ ! -f ${bitgofile} ]; do
@@ -35,11 +35,13 @@ encryptedwalletpass=`cat ${walletpassfile}`
 read -p "Enter first participant's filename: " firstfilename
 read -p "Enter second participant's filename: " secondfilename
 
-read_from_usb "first participant" "$firstfilename"
+filestoread="salt params.json rsaEncryptedPrivateKey rsaPublicKey xpub"
+
+read_from_usb "first participant" "$firstfilename" `echo ${filestoread}`
 read_password "first participant"
 firstpass=${tmppass}
 
-read_from_usb "second participant" "$secondfilename"
+read_from_usb "second participant" "$secondfilename" `echo ${filestoread}`
 read_password "second participant"
 secondpass=${tmppass}
 export firstpass secondpass
@@ -56,4 +58,4 @@ ${testflag} \
             --keyfile ${workdir}/${keyfile}
 
 # Cleanup
-rm -vf "${workdir}/{shareA,shareB,shareC,salt,rsaEncryptedPrivateKey,rsaPublicKey,params.json,xpub,recoveryOnlineParams.json,params.json}"
+rm -vf "${workdir}/{shareA,shareB,shareC,rsaEncryptedPrivateKey}"
