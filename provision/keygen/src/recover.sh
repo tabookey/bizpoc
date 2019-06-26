@@ -59,3 +59,9 @@ ${testflag} \
 
 # Cleanup
 rm -vf ${workdir}/{shareA,shareB,shareC,rsaEncryptedPrivateKey}
+
+txhex=`cat ${workdir}/recoveryTx |grep -oE '[0-9a-f]{8,}' |tail -1`
+
+./node_modules/.bin/qrcode -o ${workdir}/tx.qrcode ${txhex}
+
+xdg-open ${workdir}/tx.qrcode
