@@ -8,11 +8,29 @@ apply plugin: 'io.fabric'
 android {
     compileSdkVersion 28
     defaultConfig {
+        def getGitHash = { ->
+            def stdout = new ByteArrayOutputStream()
+            exec {
+                commandLine 'git', 'rev-parse', '--short', 'HEAD'
+                standardOutput = stdout
+            }
+            return stdout.toString().trim()
+        }
+
+        def getVersionName = { ->
+            def stdout = new ByteArrayOutputStream()
+            exec {
+                commandLine 'git', 'describe', '--tags', '--dirty'
+                standardOutput = stdout
+            }
+            return stdout.toString().trim()
+        }
+
         applicationId "com.tabookey.bizpoc"
         targetSdkVersion 28
         minSdkVersion 26
         versionCode getTimestamp()
-        versionName "1.1.7"
+        versionName getVersionName() + "-" + getGitHash()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
