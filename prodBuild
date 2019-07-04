@@ -25,12 +25,14 @@ test -r $KEYSTORE || fatal "Keystore file KEYSTORE=$KEYSTORE not found"
 GIT_TAG=`git describe --tags  --dirty`
 echo $GIT_TAG|grep -- - && fatal "git is not clean, or not on a tag"
 
+GIT_COMMIT=`git rev-parse --short HEAD`
+
 ./gradlew assRel
 
 VERSION_NAME=`cat $APK_JSON|perl -ne 'print $1 if /versionName[ ":]+(\S+?)"/'`
 outapk=bizpoc-${VERSION_NAME}.apk
-
-test "$GIT_TAG" == "v$VERSION_NAME" || fatal "git tag $GIT_TAG different from versionName: $VERSION_NAME"
+EXPECTED_VERSION="$GIT_TAG-$GIT_COMMIT"
+test "$EXPECTED_VERSION" == "$VERSION_NAME" || fatal "git tag $EXPECTED_VERSION different from versionName: $VERSION_NAME"
 
 test -r $outapk && fatal output $outapk already exist. 
 
