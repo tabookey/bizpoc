@@ -12,7 +12,7 @@ app.YUBI_API="http://localhost:"+str(port)+"/mock_verify/"
 #DEBUG-ONLY: dump current repo content (even in debug, only dump cred len, not content)
 @app.route( "/dump")
 def debug_dump():
-   return jsonify( [ dict(key=d, cs=app.data[d].checksum, creds=app.data[d].creds) for d in app.data ] )
+   return jsonify( [ dict(key=d, cs=app.data[d].checksum, creds=app.data[d].creds) for d in app.data ] + ["DEBUG MODE"])
 
 @app.route( "/mock_verify/<otp>")
 def dummy_verify(otp):
